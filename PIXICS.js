@@ -254,8 +254,10 @@ const PIXICS = (() => {
     // 매 프레임마다 물리연산을 해서 나오는 수치를 픽시 그래픽요소의 상태에 반영
     let updateList = new Map();
     let registUpdate = world => {
+        let tick_accumulator;
         PIXI.Ticker.shared.add(dt => {
-            world.step(((1 * dt) / 60));
+/*Deboucing*/{ if (tick_accumulator === undefined) { tick_accumulator = 0; }; tick_accumulator += dt; if (tick_accumulator >= 1) { tick_accumulator = tick_accumulator - 1; } else { return; } };
+            world.step(1 / 60);
             world.clearForces();
             for (let body = world.getBodyList(); body; body = body.getNext()) {
                 body.getUserData()?.syncState();
