@@ -8,6 +8,7 @@
     <title>Document</title>
     <script src="https://pixijs.download/v6.1.2/pixi.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/shakiba/planck.js/dist/planck.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/kstost/ksttool/ksttool.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/planck@latest/dist/planck-with-testbed.min.js"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/gh/kstost/PIXICS/PIXICS.js"></script> -->
     <script src="./PIXICS.js"></script>
@@ -19,10 +20,18 @@
             overflow: hidden;
             text-align: center;
         }
+        #log {
+            position: fixed;
+            top:0px;
+            left:0px;
+            color:white;
+            text-align: left;
+        }
     </style>
 </head>
 
 <body>
+    <div id="log"></div>
     <script src="./main.js"></script>
 </body>
 

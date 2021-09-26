@@ -6,6 +6,15 @@ let displaySystem = (width, height, fps) => {
         width,
         height,
         tr(v) { return v * (display.actualWidth / display.width); },
+        rt(v) { return v * (display.width / display.actualWidth); },
+        // log(v) {
+        //     if (!log.count) { log.count = 0; }
+        //     log.count++;
+        //     let el = document.querySelector('#log');
+        //     if (el) {
+        //         el.innerHTML += `${log.count} - ${v}<br />`
+        //     }
+        // },
         sizeCalc() {
             let _width = window.innerWidth;
             let _height = (display.height / display.width) * window.innerWidth;

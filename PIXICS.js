@@ -79,10 +79,10 @@ const PIXICS = (() => {
         }
         getPosition() {
             let dd = this.planckBody.getPosition();
-            dd.x *= PIXICS.worldscale;
-            dd.y *= PIXICS.worldscale;
-            dd.y *= -1;
-            return dd;
+            return {
+                x: dd.x * PIXICS.worldscale,
+                y: (dd.y * PIXICS.worldscale) * -1,
+            }
         }
         touchContacts() {
             for (let b = this.planckBody.getContactList(); b; b = b.next) {
@@ -252,15 +252,22 @@ const PIXICS = (() => {
     }
     //------------------------------
     // 매 프레임마다 물리연산을 해서 나오는 수치를 픽시 그래픽요소의 상태에 반영
-    let updateList = [];
-    PIXI.Ticker.shared.add(dt => {
-        world.step(((1 * dt) / 60));
-        world.clearForces();
-        for (let body = world.getBodyList(); body; body = body.getNext()) {
-            body.getUserData()?.syncState();
-        }
-        updateList.forEach(u => u(dt));
-    });
+    let updateList = new Map();
+    let registUpdate = world => {
+        PIXI.Ticker.shared.add(dt => {
+            world.step(((1 * dt) / 60));
+            world.clearForces();
+            for (let body = world.getBodyList(); body; body = body.getNext()) {
+                body.getUserData()?.syncState();
+            }
+            let it = updateList.keys();
+            while (true) {
+                let { value, done } = it.next();
+                if (done) break;
+                value();
+            }
+        });
+    }
 
     let point = {
         worldscale: 0, PhysicsGraphics,
@@ -268,9 +275,16 @@ const PIXICS = (() => {
         createWorld(scale, gravity) {
             point.worldscale = scale;
             let world = new planck.World(gravity);
+            registUpdate(world);
             return {
                 world,
-                update: function (cb) { updateList.push(cb); }
+                worldscale: scale,
+                update: function (cb) {
+                    updateList.set(cb);
+                },
+                unupdate: function (cb) {
+                    updateList.delete(cb);
+                }
             };
         }
     };
