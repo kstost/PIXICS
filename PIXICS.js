@@ -1,4 +1,172 @@
 const PIXICS = (() => {
+
+    let Ease = {};
+
+    // simple linear tweening - no easing, no acceleration
+    Ease.linearTween = function (t, b, c, d) {
+        return c * t / d + b;
+    };
+
+
+    // quadratic easing in - accelerating from zero velocity
+    Ease.easeInQuad = function (t, b, c, d) {
+        t /= d;
+        return c * t * t + b;
+    };
+
+
+    // quadratic easing out - decelerating to zero velocity
+    Ease.easeOutQuad = function (t, b, c, d) {
+        t /= d;
+        return -c * t * (t - 2) + b;
+    };
+
+
+    // quadratic easing in/out - acceleration until halfway, then deceleration
+    Ease.easeInOutQuad = function (t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t + b;
+        t--;
+        return -c / 2 * (t * (t - 2) - 1) + b;
+    };
+
+
+    // cubic easing in - accelerating from zero velocity
+    Ease.easeInCubic = function (t, b, c, d) {
+        t /= d;
+        return c * t * t * t + b;
+    };
+
+
+    // cubic easing out - decelerating to zero velocity
+    Ease.easeOutCubic = function (t, b, c, d) {
+        t /= d;
+        t--;
+        return c * (t * t * t + 1) + b;
+    };
+
+
+    // cubic easing in/out - acceleration until halfway, then deceleration
+    Ease.easeInOutCubic = function (t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t * t + b;
+        t -= 2;
+        return c / 2 * (t * t * t + 2) + b;
+    };
+
+
+    // quartic easing in - accelerating from zero velocity
+    Ease.easeInQuart = function (t, b, c, d) {
+        t /= d;
+        return c * t * t * t * t + b;
+    };
+
+
+    // quartic easing out - decelerating to zero velocity
+    Ease.easeOutQuart = function (t, b, c, d) {
+        t /= d;
+        t--;
+        return -c * (t * t * t * t - 1) + b;
+    };
+
+
+    // quartic easing in/out - acceleration until halfway, then deceleration
+    Ease.easeInOutQuart = function (t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t * t * t + b;
+        t -= 2;
+        return -c / 2 * (t * t * t * t - 2) + b;
+    };
+
+
+    // quintic easing in - accelerating from zero velocity
+    Ease.easeInQuint = function (t, b, c, d) {
+        t /= d;
+        return c * t * t * t * t * t + b;
+    };
+
+
+    // quintic easing out - decelerating to zero velocity
+    Ease.easeOutQuint = function (t, b, c, d) {
+        t /= d;
+        t--;
+        return c * (t * t * t * t * t + 1) + b;
+    };
+
+
+    // quintic easing in/out - acceleration until halfway, then deceleration
+    Ease.easeInOutQuint = function (t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t * t * t * t + b;
+        t -= 2;
+        return c / 2 * (t * t * t * t * t + 2) + b;
+    };
+
+
+    // sinusoidal easing in - accelerating from zero velocity
+    Ease.easeInSine = function (t, b, c, d) {
+        return -c * Ease.cos(t / d * (Ease.PI / 2)) + c + b;
+    };
+
+
+
+    // sinusoidal easing out - decelerating to zero velocity
+    Ease.easeOutSine = function (t, b, c, d) {
+        return c * Ease.sin(t / d * (Ease.PI / 2)) + b;
+    };
+
+
+    // sinusoidal easing in/out - accelerating until halfway, then decelerating
+    Ease.easeInOutSine = function (t, b, c, d) {
+        return -c / 2 * (Ease.cos(Ease.PI * t / d) - 1) + b;
+    };
+
+
+    // exponential easing in - accelerating from zero velocity
+    Ease.easeInExpo = function (t, b, c, d) {
+        return c * Ease.pow(2, 10 * (t / d - 1)) + b;
+    };
+
+
+    // exponential easing out - decelerating to zero velocity
+    Ease.easeOutExpo = function (t, b, c, d) {
+        return c * (-Ease.pow(2, -10 * t / d) + 1) + b;
+    };
+
+
+    // exponential easing in/out - accelerating until halfway, then decelerating
+    Ease.easeInOutExpo = function (t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * Ease.pow(2, 10 * (t - 1)) + b;
+        t--;
+        return c / 2 * (-Ease.pow(2, -10 * t) + 2) + b;
+    };
+
+
+    // circular easing in - accelerating from zero velocity
+    Ease.easeInCirc = function (t, b, c, d) {
+        t /= d;
+        return -c * (Ease.sqrt(1 - t * t) - 1) + b;
+    };
+
+
+    // circular easing out - decelerating to zero velocity
+    Ease.easeOutCirc = function (t, b, c, d) {
+        t /= d;
+        t--;
+        return c * Ease.sqrt(1 - t * t) + b;
+    };
+
+
+    // circular easing in/out - acceleration until halfway, then deceleration
+    Ease.easeInOutCirc = function (t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return -c / 2 * (Ease.sqrt(1 - t * t) - 1) + b;
+        t -= 2;
+        return c / 2 * (Ease.sqrt(1 - t * t) + 1) + b;
+    };
+
+
     class PhysicsGraphics {
         constructor({ world }) {
             this.world = world;
@@ -10,6 +178,87 @@ const PIXICS = (() => {
             this.planckBody.setUserData(this);
             this.planckBody.setMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
         }
+        getContactList() {
+            let bbb = this;
+            let contactList = new Map();
+            for (let b = bbb.planckBody.getContactList(); b; b = b.next) {
+                let aa = b.contact.getFixtureA().getBody();
+                let bb = b.contact.getFixtureB().getBody();
+                if (bbb.planckBody !== aa) { !contactList.has(aa) && contactList.set(aa, true) }
+                if (bbb.planckBody !== bb) { !contactList.has(bb) && contactList.set(bb, true) }
+            }
+            return [...contactList.keys()];
+        }
+        async moveBy(x, y, s) {
+            let startPoint = this.getPosition();
+            await this.moveTo(startPoint.x + x, startPoint.y + y, s);
+        }
+        moveTo(x, y, s) {
+            return new Promise(r => {
+                let point = this;
+                let startPoint = point.getPosition();
+                let endPoint = { x, y };
+                var moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint); // 충돌벽 길이
+                var radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
+                var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, startPoint, radian);
+                point.getBody().setLinearVelocity(planck.Vec2(rtn.x - startPoint.x, startPoint.y - rtn.y))
+                pixics.update(function upf() {
+                    let currentPoint = point.getPosition();
+                    var currentLength = ksttool.math.get_distance_between_two_point(startPoint, currentPoint); // 충돌벽 길이
+                    if (moveLength <= currentLength) {
+                        point.getBody().setLinearVelocity(planck.Vec2(0, 0))
+                        point.setPosition(x, y);
+                        pixics.unupdate(upf);
+                        r();
+                    }
+                });
+            })
+        }
+        async moveEaseBy(x, y, duration, f) {
+            let startPoint = this.getPosition();
+            await this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
+        }
+        moveEaseTo(x, y, duration, f) {
+            if (!f) f = 'linearTween';
+            f = Ease[f];
+            return new Promise(r => {
+                let _point = this;
+                let startPoint = _point.getPosition();
+                let endPoint = { x, y };
+                let startTime = new Date();
+                let boj = 60 * (1 / (PIXICS.worldscale / ratio));
+                var moveLength = ksttool.math.get_distance_between_two_point({
+                    x: startPoint.x / ratio * boj,
+                    y: startPoint.y / ratio * boj,
+                }, {
+                    x: endPoint.x / ratio * boj,
+                    y: endPoint.y / ratio * boj,
+                }); // 충돌벽 길이
+                var radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
+                let bf = 0;
+                pixics.update(function upf(dt) {
+                    let currentTime = new Date() - startTime;
+                    let rat = currentTime / duration;
+                    if (rat >= 1) { rat = 1; }
+                    let fv = f(rat, 0, 1, 1);
+                    let st = (fv - bf)
+                    bf = fv;
+                    let cur = ksttool.math.get_coordinate_between_two_points(startPoint, endPoint, fv);
+                    if (false) {
+                        _point.setPosition(cur.x, cur.y)
+                    } else {
+                        var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(st * moveLength, startPoint, radian);
+                        _point.getBody().setLinearVelocity(planck.Vec2(rtn.x - startPoint.x, startPoint.y - rtn.y))
+                    }
+                    if (rat === 1) {
+                        _point.setPosition(x, y);
+                        pixics.unupdate(upf);
+                        r();
+                    }
+                });
+            })
+        }
+
         getGraphic() {
             return this.graphic;
         }
@@ -195,9 +444,9 @@ const PIXICS = (() => {
             // 접해있는것의 목록을 담기
             let contactList = [];
             for (let b = this.planckBody.getContactList(); b; b = b.next) {
-                let a = b.contact.getFixtureA().getBody();
-                let b = b.contact.getFixtureB().getBody();
-                contactList.push(a, b);
+                let aa = b.contact.getFixtureA().getBody();
+                let bb = b.contact.getFixtureB().getBody();
+                contactList.push(aa, bb);
             }
 
             // 픽스쳐와 바디를 제거한다
@@ -266,7 +515,7 @@ const PIXICS = (() => {
             while (true) {
                 let { value, done } = it.next();
                 if (done) break;
-                value();
+                value(1);
             }
         });
     }
