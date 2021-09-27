@@ -632,7 +632,7 @@ const PIXICS = (() => {
                     line.innerText = str
                     document.body.appendChild(line);
                     line.measuredSize = line.getBoundingClientRect();
-                    line.measuredSize.botpos = 0;
+                    line.measuredSize.botpos = 15;
                     line.style.bottom = line.measuredSize.botpos + 'px';
                     [...lineList.keys()].forEach(bline => {
                         bline.measuredSize.botpos += line.measuredSize.height;
