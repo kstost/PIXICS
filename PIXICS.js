@@ -178,6 +178,23 @@ const PIXICS = (() => {
             this.planckBody.setUserData(this);
             this.planckBody.setMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
         }
+        isConnectedWith(thing) {
+            let rtn = false;
+            let mebody = this.getBody();
+            let history = new Map();
+            function looking(thing) {
+                if (rtn || history.has(thing)) return;
+                history.set(thing);
+                let list = thing.getContactList();
+                for (let i = 0; i < list.length; i++) {
+                    let _thing = list[i].getUserData();
+                    if (list[i] === mebody) { rtn = true; return; }
+                    looking(_thing);
+                }
+            }
+            looking(thing);
+            return rtn;
+        }
         getContactList() {
             let bbb = this;
             let contactList = new Map();
@@ -214,44 +231,86 @@ const PIXICS = (() => {
                 });
             })
         }
+        async rotateEaseBy(x, duration, f) {
+            let startPoint = this.getAngle();
+            await this.rotateEaseTo(startPoint + x, duration, f);
+        }
         async moveEaseBy(x, y, duration, f) {
             let startPoint = this.getPosition();
             await this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
         }
+        rotateEaseTo(x, duration, f) {
+            return this.easingTo(x, null, duration, f);
+        }
         moveEaseTo(x, y, duration, f) {
+            return this.easingTo(x, y, duration, f);
+        }
+        easingTo(x, y, duration, f) {
+            const magicNumber = 60;
             if (!f) f = 'linearTween';
             f = Ease[f];
             return new Promise(r => {
                 let _point = this;
-                let startPoint = _point.getPosition();
-                let endPoint = { x, y };
-                let startTime = new Date();
-                let boj = 60 * (1 / (PIXICS.worldscale / ratio));
-                var moveLength = ksttool.math.get_distance_between_two_point({
-                    x: startPoint.x / ratio * boj,
-                    y: startPoint.y / ratio * boj,
-                }, {
-                    x: endPoint.x / ratio * boj,
-                    y: endPoint.y / ratio * boj,
-                }); // 충돌벽 길이
-                var radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
+                let startPoint;// = _point.getPosition();
+                let endPoint;// = { x, y };
+                if (y !== null) {
+                    startPoint = _point.getPosition();
+                    endPoint = { x, y };
+                } else {
+                    startPoint = _point.getAngle();
+                    endPoint = x;
+                }
+                let startTime = 0;//new Date();
+                let boj = magicNumber * (1 / (PIXICS.worldscale / ratio));
+                let moveLength;
+                let radian;
+                if (y !== null) {
+                    moveLength = ksttool.math.get_distance_between_two_point({
+                        x: startPoint.x / ratio * boj,
+                        y: startPoint.y / ratio * boj,
+                    }, {
+                        x: endPoint.x / ratio * boj,
+                        y: endPoint.y / ratio * boj,
+                    }); // 충돌벽 길이
+                    radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
+                } else {
+                    moveLength = (endPoint - startPoint) * magicNumber;
+                }
                 let bf = 0;
                 pixics.update(function upf(dt) {
-                    let currentTime = new Date() - startTime;
+                    // console.log(dt);
+                    startTime += dt;
+                    let currentTime = (startTime / 60) * 1000;//new Date() - startTime;
                     let rat = currentTime / duration;
                     if (rat >= 1) { rat = 1; }
                     let fv = f(rat, 0, 1, 1);
                     let st = (fv - bf)
                     bf = fv;
-                    let cur = ksttool.math.get_coordinate_between_two_points(startPoint, endPoint, fv);
+                    // let cur = ksttool.math.get_coordinate_between_two_points(startPoint, endPoint, fv);
                     if (false) {
-                        _point.setPosition(cur.x, cur.y)
+                        // _point.setPosition(cur.x, cur.y)
                     } else {
-                        var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(st * moveLength, startPoint, radian);
-                        _point.getBody().setLinearVelocity(planck.Vec2(rtn.x - startPoint.x, startPoint.y - rtn.y))
+                        if (y !== null) {
+                            var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(st * moveLength, startPoint, radian);
+                            _point.getBody().setLinearVelocity(planck.Vec2(rtn.x - startPoint.x, startPoint.y - rtn.y))
+                        } else {
+                            _point.getBody().setAngularVelocity((st * moveLength))
+                        }
                     }
                     if (rat === 1) {
-                        _point.setPosition(x, y);
+                        if (y !== null) {
+                            // var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(st * moveLength, startPoint, radian);
+                            _point.getBody().setLinearVelocity(planck.Vec2(0, 0))
+                            _point.setPosition(x, y);
+                        } else {
+                            _point.getBody().setAngularVelocity(0)
+                            _point.setAngle(x);
+                        }
+                        // if (y !== null) {
+                        //     _point.setPosition(x, y);
+                        // } else {
+                        //     _point.setAngle(x);
+                        // }
                         pixics.unupdate(upf);
                         r();
                     }
@@ -498,24 +557,48 @@ const PIXICS = (() => {
             // 접해있던것 깨우기
             contactList.forEach(contact => contact.setAwake(true));
         }
+        setActive(v) { this.getBody().setActive(v); }
+        isActive() { return this.getBody().isActive(); }
+        setAwake(v) { this.getBody().setAwake(v); }
+        isAwake() { return this.getBody().isAwake(); }
+        setStatic() { this.getBody().setStatic(); } // dynamic의 반대
+        isStatic() { return this.getBody().isStatic(); }
     }
     //------------------------------
     // 매 프레임마다 물리연산을 해서 나오는 수치를 픽시 그래픽요소의 상태에 반영
     let updateList = new Map();
+    let timeoutList = new Map();
     let registUpdate = world => {
+        point.tickplay = true;
         let tick_accumulator;
         PIXI.Ticker.shared.add(dt => {
+            if (!point.tickplay) return;
 /*Deboucing*/{ if (tick_accumulator === undefined) { tick_accumulator = 0; }; tick_accumulator += dt; if (tick_accumulator >= 1) { tick_accumulator = tick_accumulator - 1; } else { return; } };
             world.step(1 / 60);
             world.clearForces();
             for (let body = world.getBodyList(); body; body = body.getNext()) {
                 body.getUserData()?.syncState();
             }
-            let it = updateList.keys();
-            while (true) {
-                let { value, done } = it.next();
-                if (done) break;
-                value(1);
+            {
+                let it = updateList.keys();
+                while (true) {
+                    let { value, done } = it.next();
+                    if (done) break;
+                    value(1);
+                }
+            }
+            {
+                let it = timeoutList.keys();
+                while (true) {
+                    let { value, done } = it.next();
+                    if (done) break;
+                    let to = timeoutList.get(value);
+                    to.time -= 1;
+                    if (to.time <= 0) {
+                        timeoutList.delete(value);
+                        value();
+                    }
+                }
             }
         });
     }
@@ -530,11 +613,17 @@ const PIXICS = (() => {
             return {
                 world,
                 worldscale: scale,
+                setPlay() {
+                    point.tickplay = !point.tickplay;
+                },
                 update: function (cb) {
                     updateList.set(cb);
                 },
                 unupdate: function (cb) {
                     updateList.delete(cb);
+                },
+                setTimeout(cb, time) {
+                    timeoutList.set(cb, { time: (time / 1000) * 60 });
                 }
             };
         }
