@@ -607,6 +607,7 @@ const PIXICS = (() => {
         });
     }
 
+    let lineList = new Map();
     let point = {
         worldscale: 0, PhysicsGraphics,
         transScale(v) { return v / PIXICS.worldscale; },
@@ -619,6 +620,38 @@ const PIXICS = (() => {
             point.pixics = {
                 world,
                 worldscale: scale,
+                log(str, duration) {
+                    let line = document.createElement('div');
+                    line.style.position = 'fixed';
+                    line.style.left = '0px';
+                    line.style.paddingLeft = '15px';
+                    line.style.paddingTop = '0px';
+                    line.style.paddingBottom = '5px';
+                    line.style.fontSize = '15px';
+                    line.style.color = 'white';
+                    line.innerText = str
+                    document.body.appendChild(line);
+                    line.measuredSize = line.getBoundingClientRect();
+                    line.measuredSize.botpos = 0;
+                    line.style.bottom = line.measuredSize.botpos + 'px';
+                    [...lineList.keys()].forEach(bline => {
+                        bline.measuredSize.botpos += line.measuredSize.height;
+                        bline.style.bottom = bline.measuredSize.botpos + 'px';
+                        bline.style.opacity = '0.5';
+                    });
+                    line.addEventListener('transitionend', e => {
+                        if (e.propertyName === 'filter') {
+                            line.remove();
+                            lineList.delete(line);
+                        }
+                    })
+                    setTimeout(() => {
+                        line.style.transition = '0.2s';
+                        line.style.filter = 'blur(0.2rem)';
+                        line.style.opacity = '0';
+                    }, duration ? duration : 2000);
+                    lineList.set(line, true);
+                },
                 setPlay() {
                     point.tickplay = !point.tickplay;
                 },
