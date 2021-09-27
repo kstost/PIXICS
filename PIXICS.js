@@ -212,6 +212,7 @@ const PIXICS = (() => {
         }
         moveTo(x, y, s) {
             const pixics = point.pixics;
+            this.getBody().setKinematic();
             return new Promise(r => {
                 let point = this;
                 let startPoint = point.getPosition();
