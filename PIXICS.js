@@ -452,17 +452,17 @@ const PIXICS = (() => {
             this.setFixtureProp(value, 'density', idx);
             this.resetBodyAndFixtures();
         }
-        getDensity(idx) { return this.getFixtureProp('density', idx); }
+        getDensity(idx) { if (idx === undefined) { idx = 0; } return this.getFixtureProp('density', idx); }
         setRestitution(value, idx) {
             this.setFixtureProp(value, 'restitution', idx);
             this.resetBodyAndFixtures();
         }
-        getRestitution(idx) { return this.getFixtureProp('restitution', idx); }
+        getRestitution(idx) { if (idx === undefined) { idx = 0; } return this.getFixtureProp('restitution', idx); }
         setFriction(value, idx) {
             this.setFixtureProp(value, 'friction', idx);
             this.resetBodyAndFixtures();
         }
-        getFriction(idx) { return this.getFixtureProp('friction', idx); }
+        getFriction(idx) { if (idx === undefined) { idx = 0; } return this.getFixtureProp('friction', idx); }
         setDynamic() {
             this.planckBody.setDynamic();
         }
