@@ -1,340 +1,61 @@
-//------------------------------
-// 스크린의 준비
-const display = displaySystem(1080, 1920, false); // 스크린너비, 스크린높이, 성능측정모니터사용여부
-const app = display.createPIXIApp(); // 화면을 생성한다 PIXI Application Stage 를 생성한다
-const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
-document.querySelector('body').appendChild(app.view);
+window.addEventListener('load', async () => {
 
-//------------------------------
-// 피직스월드의 준비
-const gravity = planck.Vec2(0, -100); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
-const pixics = PIXICS.createWorld(50*ratio, gravity);
-const world = pixics.world;
-pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
-
-//------------------------------
-// 메인 코드의 시작
-(async () => {
-    1 && await pixics.sleep(1000);
-
-    // 사각형을 하나 생성
-    let rectsize = (1080 * 0.1) * ratio;
-    let rect = new PIXICS.PhysicsGraphics({ world });
-    rect.drawRect(-rectsize * 0.5, -rectsize * 0.5, rectsize, rectsize);
-    rect.getGraphic().tint = 0xffffff;
-    app.stage.addChild(rect.getGraphic());
-    0 && await pixics.sleep(1000);
-
-    // 사각형의 위치 이동
-    // 화면의 중앙에 위치하도록 하기위해 1080를 2로 나눈후 그 값에 ratio 를 곱해준다
-    // display.width 값과 1080*ratio 값은 같다
-    // ratio 를 곱해주는 이유는 화면의 크기를 지정하기위해 displaySystem 인자로 넣었던 수치인 1080x1920을 기준으로
-    // 코드에 입력하기 위함이다
-    // ratio 는 좌표, 크기적용시에만 곱해서 사용해주도록 하자
-    rect.setPosition(1080 * 0.5 * ratio, 0)
-    0 && await pixics.sleep(500);
-
-    // 사각형의 각도조절
-    rect.setAngle(Math.PI * 0.26)
-    0 && await pixics.sleep(500);
-
-    // 사각형의 색을 변경
-    rect.getGraphic().tint = 0xffff00;
-    0 && await pixics.sleep(500);
-
-    // 중력의 영향을 받도록 적용
-    rect.setDynamic();
-    0 && await pixics.sleep(500);
-
-    // 중력의 영향을 받지않는 요소로 전환
-    rect.setStatic();
-    0 && await pixics.sleep(500);
-
-    // 다시 중력의 영향을 받도록 적용
-    rect.setDynamic();
-    0 && await pixics.sleep(500);
-
-    // 길다란 화면너비만큼의 막대기 생성
-    let stick = new PIXICS.PhysicsGraphics({ world });
-    stick.drawRect(0, (1920 - 50) * ratio, display.width, 50 * ratio);
-    stick.getGraphic().tint = 0x44aa44;
-    app.stage.addChild(stick.getGraphic());
-
-    // 사각형에 마우스다운이벤트 붙이기
-    rect.getGraphic().interactive = true;
-    let touch = function (e) {
-        // 터치하면 사각형 요소에 하늘로솓는 힘을 준다
-        // 힘을 85만큼 주고 이때 이 값에는 ratio 를 곱하지 않도록 한다
-        // ratio 는 요소의 size를 지정할때만 사용한다
-        rect.getBody().setLinearVelocity(planck.Vec2(0, 85))
-    };
-    rect.getGraphic().on('mousedown', touch)
-    rect.getGraphic().on('touchstart', touch)
-
-})()
-
-
-
-// {
-//     let dd = new Date();
-//     pixics.setTimeout(() => {
-//         console.log(new Date() - dd);
-//         // rect.getGraphic().tint = 0xffff00;
-//     }, 1000);
-
-// }
-
-if (false) {
     //------------------------------
-    // 화면 사방을 막아주는 바운더리 요소를 만들어서 화면에 등장시키기
-    let 선굵기 = (11 * ratio);
-    let 바운더리 = new PIXICS.PhysicsGraphics({ world });
-    바운더리.getBody().setBullet(true); // 컨티너스컬리젼디텍션 켜기
-    바운더리.drawRect(0, 0, (display.width), 선굵기);
-    // 바운더리.drawRect(0, (display.height) - 선굵기, (display.width), 선굵기);
-    바운더리.drawRect(0, 0, 선굵기, (display.height));
-    바운더리.drawRect((display.width) - 선굵기, 0, 선굵기, (display.height));
-    바운더리.getGraphic().tint = 0xffffff;
-    app.stage.addChild(바운더리.getGraphic());
+    // 스크린의 준비
+    const display = displaySystem(1080, 1920, true); // 스크린너비, 스크린높이, 성능측정모니터사용여부
+    const app = display.createPIXIApp(); // 화면을 생성한다 PIXI Application Stage 를 생성한다
+    const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
+    document.querySelector('body').appendChild(app.view);
 
-    let 바닥 = new PIXICS.PhysicsGraphics({ world });
-    바닥.getBody().setBullet(true); // 컨티너스컬리젼디텍션 켜기
-    바닥.drawRect(0, (display.height) - 선굵기, (display.width), 선굵기);
-    바닥.getGraphic().tint = 0x9944aa;
-    app.stage.addChild(바닥.getGraphic());
+    //------------------------------
+    // 피직스월드의 준비
+    const gravity = planck.Vec2(0, -100); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
+    const pixics = PIXICS.createWorld(30, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
+    const world = pixics.world;
+    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
-    // 막대기.getGraphic().tint = 0xffffff;
+    //------------------------------
+    // 메인 코드의 시작
+    await pixics.sleep(10);
 
-    let 가장위막대기;
-    for (let i = 1; i < 0; i++) {
-        let 길이 = 1080 / 2 * ratio;
-        let 막대기 = new PIXICS.PhysicsGraphics({ world });
-        막대기.setFriction(1);
-        막대기.drawRect(0, 0, (길이), (10)); // 사각형 그리기. 사각형을 그려주는 위치는 회전축과 연관이 있게된다
-        if (i % 2) {
-            막대기.setPosition(0 * ratio, (1920 * 0.02 * ratio) * (i + 1))
-        } else {
-            막대기.setPosition(1080 / 2 * ratio, (1920 * 0.02 * ratio) * (i + 1))
-        }
-        막대기.getBody().setBullet(true);
-        막대기.getBody().setKinematic();
-        app.stage.addChild(막대기.getGraphic());
-        1 && (async () => {
-            while (true) {
-                if (false) {
-                    if (i % 2) {
-                        await 막대기.moveBy(1080 / 2 * ratio, 0, 100, 'easeInOutQuad');
-                        await 막대기.moveBy(-1080 / 2 * ratio, 0, 100, 'easeInOutQuad');
-                    } else {
-                        await 막대기.moveBy(-1080 / 2 * ratio, 0, 100, 'easeInOutQuad');
-                        await 막대기.moveBy(1080 / 2 * ratio, 0, 100, 'easeInOutQuad');
-                    }
-                } else {
-                    if (i % 2) {
-                        await 막대기.moveEaseBy(1080 / 2 * ratio, 0, 2100, 'easeInOutQuad');
-                        await 막대기.moveEaseBy(-1080 / 2 * ratio, 0, 2100, 'easeInOutQuad');
-                    } else {
-                        await 막대기.moveEaseBy(-1080 / 2 * ratio, 0, 2100, 'easeInOutQuad');
-                        await 막대기.moveEaseBy(1080 / 2 * ratio, 0, 2100, 'easeInOutQuad');
-                    }
-                }
-            }
-        })();
-        if (i === 1) {
-            가장위막대기 = 막대기;
-        }
-    }
-    if (false) {
-        let 길이 = 1080 / 2 * ratio;
-        let 막대기 = new PIXICS.PhysicsGraphics({ world });
-        막대기.setFriction(1);
-        막대기.drawRect(0, 0, (길이), (10)); // 사각형 그리기. 사각형을 그려주는 위치는 회전축과 연관이 있게된다
-        막대기.setPosition(0 * ratio, (1920 * 0.2 * ratio) * 3)
-        막대기.getBody().setBullet(true);
-        막대기.getBody().setKinematic();
-        // 막대기.getBody().setAngularVelocity(0.1);
-        app.stage.addChild(막대기.getGraphic());
-        1 && (async () => {
-            while (true) {
-                // await 막대기.moveBy(0, 100, 3);
-                // await 막대기.moveBy(0, -100, 30);
-                await 막대기.moveEaseBy(1080 / 2 * ratio, 0, 2000, 'easeInOutQuad');
-                await 막대기.moveEaseBy(-1080 / 2 * ratio, 0, 2000, 'easeInOutQuad');
-                // await 막대기.moveEaseBy(0, 0, 1000, 'easeInOutQuad');
-                // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/3, 1000, 'easeInOutQuad');
-                // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/2, 1000, 'easeInOutCubic');
-                // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/3, 1000, 'easeInOutCubic');
-            }
-        })();
-    }
-    // {
-    //     let 길이 = 1080 / 2 * ratio;
-    //     let 막대기 = new PIXICS.PhysicsGraphics({ world });
-    //     막대기.setFriction(1);
-    //     막대기.drawRect(0, 0, (길이), (10)); // 사각형 그리기. 사각형을 그려주는 위치는 회전축과 연관이 있게된다
-    //     막대기.setPosition(0 * ratio, (1920 * 0.2 * ratio) * 2)
-    //     막대기.getBody().setBullet(true);
-    //     막대기.getBody().setKinematic();
-    //     // 막대기.getBody().setAngularVelocity(0.1);
-    //     app.stage.addChild(막대기.getGraphic());
-    //     1 && (async () => {
-    //         while (true) {
-    //             // await 막대기.moveBy(0, 100, 3);
-    //             // await 막대기.moveBy(0, -100, 30);
-    //             await 막대기.moveEaseBy(1080 / 2 * ratio, 0, 3000, 'easeInOutQuad');
-    //             await 막대기.moveEaseBy(-1080 / 2 * ratio, 0, 3000, 'easeInOutQuad');
-    //             // await 막대기.moveEaseBy(0, 0, 1000, 'easeInOutQuad');
-    //             // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/3, 1000, 'easeInOutQuad');
-    //             // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/2, 1000, 'easeInOutCubic');
-    //             // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/3, 1000, 'easeInOutCubic');
-    //         }
-    //     })();
-    // }
-    // {
-    //     let 길이 = 1080 / 2 * ratio;
-    //     let 막대기 = new PIXICS.PhysicsGraphics({ world });
-    //     막대기.setFriction(1);
-    //     막대기.graphic.tint = 0xff0000;
-    //     막대기.drawRect(0, 0, (길이), (10)); // 사각형 그리기. 사각형을 그려주는 위치는 회전축과 연관이 있게된다
-    //     막대기.setPosition(0 * ratio, (1920 * 0.2 * ratio) * 1)
-    //     막대기.getBody().setBullet(true);
-    //     막대기.getBody().setKinematic();
-    //     // 막대기.getBody().setAngularVelocity(0.1);
-    //     app.stage.addChild(막대기.getGraphic());
-    //     1 && (async () => {
-    //         while (true) {
-    //             // await 막대기.moveBy(0, 100, 3);
-    //             // await 막대기.moveBy(0, -100, 30);
-    //             await 막대기.moveEaseBy(1080 / 2 * ratio, 0, 4000, 'easeInOutQuad');
-    //             await 막대기.moveEaseBy(-1080 / 2 * ratio, 0, 4000, 'easeInOutQuad');
-    //             // await 막대기.moveEaseBy(0, 0, 1000, 'easeInOutQuad');
-    //             // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/3, 1000, 'easeInOutQuad');
-    //             // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/2, 1000, 'easeInOutCubic');
-    //             // await 막대기.moveEaseTo(1080/4*ratio, 1920*ratio/3, 1000, 'easeInOutCubic');
-    //         }
-    //     })();
-    //     가장위막대기 = 막대기;
+    // 복합도형 오브젝트 생성
+    let rectsize = (1080 * 0.4) * ratio;
+    let rect = new PIXICS.PhysicsGraphics({ world });
+    rect.drawCircle(0, 0, rectsize / 2); // 원그리고
+    rect.drawRect(0, 0, rectsize * 1.5, rectsize * 0.1); // 길다란사각형그렸다
+    rect.getGraphic().tint = 0xaaff00;
+    app.stage.addChild(rect.getGraphic());
+    await pixics.sleep(1000);
 
-    // }
+    // 화면의 가운데로 오도록 좌표변경
+    rect.setPosition(1080 * 0.5 * ratio, 1920 * 0.5 * ratio)
+    await pixics.sleep(1000);
 
-    // 막대기.drawRect(-((display.width / 2)/2), -5, (display.width / 2), 10);
-    // 막대기.setPosition(1080 / 3 * ratio, 1920 / 2 * ratio);
-    // 막대기
-    // 막대기.getBody().setLinearVelocity(planck.Vec2(2,0))
-    // let { x, y } = 막대기.getPosition();
-    // setTimeout(()=>{
-    // },100);
+    // 붉은막대 생성
+    let shortground = new PIXICS.PhysicsGraphics({ world });
+    shortground.drawRect(
+        -(1000 * ratio * 0.5),
+        -(30 * ratio * 0.5),
+        1000 * ratio,
+        30 * ratio
+    );
+    shortground.getGraphic().tint = 0xaa0000;
+    app.stage.addChild(shortground.getGraphic());
+    shortground.setPosition(1080 * 0.5 * ratio, 1920 * 0.8 * ratio)
 
-    // let 돌아가는막대 = new PIXICS.PhysicsGraphics({ world });
-    // 돌아가는막대.drawRect((-10000 / 2), (-5), (10000), (10)); // 사각형 그리기. 사각형을 그려주는 위치는 회전축과 연관이 있게된다
-    // 돌아가는막대.setPosition((1080 / 2) * ratio, (1920 / 2) * ratio)
-    // 돌아가는막대.getBody().setBullet(true); // 막대는 얇고 얇은만큼 이 옵션을 안켜주면 충돌체가 투과해버릴 수 있다
-    // 돌아가는막대.getBody().setKinematic(); // 다이나믹과 다르게 중력에 영향을 받지 않으며 Velocity 값이 영속적이게 된다
-    // 돌아가는막대.getBody().setAngularVelocity(1); // 자율적이고 영속적인 회전힘을 부여
-    // app.stage.addChild(돌아가는막대.getGraphic()); // 그래픽요소를 화면에 추가
+    // 복합도형이 중력의 영향 받도록 설정
+    rect.setDynamic();
+    await pixics.sleep(1000);
 
-    // function moveEase() {
+    // 붉은막대 움직여보기
+    // 이 움직임은 중력의 영향을 받는 Dynamic 상태의 움직임과는 다른 움직임이다
+    // 중력에 전혀 영향을 받지 않고 다른 오브젝트로부터의 저항에도 전혀 영향받지 않는 절대적인 힘을 가진다
+    // 각 함수의 리턴은 Promise이며 움직임이 종료되면 resolve 된다
+    // 만약 해당 요소가 dynamic 상태라면 아래 코드를 수행함으로써 자동적으로 kinematic 상태로 전환된다
+    // dynamic = 중력에 영향받는 상태
+    // kinematic = 중력에 영향받지 않는 절대적인 힘의 움직임을 가지는 상태
+    await shortground.rotateEaseBy(-(Math.PI / 10), 1000, 'easeInOutQuad');
+    await shortground.rotateEaseBy((Math.PI / 10), 300, 'easeInOutQuad');
+    await shortground.moveEaseBy(0, -100, 200, 'easeInOutQuad');
 
-    // }
-    // console.log(pixics.update)
-
-    // for (let i = 0; i < 1; i++) {
-    // 여러가지조합.drawRect(50 * ratio, 50 * ratio, 550 * ratio, 90 * ratio);
-    // 여러가지조합.getBody().setBullet(true);
-    function getBox() {
-        let alive = true;
-        let 여러가지조합 = new PIXICS.PhysicsGraphics({ world });
-        여러가지조합.setDynamic();
-        여러가지조합.getGraphic().tint = 0x00aa00; // 색 지정이 가능. 그래픽요소의 기본색은 흰색
-        여러가지조합.drawRect(0, 0, 100 * ratio, 100 * ratio);
-        여러가지조합.setPosition(1080 / 2 * ratio, 1920 * 0.9 * ratio)
-        여러가지조합.setDensity(1000000)
-        여러가지조합.setRestitution(0)
-        여러가지조합.setFriction(1);
-        app.stage.addChild(여러가지조합.getGraphic()); // 그래픽요소를 화면에 추가
-        여러가지조합.getGraphic().interactive = true;
-        여러가지조합.getBody().setGravityScale(0.2)
-        let ev = e => {
-            if (!alive) return;
-            if (여러가지조합.getContactList().filter(a => a !== 바운더리.getBody()).length === 0) return;
-            let vel = 여러가지조합.getBody().getLinearVelocity();
-            여러가지조합.getBody().setLinearVelocity(planck.Vec2(0 + vel.x, 50 + vel.y));
-        };
-        여러가지조합.getGraphic().on('mousedown', ev)
-        여러가지조합.getGraphic().on('touchstart', ev)
-        let timen = 0;
-        pixics.update(function uup(dt) {
-            let posdi = (Math.abs(가장위막대기.getBody().getLinearVelocity().x - 여러가지조합.getBody().getLinearVelocity().x));
-            // let contact = 여러가지조합.getContactList();
-            if (currentRect.isConnectedWith(가장위막대기) && posdi < 5) {
-                timen += dt;
-                if (timen > 1 * 120) {
-                    alive = false;
-                    pixics.unupdate(uup);
-                    currentRect.setDensity(1000);
-                    currentRect = getBox();
-                }
-            } else {
-                timen = 0;
-            }
-        });
-        return 여러가지조합;
-    }
-    if (false) {
-        let currentRect = getBox();
-
-
-        let 투명스프라이트 = new PIXI.Graphics();
-        투명스프라이트.beginFill(0x00ffff);
-        투명스프라이트.drawRect(0, 0, display.width, display.height);
-        투명스프라이트.endFill();
-        투명스프라이트.alpha = 0;
-        투명스프라이트.interactive = true;
-        app.stage.addChild(투명스프라이트);
-        let tcc = () => {
-            currentRect.getGraphic().emit('mousedown');
-        }
-        투명스프라이트.on('touchstart', tcc);
-        투명스프라이트.on('mousedown', tcc);
-        // app.stage.interactive = true;
-        // 
-        // setInterval(ev, 1000 + (Math.random() * 1000))
-        // }
-        // setInterval(ev, 1000)
-        if (false) {
-            let bbb = 여러가지조합;
-            let contactList = new Map();
-            for (let b = bbb.planckBody.getContactList(); b; b = b.next) {
-                let aa = b.contact.getFixtureA().getBody();
-                let bb = b.contact.getFixtureB().getBody();
-                if (bbb.planckBody !== aa) { !contactList.has(aa) && contactList.set(aa, true) }
-                if (bbb.planckBody !== bb) { !contactList.has(bb) && contactList.set(bb, true) }
-            }
-            console.log([...contactList.keys()]);
-
-        }
-    }
-
-
-
-
-    let 길이 = 1080 / 2 * ratio;
-    let 막대기 = new PIXICS.PhysicsGraphics({ world });
-    막대기.graphic.tint = 0x00aaff
-    막대기.setFriction(1);
-    막대기.drawRect(-10, -10, (길이), (20)); // 사각형 그리기. 사각형을 그려주는 위치는 회전축과 연관이 있게된다
-    막대기.setPosition(1080 / 2 * ratio, (1920 / 2 * ratio))
-    막대기.getBody().setBullet(true);
-    막대기.getBody().setKinematic();
-
-    // 막대기.getBody().setAngularVelocity(-0.1);
-    app.stage.addChild(막대기.getGraphic());
-    1 && (async () => {
-        // await 막대기.moveEaseBy(-(Math.PI/4), null, 210, 'easeInOutQuad');
-        while (true) {
-            await 막대기.rotateEaseBy(-(Math.PI / 4), 1100, 'easeInOutQuad');
-            await 막대기.rotateEaseBy((Math.PI / 4), 110, 'easeInOutQuad');
-            // await 막대기.moveEaseBy(-1080 / 2 * ratio, null, 2100, 'easeInOutQuad');
-        }
-    })();
-}
+});

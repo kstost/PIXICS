@@ -211,6 +211,7 @@ const PIXICS = (() => {
             await this.moveTo(startPoint.x + x, startPoint.y + y, s);
         }
         moveTo(x, y, s) {
+            const pixics = point.pixics;
             return new Promise(r => {
                 let point = this;
                 let startPoint = point.getPosition();
@@ -246,9 +247,12 @@ const PIXICS = (() => {
             return this.easingTo(x, y, duration, f);
         }
         easingTo(x, y, duration, f) {
+            const pixics = point.pixics;
+            const ratio = point.ratio;
             const magicNumber = 60;
             if (!f) f = 'linearTween';
             f = Ease[f];
+            this.getBody().setKinematic();
             return new Promise(r => {
                 let _point = this;
                 let startPoint;// = _point.getPosition();
@@ -606,11 +610,13 @@ const PIXICS = (() => {
     let point = {
         worldscale: 0, PhysicsGraphics,
         transScale(v) { return v / PIXICS.worldscale; },
-        createWorld(scale, gravity) {
+        createWorld(scale, ratio, gravity) {
+            scale *= ratio;
+            point.ratio = ratio;
             point.worldscale = scale;
             let world = new planck.World(gravity);
             registUpdate(world);
-            return {
+            point.pixics = {
                 world,
                 worldscale: scale,
                 setPlay() {
@@ -631,6 +637,7 @@ const PIXICS = (() => {
                     });
                 }
             };
+            return point.pixics;
         }
     };
     return point;
