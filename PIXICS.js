@@ -624,6 +624,11 @@ const PIXICS = (() => {
                 },
                 setTimeout(cb, time) {
                     timeoutList.set(cb, { time: (time / 1000) * 60 });
+                },
+                sleep(time) {
+                    return new Promise(r => {
+                        this.setTimeout(r, time);
+                    });
                 }
             };
         }

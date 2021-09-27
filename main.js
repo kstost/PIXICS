@@ -7,36 +7,73 @@ document.querySelector('body').appendChild(app.view);
 
 //------------------------------
 // 피직스월드의 준비
-const gravity = planck.Vec2(0, -20); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
-const pixics = PIXICS.createWorld(50 * ratio, gravity);
+const gravity = planck.Vec2(0, -100); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
+const pixics = PIXICS.createWorld(50*ratio, gravity);
 const world = pixics.world;
 pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
-// 사각형을 하나 생성
-let rect = new PIXICS.PhysicsGraphics({ world });
-rect.drawRect(0, 0, 100, 100);
-rect.getGraphic().tint = 0xffffff;
-app.stage.addChild(rect.getGraphic());
+//------------------------------
+// 메인 코드의 시작
+(async () => {
+    1 && await pixics.sleep(1000);
 
-// 사각형의 색을 변경
-pixics.setTimeout(() => {
+    // 사각형을 하나 생성
+    let rectsize = (1080 * 0.1) * ratio;
+    let rect = new PIXICS.PhysicsGraphics({ world });
+    rect.drawRect(-rectsize * 0.5, -rectsize * 0.5, rectsize, rectsize);
+    rect.getGraphic().tint = 0xffffff;
+    app.stage.addChild(rect.getGraphic());
+    0 && await pixics.sleep(1000);
+
+    // 사각형의 위치 이동
+    // 화면의 중앙에 위치하도록 하기위해 1080를 2로 나눈후 그 값에 ratio 를 곱해준다
+    // display.width 값과 1080*ratio 값은 같다
+    // ratio 를 곱해주는 이유는 화면의 크기를 지정하기위해 displaySystem 인자로 넣었던 수치인 1080x1920을 기준으로
+    // 코드에 입력하기 위함이다
+    // ratio 는 좌표, 크기적용시에만 곱해서 사용해주도록 하자
+    rect.setPosition(1080 * 0.5 * ratio, 0)
+    0 && await pixics.sleep(500);
+
+    // 사각형의 각도조절
+    rect.setAngle(Math.PI * 0.26)
+    0 && await pixics.sleep(500);
+
+    // 사각형의 색을 변경
     rect.getGraphic().tint = 0xffff00;
-}, 1000);
+    0 && await pixics.sleep(500);
 
-// 중력의 영향을 받도록 적용
-pixics.setTimeout(() => {
+    // 중력의 영향을 받도록 적용
     rect.setDynamic();
-}, 2000);
+    0 && await pixics.sleep(500);
 
-// 중력의 영향을 받지않는 요소로 전환
-pixics.setTimeout(() => {
+    // 중력의 영향을 받지않는 요소로 전환
     rect.setStatic();
-}, 3000);
+    0 && await pixics.sleep(500);
 
-// 다시 중력의 영향을 받도록 적용
-pixics.setTimeout(() => {
+    // 다시 중력의 영향을 받도록 적용
     rect.setDynamic();
-}, 4000);
+    0 && await pixics.sleep(500);
+
+    // 길다란 화면너비만큼의 막대기 생성
+    let stick = new PIXICS.PhysicsGraphics({ world });
+    stick.drawRect(0, (1920 - 50) * ratio, display.width, 50 * ratio);
+    stick.getGraphic().tint = 0x44aa44;
+    app.stage.addChild(stick.getGraphic());
+
+    // 사각형에 마우스다운이벤트 붙이기
+    rect.getGraphic().interactive = true;
+    let touch = function (e) {
+        // 터치하면 사각형 요소에 하늘로솓는 힘을 준다
+        // 힘을 85만큼 주고 이때 이 값에는 ratio 를 곱하지 않도록 한다
+        // ratio 는 요소의 size를 지정할때만 사용한다
+        rect.getBody().setLinearVelocity(planck.Vec2(0, 85))
+    };
+    rect.getGraphic().on('mousedown', touch)
+    rect.getGraphic().on('touchstart', touch)
+
+})()
+
+
 
 // {
 //     let dd = new Date();
