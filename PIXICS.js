@@ -227,7 +227,7 @@ const PIXICS = (() => {
                     let currentPoint = point.getPosition();
                     var currentLength = ksttool.math.get_distance_between_two_point(startPoint, currentPoint); // 충돌벽 길이
                     let moveStep = currentLength - beforeLength;
-                    console.log('**********뭅', moveStep);
+                    // console.log('**********뭅', moveStep);
                     beforeLength = currentLength;
                     if (true) {
                         moveStep = 0;
