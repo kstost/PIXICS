@@ -212,6 +212,7 @@ const PIXICS = (() => {
             await this.moveTo(startPoint.x + x, startPoint.y + y, s);
         }
         moveTo(x, y, s) {
+            //working
             const pixics = point.pixics;
             this.getBody().setKinematic();
             return new Promise(r => {
@@ -219,24 +220,40 @@ const PIXICS = (() => {
                 let startPoint = point.getPosition();
                 let endPoint = { x, y };
                 var moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint); // 충돌벽 길이
+                let moveDistance = getMoveDistancePerFrame(s);
+                let maxDistance = getMovableMaxDistancePerFrame();
+                let frid = moveDistance >= maxDistance ? maxDistance : moveDistance;
+                if (frid > moveLength) s = getVelocityPerFrame(moveLength)
                 var radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
                 var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, startPoint, radian);
                 point.getBody().setLinearVelocity(planck.Vec2(rtn.x - startPoint.x, startPoint.y - rtn.y))
                 let beforeLength = 0;
+                let endtrigger = false;
                 pixics.update(function upf() {
                     let currentPoint = point.getPosition();
                     var currentLength = ksttool.math.get_distance_between_two_point(startPoint, currentPoint); // 충돌벽 길이
                     let moveStep = currentLength - beforeLength;
-                    // console.log('**********뭅', moveStep);
+                    0 && console.log('*뭅', moveStep);
                     beforeLength = currentLength;
-                    if (true) {
-                        moveStep = 0;
-                    }
-                    if (moveLength <= currentLength + moveStep) {
+                    function final() {
                         point.getBody().setLinearVelocity(planck.Vec2(0, 0))
-                        point.setPosition(x, y);
+                        1 && point.setPosition(x, y);
+                        0 && console.log('끝');
                         pixics.unupdate(upf);
                         r();
+                    }
+                    if (!endtrigger && moveLength <= currentLength + moveStep) {
+                        endtrigger = true;
+                        let currentLength2 = ksttool.math.get_distance_between_two_point(currentPoint, endPoint);
+                        if (currentLength2 > Number.EPSILON * 100000000) {
+                            let s = pixics.getVelocityPerFrame(currentLength2);
+                            var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, currentPoint, radian);
+                            point.getBody().setLinearVelocity(planck.Vec2(rtn.x - currentPoint.x, currentPoint.y - rtn.y))
+                        } else {
+                            final();
+                        }
+                    } else {
+                        endtrigger && final();
                     }
                 });
             })

@@ -1,26 +1,17 @@
-let 스케일 = 100;
+// let 스케일 = 100;
 window.addEventListener('load', async () => {
 
     //------------------------------
     // 스크린의 준비
-    const display = displaySystem(1500, 1000, true); // 스크린너비, 스크린높이, 성능측정모니터사용여부
+    const display = displaySystem(1080, 1920, true); // 스크린너비, 스크린높이, 성능측정모니터사용여부
     const app = display.createPIXIApp(); // 화면을 생성한다 PIXI Application Stage 를 생성한다
     const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
     document.querySelector('body').appendChild(app.view);
 
-    // console.log('이게뭐지', ratio)
-    // console.log('최대속도', (ratio * 2) * 스케일)
-    // console.log('이게뭐지', width)
-    // console.log('이게뭐지', height)
-    // console.log('이게뭐지', width / height)
-    // console.log('이게뭐지', height / width)
-    // console.log('이게뭐지', (width / height))
-    // console.log('이게뭐지', (height / width))
     //------------------------------
     // 피직스월드의 준비
-
     const gravity = planck.Vec2(0, -30); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
-    const pixics = PIXICS.createWorld(스케일, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
+    const pixics = PIXICS.createWorld(700, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
     const world = pixics.world;
     const L = pixics.log;
     pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
@@ -54,21 +45,29 @@ window.addEventListener('load', async () => {
     //     return 한프레임당이동하기를원하는벨로시티(한프레임당최대이동한계거리());
     // }
     ball.getGraphic().on('mousedown', async e => {
-        console.log(ball.getPosition())
+        // console.log(ball.getPosition())
         function pythagorean(sideA, sideB) {
             return Math.sqrt(Math.pow(sideA, 2) + Math.pow(sideB, 2));
         }
-        let 벨로시티 = 50;
-        let 이동거리 = 10 * ratio;
-        let xx = (이동거리 * (Math.random() * 100)) * (Math.random() < 0.5 ? -1 : 1);
-        let yy = (이동거리 * (Math.random() * 100)) * (Math.random() < 0.5 ? -1 : 1);
-        이동거리 = pythagorean(xx, yy);
-        let ddd = new Date();
-        await ball.moveTo(xx, yy, 벨로시티);
-        console.log('걸린시간', new Date() - ddd);
-        console.log({ x: xx, y: yy });
-        console.log(ball.getPosition())
+        // console.log(pixics);
+        let x = 1080 * 0.5 * ratio;
+        let y = 1920 * 0.5 * ratio;
+        let velocity = pixics.getVelocityFor(pythagorean(x, y), 1);
+
+        // let 벨로시티 = 50;
+        // let 이동거리 = 10 * ratio;
+        // let xx = (이동거리 * (Math.random() * 100)) * (Math.random() < 0.5 ? -1 : 1);
+        // let yy = (이동거리 * (Math.random() * 100)) * (Math.random() < 0.5 ? -1 : 1);
+        // 이동거리 = pythagorean(xx, yy);
+        // let ddd = new Date();
+        // await ball.moveTo(xx, yy, 벨로시티);
+        // console.log('걸린시간', new Date() - ddd);
+        // console.log({ x: xx, y: yy });
+        // console.log(ball.getPosition())
         // ball.getBody().setLinearVelocity(planck.Vec2(0, 500000))
+        let start = new Date();
+        await ball.moveTo(x, y, velocity);
+        console.log(new Date() - start);
 
         // console.log(ball.getBody().getLinearVelocity());
     })
