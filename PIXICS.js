@@ -212,11 +212,21 @@ const PIXICS = (() => {
             f = Ease[f];
             const _point = this;
             const pixics = point.pixics;
-            let max = getMovableMaxDistancePerFrame();
+            let max = y !== null ? getMovableMaxDistancePerFrame() : Math.PI / 2;
             let ticktime = (1 / magicNumber) * 1000;
-            let startPoint = this.getPosition();
-            let endPoint = { x, y };
-            var moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
+
+            let startPoint;// = this.getPosition();
+            let endPoint;// = { x, y };
+            let moveLength;// = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
+            if (y !== null) {
+                startPoint = this.getPosition();
+                endPoint = { x, y };
+                moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
+            } else {
+                startPoint = this.getAngle();
+                endPoint = x;
+                moveLength = (endPoint - startPoint);// * magicNumber;
+            }
             let acc = 0;
             let dist = 0;
             let whole = 0;
@@ -258,31 +268,37 @@ const PIXICS = (() => {
                     dist = acc
                 }
             }
-            if (true) {
-                // ease 적용가능
-                this.getBody().setKinematic();
-                return new Promise(r => {
-                    let cnt = 0;
-                    pixics.update(function upf(tk) {
-                        if (tasks[cnt] === undefined) {
+            this.getBody().setKinematic();
+            return new Promise(r => {
+                let cnt = 0;
+                pixics.update(function upf(tk) {
+                    if (tasks[cnt] === undefined) {
+                        if (y !== null) {
                             _point.getBody().setLinearVelocity(planck.Vec2(0, 0))
-                            pixics.unupdate(upf);
-                            r();
-                            return;
+                            _point.setPosition(x, y);
+                        } else {
+                            _point.getBody().setAngularVelocity(0)
+                            _point.setAngle(x);
                         }
-                        let distanceToMoveOnThisTick = tasks[cnt];
-                        console.log('이동', distanceToMoveOnThisTick);
+                        pixics.unupdate(upf);
+                        r();
+                        return;
+                    }
+                    let distanceToMoveOnThisTick = tasks[cnt];
+                    let point = _point;
+                    if (y !== null) {
                         let s = getVelocityPerFrame(distanceToMoveOnThisTick);//*0.0001;
-                        //-----------------------------
-                        let point = _point;
-                        var radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
+                        let radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint); // 엘라스틱에서 신경쓰자.
                         let _startPoint = point.getPosition();
-                        var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
+                        let rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
                         point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
-                        cnt++;
-                    });
-                })
-            }
+                    } else {
+                        point.getBody().setAngularVelocity(distanceToMoveOnThisTick * magicNumber)
+                    }
+                    cnt++;
+                });
+            });
+
 
             // console.log('w', whole);
             // console.log(acc-d)
