@@ -1,4 +1,3 @@
-// let 스케일 = 100;
 window.addEventListener('load', async () => {
 
     //------------------------------
@@ -7,119 +6,54 @@ window.addEventListener('load', async () => {
     const app = display.createPIXIApp(); // 화면을 생성한다 PIXI Application Stage 를 생성한다
     const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
     document.querySelector('body').appendChild(app.view);
-
+ 
     //------------------------------
     // 피직스월드의 준비
-    const gravity = planck.Vec2(0, -30); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
-    const pixics = PIXICS.createWorld(100, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
+    const gravity = planck.Vec2(0, -300); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
+    const pixics = PIXICS.createWorld(300, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
     const world = pixics.world;
     const L = pixics.log;
     pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
-
-
-    let dd = new Date();
-    pixics.update(function (dt) {
-        let n = new Date();
-        // console.log(n-dd)
-        dd = n;
-    });
-
+ 
     //------------------------------
     L('메인 코드의 시작');
     await pixics.sleep(10);
-
-    let tickness = 0.2 * ratio;
+ 
+    L('붉은막대 생성');
     let shortground = new PIXICS.PhysicsGraphics({ world });
-    shortground.drawRect(0, 0, tickness, height);
-    shortground.drawRect(width - tickness, 0, tickness, height);
-    shortground.drawRect(0, height - tickness, width, tickness);
-    shortground.drawRect(0, 0, width, tickness);
+    shortground.drawRect(
+       -(1000 * ratio * 0.5),
+       -(30 * ratio * 0.5),
+       1000 * ratio,
+       30 * ratio
+    );
+    // shortground.getBody().setBullet(true);
+    shortground.getGraphic().tint = 0xaa0000;
     app.stage.addChild(shortground.getGraphic());
-    // await pixics.sleep(1000);
-    // setInterval(() => {
-    let tick = 300;
-    let ball = new PIXICS.PhysicsGraphics({ world });
-    // ball.setDensity(1000)
-    ball.getBody().setBullet(true);
-    ball.getGraphic().tint = 0xddaa00;
-    ball.drawRect(0, -(tick * ratio * 0.5), width, (tick * ratio));
-    // ball.setPosition(width / 2, height / 2);
-    app.stage.addChild(ball.getGraphic());
-    ball.getGraphic().interactive = true;
-    // console.log(ratio)
-    // console.log(app.view.width / window.devicePixelRatio)
-    // console.log(window.devicePixelRatio)
-
-    // const 가능한최대속도의벨로시티 = () => {
-    //     return 한프레임당이동하기를원하는벨로시티(한프레임당최대이동한계거리());
-    // }
-    ball.getGraphic().on('mousedown', async e => {
-        // console.log(ball.getPosition())
-        function pythagorean(sideA, sideB) {
-            return Math.sqrt(Math.pow(sideA, 2) + Math.pow(sideB, 2));
-        }
-        // console.log(pixics);
-        if (!false) {
-            let x = 1080 * 0.5 * ratio;
-            let y = 1920 * 0.5 * ratio;
-            let start = new Date();
-            await ball.moveEaseTo(x, y, 2000, 'easeOutElastic');
-            console.log(new Date() - start);
-        } else {
-            let start = new Date();
-            await ball.moveAdvEaseTo(Math.PI*30, null, 1, 'easeInOutQuad');
-            console.log(new Date() - start);
-        }
-        // let velocity = pixics.getVelocityFor(pythagorean(x, y), 1);
-
-        // let 벨로시티 = 50;
-        // let 이동거리 = 10 * ratio;
-        // let xx = (이동거리 * (Math.random() * 100)) * (Math.random() < 0.5 ? -1 : 1);
-        // let yy = (이동거리 * (Math.random() * 100)) * (Math.random() < 0.5 ? -1 : 1);
-        // 이동거리 = pythagorean(xx, yy);
-        // let ddd = new Date();
-        // await ball.moveTo(xx, yy, 벨로시티);
-        // console.log('걸린시간', new Date() - ddd);
-        // console.log({ x: xx, y: yy });
-        // console.log(ball.getPosition())
-        // ball.getBody().setLinearVelocity(planck.Vec2(0, 500000))
-        // await ball.moveTo(x, y, velocity);
-
-        // console.log(ball.getBody().getLinearVelocity());
-    })
-    ball.getGraphic().emit('mousedown')
-    let massive = new PIXICS.PhysicsGraphics({ world });
-    massive.drawRect(0, 0, (100 * ratio), (100 * ratio));
-    massive.setPosition(width / 2, height / 2);
-    massive.setDynamic()
-    massive.setDensity(1000)
-    massive.getBody().setGravityScale(0)
-    app.stage.addChild(massive.getGraphic());
-    // massive.getGraphic().interactive = true;
-    // massive.getGraphic().on('mousedown', e => {
-    //     massive.getBody().setLinearVelocity(planck.Vec2(0, 10))
-    //     console.log(123);
-    // })
-    // }, 1000);
-    // await pixics.sleep(1000);
-
-    // L('중력 영향 받는 요소생성');
-    // shortground.getGraphic().tint = 0xaa0000;
-    // let butter = new PIXICS.PhysicsGraphics({ world });
-    // butter.drawCircle(0, 0, 100 * ratio);
-    // butter.getGraphic().tint = 0xddaa00;
-    // app.stage.addChild(butter.getGraphic());
-    // butter.setPosition((1080) * 0.5 * ratio, 1920 * 0.5 * ratio)
-    // butter.setDynamic()
-    // await pixics.sleep(1000);
-
-    // L('붉은 막대를 계속 움직여주는 작동을 한다. 이 작동은 무한히 반복된다');
-    // // 이동할 거리값에 ratio 를 붙이는것을 잊지말자
-    // while (true) {
-    //    L('위로');
-    //    await shortground.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad');
-    //    L('아래로');
-    //    await shortground.moveEaseBy(0, 1920 * 0.1 * ratio, 1000, 'easeInOutQuad');
-    // }
-
-});
+    shortground.setPosition(1080 * 0.5 * ratio, (1920 - 15) * ratio)
+    await pixics.sleep(1000);
+ 
+    L('중력 영향 받는 요소생성');
+    let butter = new PIXICS.PhysicsGraphics({ world });
+    butter.drawCircle(0, 0, 100 * ratio);
+    butter.getGraphic().tint = 0xddaa00;
+    app.stage.addChild(butter.getGraphic());
+    butter.setPosition((1080) * 0.5 * ratio, 1920 * 0.5 * ratio)
+    butter.setDynamic()
+    await pixics.sleep(1000);
+ 
+    L('붉은 막대를 계속 움직여주는 작동을 한다. 이 작동은 무한히 반복된다');
+    // 이동할 거리값에 ratio 를 붙이는것을 잊지말자
+    // 빠르게 움직이게 한다면 PIXICS.createWorld 의 첫번째인자인 스케일을 키워야한다
+    // 키우지 않으면 물체를 통과해버리는 문제가 생길 수 있다
+    // 스케일에 의해서 Velocity 의 한계가 정해지기 때문에 함께 적절히 조절되어야한다
+    while (true) {
+       L('위로');
+       // 엄청나게 빠른 움직임이 필요한거면 ease 적용하지 않고 사용하는것을 강력추천한다
+       // 엄청 빠른 움직임을 Ease로 할 경우 물체가 통과해버리는 문제가 생길 수 있다
+       await shortground.moveBy(0, -1920 * 1 * ratio, 5000);
+       L('아래로');
+       await shortground.moveEaseBy(0, 1920 * 1 * ratio, 2000, 'easeInOutQuad');
+    }
+ 
+ });

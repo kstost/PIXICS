@@ -383,10 +383,17 @@ const PIXICS = (() => {
             let startPoint = this.getPosition();
             await this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
         }
+        async moveBy(x, y, duration, f) {
+            let startPoint = this.getPosition();
+            await this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
+        }
         rotateEaseTo(x, duration, f) {
             return this.easingTo(x, null, duration, f);
         }
         moveEaseTo(x, y, duration, f) {
+            return this.easingTo(x, y, duration, f);
+        }
+        moveTo(x, y, duration, f) {
             return this.easingTo(x, y, duration, f);
         }
         // xxxxeasingTo(x, y, duration, f) {
