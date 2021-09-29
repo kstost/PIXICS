@@ -210,20 +210,14 @@ const PIXICS = (() => {
         moveAdvEaseTo(x, y, d, f) {
             if (!f) f = 'linearTween';
             f = Ease[f];
-            // let
             const _point = this;
             const pixics = point.pixics;
             let max = getMovableMaxDistancePerFrame();
             let ticktime = (1 / magicNumber) * 1000;
-            // d = 2000;
-            // console.log(ticktime*1000)
-            // d = Math.round(d * 1000) - (Math.round(d * 1000) % Math.round(ticktime * 1000));
-            // d /= 1000;
             let startPoint = this.getPosition();
             let endPoint = { x, y };
             var moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
-
-            let acc = 0;//-ticktime;
+            let acc = 0;
             let dist = 0;
             let whole = 0;
             let tasks = [];
@@ -238,21 +232,33 @@ const PIXICS = (() => {
                 acc -= ticktime;
                 evt(nam);
             }
-            function evt(tick) {
+            function evt(tick, ignoref) {
                 let ratio = acc / d;
-                let curf = f(ratio, 0, 1, 1);
+                let curf = !ignoref ? f(ratio, 0, 1, 1) : ratio;
                 let cha = curf - dist;
                 dist = curf;
                 whole += cha;
-                // console.log(tick, cha * moveLength, max);
                 tasks.push(cha * moveLength);
-                // 0 && console.log(nam, ratio, f(ratio, 0, 1, 1), cha);
-
             }
             if (tasks.filter(n => n > max).length) {
-                // ease 적용 불가능
-
-            } else {
+                acc = 0;
+                dist = 0;
+                tasks = [];
+                while (true) {
+                    acc += max;
+                    if (acc > moveLength) break;
+                    tasks.push(acc - dist);
+                    dist = acc
+                }
+                let nam = max - (acc - moveLength);
+                if (nam > Number.EPSILON * 100000000) {
+                    acc += nam;
+                    acc -= max;
+                    tasks.push(acc - dist);
+                    dist = acc
+                }
+            }
+            if (true) {
                 // ease 적용가능
                 this.getBody().setKinematic();
                 return new Promise(r => {
