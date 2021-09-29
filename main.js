@@ -63,7 +63,7 @@ window.addEventListener('load', async () => {
             let x = 1080 * 0.5 * ratio;
             let y = 1920 * 0.5 * ratio;
             let start = new Date();
-            await ball.moveAdvEaseTo(x, y, 2000, 'easeOutElastic');
+            await ball.moveEaseTo(x, y, 2000, 'easeOutElastic');
             console.log(new Date() - start);
         } else {
             let start = new Date();
