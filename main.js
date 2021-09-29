@@ -11,10 +11,18 @@ window.addEventListener('load', async () => {
     //------------------------------
     // 피직스월드의 준비
     const gravity = planck.Vec2(0, -30); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
-    const pixics = PIXICS.createWorld(700, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
+    const pixics = PIXICS.createWorld(17, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
     const world = pixics.world;
     const L = pixics.log;
     pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
+
+
+    let dd = new Date();
+    pixics.update(function (dt) {
+        let n = new Date();
+        // console.log(n-dd)
+        dd = n;
+    });
 
     //------------------------------
     L('메인 코드의 시작');
@@ -50,9 +58,9 @@ window.addEventListener('load', async () => {
             return Math.sqrt(Math.pow(sideA, 2) + Math.pow(sideB, 2));
         }
         // console.log(pixics);
-        let x = 1080 * 0.5 * ratio;
+        let x = 0//1080 * 0.5 * ratio;
         let y = 1920 * 0.5 * ratio;
-        let velocity = pixics.getVelocityFor(pythagorean(x, y), 1);
+        // let velocity = pixics.getVelocityFor(pythagorean(x, y), 1);
 
         // let 벨로시티 = 50;
         // let 이동거리 = 10 * ratio;
@@ -66,7 +74,8 @@ window.addEventListener('load', async () => {
         // console.log(ball.getPosition())
         // ball.getBody().setLinearVelocity(planck.Vec2(0, 500000))
         let start = new Date();
-        await ball.moveTo(x, y, velocity);
+        await ball.moveAdvEaseTo(x, y, 1000, 'easeInOutQuad');
+        // await ball.moveTo(x, y, velocity);
         console.log(new Date() - start);
 
         // console.log(ball.getBody().getLinearVelocity());

@@ -207,6 +207,85 @@ const PIXICS = (() => {
             }
             return [...contactList.keys()];
         }
+        moveAdvEaseTo(x, y, d, f) {
+            if (!f) f = 'linearTween';
+            f = Ease[f];
+            // let
+            const _point = this;
+            const pixics = point.pixics;
+            let max = getMovableMaxDistancePerFrame();
+            let ticktime = (1 / magicNumber) * 1000;
+            // d = 2000;
+            // console.log(ticktime*1000)
+            // d = Math.round(d * 1000) - (Math.round(d * 1000) % Math.round(ticktime * 1000));
+            // d /= 1000;
+            let startPoint = this.getPosition();
+            let endPoint = { x, y };
+            var moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
+
+            let acc = 0;//-ticktime;
+            let dist = 0;
+            let whole = 0;
+            let tasks = [];
+            while (true) {
+                acc += ticktime;
+                if (acc > d) break;
+                evt(ticktime);
+            }
+            let nam = ticktime - (acc - d);
+            if (nam > Number.EPSILON * 100000000) {
+                acc += nam;
+                acc -= ticktime;
+                evt(nam);
+            }
+            function evt(tick) {
+                let ratio = acc / d;
+                let curf = f(ratio, 0, 1, 1);
+                let cha = curf - dist;
+                dist = curf;
+                whole += cha;
+                // console.log(tick, cha * moveLength, max);
+                tasks.push(cha * moveLength);
+                // 0 && console.log(nam, ratio, f(ratio, 0, 1, 1), cha);
+
+            }
+            if (tasks.filter(n => n > max).length) {
+                // ease 적용 불가능
+
+            } else {
+                // ease 적용가능
+                this.getBody().setKinematic();
+                return new Promise(r => {
+                    let cnt = 0;
+                    pixics.update(function upf(tk) {
+                        if (tasks[cnt] === undefined) {
+                            _point.getBody().setLinearVelocity(planck.Vec2(0, 0))
+                            pixics.unupdate(upf);
+                            r();
+                            return;
+                        }
+                        let distanceToMoveOnThisTick = tasks[cnt];
+                        console.log('이동', distanceToMoveOnThisTick);
+                        let s = getVelocityPerFrame(distanceToMoveOnThisTick);//*0.0001;
+                        //-----------------------------
+                        let point = _point;
+                        var radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
+                        let _startPoint = point.getPosition();
+                        var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
+                        point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                        cnt++;
+                    });
+                })
+            }
+
+            // console.log('w', whole);
+            // console.log(acc-d)
+            // let lastAmount = d%ticktime;
+
+            // console.log(d,ticktime, d%ticktime)
+            // console.log(f)
+
+        }
         async moveBy(x, y, s) {
             let startPoint = this.getPosition();
             await this.moveTo(startPoint.x + x, startPoint.y + y, s);
