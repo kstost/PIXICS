@@ -3,6 +3,22 @@ const PIXICS = (() => {
 
     let Ease = {};
 
+    Ease.easeOutElastic = function (t, b, c, d) {
+        var s = 1.70158;
+        var p = 0;
+        var a = c;
+        if (t == 0) return b;
+        if ((t /= d) == 1) return b + c;
+        if (!p) p = d * .3;
+        if (a < Math.abs(c)) {
+            a = c;
+            var s = p / 4;
+        }
+        else var s = p / (2 * Math.PI) * Math.asin(c / a);
+        return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) *
+            (2 * Math.PI) / p) + c + b;
+    };
+
     // simple linear tweening - no easing, no acceleration
     Ease.linearTween = function (t, b, c, d) {
         return c * t / d + b;
@@ -214,13 +230,14 @@ const PIXICS = (() => {
             const pixics = point.pixics;
             let max = y !== null ? getMovableMaxDistancePerFrame() : Math.PI / 2;
             let ticktime = (1 / magicNumber) * 1000;
-
             let startPoint;// = this.getPosition();
             let endPoint;// = { x, y };
+            let radian;// = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint); // 엘라스틱에서 신경쓰자.
             let moveLength;// = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
             if (y !== null) {
                 startPoint = this.getPosition();
                 endPoint = { x, y };
+                radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint); // 엘라스틱에서 신경쓰자.
                 moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
             } else {
                 startPoint = this.getAngle();
@@ -288,7 +305,6 @@ const PIXICS = (() => {
                     let point = _point;
                     if (y !== null) {
                         let s = getVelocityPerFrame(distanceToMoveOnThisTick);//*0.0001;
-                        let radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint); // 엘라스틱에서 신경쓰자.
                         let _startPoint = point.getPosition();
                         let rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
                         point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))

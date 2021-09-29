@@ -11,7 +11,7 @@ window.addEventListener('load', async () => {
     //------------------------------
     // 피직스월드의 준비
     const gravity = planck.Vec2(0, -30); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
-    const pixics = PIXICS.createWorld(10, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
+    const pixics = PIXICS.createWorld(100, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
     const world = pixics.world;
     const L = pixics.log;
     pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
@@ -43,7 +43,7 @@ window.addEventListener('load', async () => {
     ball.getBody().setBullet(true);
     ball.getGraphic().tint = 0xddaa00;
     ball.drawRect(0, -(tick * ratio * 0.5), width, (tick * ratio));
-    ball.setPosition(width / 2, height / 2);
+    // ball.setPosition(width / 2, height / 2);
     app.stage.addChild(ball.getGraphic());
     ball.getGraphic().interactive = true;
     // console.log(ratio)
@@ -59,15 +59,15 @@ window.addEventListener('load', async () => {
             return Math.sqrt(Math.pow(sideA, 2) + Math.pow(sideB, 2));
         }
         // console.log(pixics);
-        if (false) {
+        if (!false) {
             let x = 1080 * 0.5 * ratio;
             let y = 1920 * 0.5 * ratio;
             let start = new Date();
-            await ball.moveAdvEaseTo(x, y, 1000, 'easeInOutQuad');
+            await ball.moveAdvEaseTo(x, y, 2000, 'easeOutElastic');
             console.log(new Date() - start);
         } else {
             let start = new Date();
-            await ball.moveAdvEaseTo(Math.PI*3, null, 1, 'easeInOutQuad');
+            await ball.moveAdvEaseTo(Math.PI*30, null, 1, 'easeInOutQuad');
             console.log(new Date() - start);
         }
         // let velocity = pixics.getVelocityFor(pythagorean(x, y), 1);
