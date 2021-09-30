@@ -3,8 +3,10 @@ git reset HEAD^
 git push -f
 
 [맥에서 스크립트 실행시키기 전에 필요한 모듈들]
-sudo pip3 install python-dateutil
-sudo pip3 install pytz           
+sudo pip3 install python-dateutil pytz
+근데 pip3이 이상해져서 설치가 안될때가 있다. 그때는 아래 수행
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py
 
 [깃헙API토큰갱신]
 https://github.com/settings/tokens 에서 리제너레이트하면 되고 나오는 토큰은
