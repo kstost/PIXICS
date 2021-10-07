@@ -474,21 +474,82 @@ const PIXICS = (() => {
         getGraphic() {
             return this.graphic;
         }
+        drawJSON({ scale, json }) {
+            let data = json;
+            let ratio = point.ratio;
+            let butter = this;
+            data.layers.forEach(layer => {
+                let class_ = layer.class;
+                let { restitution, density, friction } = layer;
+                let color = Number('0x' + layer.color);
+                if (class_ === 'polygon') {
+                    let data_ = layer.dots[class_].map(dot => {
+                        return {
+                            x: ((dot.x - data.pivotpoint.x) / data.scale) * scale * ratio,
+                            y: ((dot.y - data.pivotpoint.y) / data.scale) * scale * ratio,
+                        }
+                    });
+                    data_.length && butter.drawPolygon(data_, color);
+                }
+                else if (class_ === 'rect' && layer.dots[class_].length === 2) {
+                    let center = layer.dots[class_][0];
+                    let another = layer.dots[class_][1];
+                    let width = another.x - center.x;
+                    let height = another.y - center.y;
+                    butter.drawRect(
+                        ((center.x - data.pivotpoint.x) / data.scale) * scale * ratio,
+                        ((center.y - data.pivotpoint.y) / data.scale) * scale * ratio,
+                        (width / data.scale) * scale * ratio,
+                        (height / data.scale) * scale * ratio,
+                        color
+                    );
+                }
+                else if (class_ === 'circle' && layer.dots[class_].length === 2) {
+                    let center = layer.dots[class_][0];
+                    let another = layer.dots[class_][1];
+                    let r = ksttool.math.get_distance_between_two_point(center, another);
+                    butter.drawCircle(
+                        ((center.x - data.pivotpoint.x) / data.scale) * scale * ratio,
+                        ((center.y - data.pivotpoint.y) / data.scale) * scale * ratio,
+                        (r / data.scale) * scale * ratio,
+                        color
+                    );
+                }
+            });
+        }
+        removeFixture(idx) {
+            let fixtures = this.getFixtures();
+            let fx = (fixtures.length - 1) - idx;
+            this.planckBody.destroyFixture(fixtures[fx]);
+            this.redrawFixture();
+        }
         createFixture(shape, attr) {
             return this.planckBody.createFixture(shape, attr);
         }
-        drawRect(x, y, width, height) {
-            this.graphic.beginFill(0xffffff);
+        redrawFixture() {
+            this.graphic.clear();
+            let drawArgs = this.getFixtures().map(fixture => fixture.drawingProfile);
+            drawArgs.forEach(arg => arg.type.bind(this)(...arg.arg));
+        }
+        _drawRect(x, y, width, height, color) {
+            if (color === undefined) color = 0xffffff;
+            this.graphic.beginFill(color);
             this.graphic.drawRect(x, y, width, height);
             this.graphic.endFill();
+        }
+        drawRect(x, y, width, height, color) {
+            if (color === undefined) color = 0xffffff;
             let position = planck.Vec2((x + (width / 2)) / PIXICS.worldscale, -(y + (height / 2)) / PIXICS.worldscale);
             let shape = planck.Box(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
             let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-            fixture.drawingProfile = arguments;
+            fixture.drawingProfile = { type: this._drawRect, arg: arguments };
+            fixture.drawingProfile.type.bind(this)(...arguments);
+            // this._drawRect(...arguments);
             return fixture;
         }
-        drawPolygon(path) {
-            this.graphic.beginFill(0xffffff);
+        _drawPolygon(path, color) {
+            if (color === undefined) color = 0xffffff;
+            this.graphic.beginFill(color);
             for (let i = 0; i < path.length; i++) {
                 if (i === 0) {
                     this.graphic.moveTo((path[i].x), (path[i].y));
@@ -498,24 +559,37 @@ const PIXICS = (() => {
             }
             this.graphic.closePath();
             this.graphic.endFill();
-            let shape = planck.Polygon(path.map(point => {
+        }
+        drawPolygon(path, color) {
+            // 볼록한(convex) 도형만 지원한다
+            // 오목한(concave) 형태의 도형은 지원하지 않으니 오목하게 하고자 하면 두개의 폴리곤을 덧대어 구현하라
+            if (color === undefined) color = 0xffffff;
+            let shape = planck.Polygon((JSON.parse(JSON.stringify(path))).map(point => {
                 point.x /= PIXICS.worldscale;
                 point.y /= PIXICS.worldscale;
                 point.y *= -1
                 return point;
             }));
             let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-            fixture.drawingProfile = arguments;
+            fixture.drawingProfile = { type: this._drawPolygon, arg: arguments };
+            fixture.drawingProfile.type.bind(this)(...arguments);
+            // this._drawPolygon(...arguments);
             return fixture;
         }
-        drawCircle(x, y, radius) {
-            this.graphic.beginFill(0xffffff);
+        _drawCircle(x, y, radius, color) {
+            if (color === undefined) color = 0xffffff;
+            this.graphic.beginFill(color);
             this.graphic.drawCircle(x, y, radius);
             this.graphic.endFill();
+        }
+        drawCircle(x, y, radius, color) {
+            if (color === undefined) color = 0xffffff;
             let position = planck.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale);
             let shape = planck.Circle(position, radius / PIXICS.worldscale);
             let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-            fixture.drawingProfile = arguments;
+            fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
+            fixture.drawingProfile.type.bind(this)(...arguments);
+            // this._drawCircle(...arguments);
             return fixture;
         }
         syncState() {

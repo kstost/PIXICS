@@ -1,3 +1,4 @@
-npm i -g webpack
+# npm i -g webpack
 npm i -D webpack babel-core babel-loader
 npm i -D webpack-cli
+npx webpack-cli
