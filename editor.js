@@ -1,3 +1,4 @@
+import CenterDot from './editor/CenterDot.js'
 import Common from './editor/Common.js'
 import { createMosa } from './editor/Mosa.js'
 import { addLayerButton } from './editor/AddLayerButton.js'
@@ -31,8 +32,17 @@ window.addEventListener('load', function () {
     createTouchArea(global, width, height);
 
     createToolbar(global);
-    createEditor(global);
+    global.editor = createEditor(global);
+    global.centerdot = new CenterDot({ global, width, height });
+    global.editor.getEditor('general').value = JSON.stringify({
+        scale: global.term
+    }, undefined, 3)
     loadData(global, localStorage.getItem('working'))
+    global.editor.active(global);
 
+    // console.log(global.centerdot.getPosition());
+    // console.log(global.editor.getEditor('general'))
+    // console.log(global.centerdot.getGraphic().x);
+    // console.log(global.centerdot.getGraphic().y);
 
 });

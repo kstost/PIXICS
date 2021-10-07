@@ -11,6 +11,11 @@ function createTouchArea(global, width, height) {
     setEvent(rect, ['mousedown', 'touchstart'], function (e) {
         const { group } = global;
         if (!group) { global.addButton.emit('mousedown') }
+        // console.log(group);
+        if (group) {
+            if (group.class === 'circle' && group.dots[group.class].length >= 2) return;
+            if (group.class === 'rect' && group.dots[group.class].length >= 2) return;
+        }
         makeADot(e.data.getLocalPosition(this.parent), global);
     });
 }

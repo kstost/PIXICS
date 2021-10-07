@@ -2,6 +2,7 @@ import Common from './Common.js'
 const { makeADot, getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
 import { saveData, loadData } from './Data.js'
 function createToolbar(global) {
+    return;
     let toolbar = document.createElement('div');
     toolbar.style.padding = '20px';
     toolbar.style.position = 'fixed';

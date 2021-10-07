@@ -2,10 +2,11 @@ import { Rectangle, Line } from './PixiExtend.js'
 function createMosa(global, width, height) {
     let { app } = global;
     let nu = 0;
-    let tick = 0.7;
+    let tick = 0.5;
     while (true) {
         nu += global.term;
         let ln = new Line();
+        ln.alpha = 0.5;
         ln.tint = 0x00f000;
         ln.thickness = tick;
         ln.ax = 0;
@@ -19,6 +20,7 @@ function createMosa(global, width, height) {
     while (true) {
         nu += global.term;
         let ln = new Line();
+        ln.alpha = 0.5;
         ln.tint = 0x00f000;
         ln.thickness = tick;
         ln.ax = nu;
