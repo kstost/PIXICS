@@ -24,6 +24,8 @@ function saveData(global) {
     // console.log(rd);
     rd = JSON.stringify(rd);
     localStorage.setItem('working', rd);
+    history.replaceState(null, null, location.pathname + '#' + encodeURIComponent(rd));
+    console.log(rd);
     return rd;
 }
 function loadData(global, data) {
@@ -51,6 +53,8 @@ function loadData(global, data) {
 
     });
     global.editor.turn('layer');
+    saveData(global);
+
 }
 export {
     saveData,

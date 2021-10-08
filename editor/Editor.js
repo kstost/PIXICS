@@ -142,6 +142,7 @@ function createEditor(global) {
                 group.class = type;
                 getActiveObj(global).setJSON(group)
                 input.style.background = 'green';
+                saveData(global);
             })
         });
         {
@@ -156,6 +157,7 @@ function createEditor(global) {
             editorbody.appendChild(input);
             input.addEventListener('click', e => {
                 getActiveObj(global)?.cleaner();
+                saveData(global);
                 // getActiveObj(global)?.remove();
             });
         }
@@ -172,6 +174,7 @@ function createEditor(global) {
             input.addEventListener('click', e => {
                 getActiveObj(global)?.cleaner();
                 getActiveObj(global)?.remove();
+                saveData(global);
             });
         }
     }

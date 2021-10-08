@@ -1,5 +1,6 @@
 import { Rectangle, Line } from './PixiExtend.js'
 import Common from './Common.js'
+import { saveData, loadData } from './Data.js'
 const { makeADot, getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
 class CenterDot {
     getGraphic() {
@@ -81,6 +82,7 @@ class CenterDot {
             this.dragging = false; this.data = null;
             startpoint = null;
             base = null;
+            saveData(global);
         }
         const onDragMove = function (e) {
             if (this.dragging) {

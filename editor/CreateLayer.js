@@ -1,3 +1,4 @@
+import { saveData } from './Data.js'
 import Common from './Common.js'
 const { reAlignLayers, setEvent, setFirstInvisible } = Common;
 
@@ -140,6 +141,8 @@ function createLayer(global) {
     reAlignLayers(global.layerList, global);
     레이어.setJSON(새롭게만든그룹);
     global.editor.active(global);
+    saveData(global);
+
 }
 export {
     createLayer

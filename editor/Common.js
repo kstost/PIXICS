@@ -1,3 +1,4 @@
+// import { saveData } from './Data.js'
 
 function setEvent(thing, names, fn) {
     thing.interactive = true;
@@ -115,6 +116,7 @@ function makeADot(position, global) {
             startpoint = null;
             base = null;
             dotposes = null;
+            // saveData(global);
         }
         const onDragMove = function (e) {
             if (this.dragging) {
