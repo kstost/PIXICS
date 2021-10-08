@@ -1,17 +1,6 @@
 import { saveData } from './Data.js'
 import Common from './Common.js'
 const { reAlignLayers, setEvent, setFirstInvisible } = Common;
-
-
-// import Common from './editor/Common.js'
-// import { createMosa } from './editor/Mosa.js'
-// import { addLayerButton } from './editor/AddLayerButton.js'
-// import { createTouchArea } from './editor/TouchArea.js'
-// import { saveData, loadData } from './editor/Data.js'
-// import { createEditor } from './editor/Editor.js'
-// import { createToolbar } from './editor/Toolbar.js'
-// const { makeADot, getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
-
 function createLayer(global) {
     let { app } = global;
     let 새롭게만든그룹 = {

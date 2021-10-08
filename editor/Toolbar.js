@@ -1,5 +1,5 @@
 import Common from './Common.js'
-const { makeADot, getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
+const { getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
 import { saveData, loadData } from './Data.js'
 function createToolbar(global) {
     return;

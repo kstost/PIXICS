@@ -1,7 +1,7 @@
 import { Rectangle, Line } from './PixiExtend.js'
 import Common from './Common.js'
 import { saveData, loadData } from './Data.js'
-const { makeADot, getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
+const { getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
 class CenterDot {
     getGraphic() {
         return this.graphic;
@@ -41,9 +41,9 @@ class CenterDot {
         centerDot.zIndex = 1;
         this.graphic = centerDot;
         centerDot.lineStyle(0);
-        centerDot.alpha=0.5
+        centerDot.alpha = 0.5
         centerDot.beginFill(0xffffff, 1);
-        centerDot.drawRect(-10, -10, 20,20);
+        centerDot.drawRect(-10, -10, 20, 20);
         centerDot.endFill();
         app.stage.addChild(centerDot)
         setDotPos.bind(centerDot)({ x: width / 2, y: height / 2, group, global });

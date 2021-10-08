@@ -1,5 +1,6 @@
 import Common from './Common.js'
-const { makeADot, getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
+const { getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
+import { makeADot } from './MakeADot.js'
 import { createLayer } from './CreateLayer.js'
 function saveData(global) {
     let rd = global.layerList.map(obj => {
@@ -23,9 +24,9 @@ function saveData(global) {
     };
     // console.log(rd);
     rd = JSON.stringify(rd);
-    localStorage.setItem('working', rd);
+    0 && localStorage.setItem('working', rd);
     history.replaceState(null, null, location.pathname + '#' + encodeURIComponent(rd));
-    console.log(rd);
+    console.log(Math.random(), 'saved');
     return rd;
 }
 function loadData(global, data) {

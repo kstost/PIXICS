@@ -1,6 +1,7 @@
 import { Rectangle, Line } from './PixiExtend.js'
 import Common from './Common.js'
-const { makeADot, getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
+import { makeADot } from './MakeADot.js'
+const { getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
 function createTouchArea(global, width, height) {
     let rect = new Rectangle();
     rect.width = width;
@@ -16,6 +17,7 @@ function createTouchArea(global, width, height) {
             if (group.class === 'circle' && group.dots[group.class].length >= 2) return;
             if (group.class === 'rect' && group.dots[group.class].length >= 2) return;
         }
+        // console.log(123);
         makeADot(e.data.getLocalPosition(this.parent), global);
     });
 }

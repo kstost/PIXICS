@@ -1,6 +1,6 @@
 import Common from './Common.js'
 import { saveData, loadData } from './Data.js'
-const { makeADot, getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
+const { getActiveObj, reAlignLayers, setDotPos, setEvent } = Common;
 function createEditor(global) {
     let editors = {};
     let bodies = {};
