@@ -482,6 +482,7 @@ const PIXICS = (() => {
                 let class_ = layer.class;
                 let { restitution, density, friction } = layer;
                 let color = Number('0x' + layer.color);
+                let fixture;
                 if (class_ === 'polygon') {
                     let data_ = layer.dots[class_].map(dot => {
                         return {
@@ -489,14 +490,14 @@ const PIXICS = (() => {
                             y: ((dot.y - data.pivotpoint.y) / data.scale) * scale * ratio,
                         }
                     });
-                    data_.length && butter.drawPolygon(data_, color);
+                    fixture = data_.length && butter.drawPolygon(data_, color);
                 }
                 else if (class_ === 'rect' && layer.dots[class_].length === 2) {
                     let center = layer.dots[class_][0];
                     let another = layer.dots[class_][1];
                     let width = another.x - center.x;
                     let height = another.y - center.y;
-                    butter.drawRect(
+                    fixture = butter.drawRect(
                         ((center.x - data.pivotpoint.x) / data.scale) * scale * ratio,
                         ((center.y - data.pivotpoint.y) / data.scale) * scale * ratio,
                         (width / data.scale) * scale * ratio,
@@ -508,12 +509,20 @@ const PIXICS = (() => {
                     let center = layer.dots[class_][0];
                     let another = layer.dots[class_][1];
                     let r = ksttool.math.get_distance_between_two_point(center, another);
-                    butter.drawCircle(
+                    fixture = butter.drawCircle(
                         ((center.x - data.pivotpoint.x) / data.scale) * scale * ratio,
                         ((center.y - data.pivotpoint.y) / data.scale) * scale * ratio,
                         (r / data.scale) * scale * ratio,
                         color
                     );
+                }
+                if (fixture) {
+                    let idx = this.getFixtures().length - 1;
+                    if (idx > -1) {
+                        this.setFriction(friction, idx);
+                        this.setRestitution(restitution, idx);
+                        this.setDensity(density, idx);
+                    }
                 }
             });
         }
