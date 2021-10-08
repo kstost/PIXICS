@@ -537,7 +537,7 @@ const PIXICS = (() => {
         }
         redrawFixture() {
             this.graphic.clear();
-            let drawArgs = this.getFixtures().map(fixture => fixture.drawingProfile);
+            let drawArgs = this.getFixtures().reverse().map(fixture => fixture.drawingProfile);
             drawArgs.forEach(arg => arg.type.bind(this)(...arg.arg));
         }
         _drawRect(x, y, width, height, color) {
