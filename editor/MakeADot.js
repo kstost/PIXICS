@@ -100,6 +100,8 @@ function makeADot(position, global) {
         circlePoint.group.layer.emit('mousedown');
         if (!this.group.active) { return; }; this.data = event.data; this.dragging = true;
         // setFirstInvisible(global, group)
+        // console.log(circlePoint);
+        global.lastChooseOne = circlePoint;
     }
     function onDragEnd() { this.dragging = false; this.data = null; saveData(global); }
     function onDragMove(pos, force) {

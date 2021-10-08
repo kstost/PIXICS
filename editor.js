@@ -14,6 +14,18 @@ const global = {
     dotsize: 10,
     group: null,
 }
+window.addEventListener('keydown', function (e) {
+    if (e.key === 'Delete') {
+        let group = getActiveObj(global).getGroup();
+        let list = group.dots[group.class];
+        let idx = list.indexOf(global.lastChooseOne);
+        if (idx > -1) {
+            let sp = list.splice(idx, 1)[0];
+            sp.parent.removeChild(sp);
+            (group && group.shape) && group.shape.redrawPoly();
+        }
+    }
+});
 window.addEventListener('load', function () {
     document.body.innerHTML = '';
     document.body.style.margin = '0px';
