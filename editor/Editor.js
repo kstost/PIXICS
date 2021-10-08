@@ -50,7 +50,7 @@ function createEditor(global) {
         bodies[key] = editorbody;
         {
             let input = document.createElement('div');
-            input.innerText = 'Save & Export';
+            input.innerText = 'Save & Export as JSON';
             input.style.cursor = 'pointer'
             input.style.color = 'white'
             input.style.padding = '5px'
@@ -69,6 +69,31 @@ function createEditor(global) {
                 }
                 copyToClipboard(saveData(global));
                 Swal.fire('Saved and Copied to your clipboard')
+            });
+        }
+        {
+            let input = document.createElement('div');
+            input.innerText = 'Load JSON';
+            input.style.cursor = 'pointer'
+            input.style.color = 'white'
+            input.style.padding = '5px'
+            input.style.border = '1px solid #777'
+            input.style.textAlign = 'center'
+            input.style.background = '#000'
+            editorbody.appendChild(input);
+            input.addEventListener('click', e => {
+                let json = prompt('JSON을 넣어주세요');
+                try {
+                    if (json) {
+                        JSON.parse(json)
+                        // { "layers": [{ "dots": { "polygon": [{ "x": 390, "y": 240 }, { "x": 390, "y": 330 }, { "x": 630, "y": 330 }], "circle": [], "rect": [] }, "color": "ffffff", "friction": 0, "density": 0, "restitution": 0, "class": "polygon" }, { "dots": { "polygon": [{ "x": 390, "y": 330 }, { "x": 630, "y": 240 }, { "x": 630, "y": 330 }], "circle": [], "rect": [] }, "color": "ffffff", "friction": 0, "density": 0, "restitution": 0, "class": "polygon" }], "pivotpoint": { "x": 510, "y": 300 }, "scale": 30 }
+                        while (getActiveObj(global)) {
+                            getActiveObj(global)?.cleaner();
+                            getActiveObj(global)?.remove();
+                        }
+                        loadData(global, json);
+                    }
+                } catch (e) { }
             });
         }
     }

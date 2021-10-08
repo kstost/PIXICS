@@ -37,9 +37,15 @@ window.addEventListener('load', function () {
     global.editor.getEditor('general').value = JSON.stringify({
         scale: global.term
     }, undefined, 3)
-    loadData(global, localStorage.getItem('working'))
-    global.editor.active(global);
 
+    let source;
+    try {
+        source = JSON.parse(decodeURIComponent(location.hash.substring(1, Infinity)))
+        loadData(global, JSON.stringify(source))
+    } catch (e) {
+        loadData(global, localStorage.getItem('working'))
+    }
+    global.editor.active(global);
     // console.log(global.centerdot.getPosition());
     // console.log(global.editor.getEditor('general'))
     // console.log(global.centerdot.getGraphic().x);

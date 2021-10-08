@@ -873,6 +873,22 @@ const PIXICS = (() => {
     let lineList = new Map();
     let point = {
         worldscale: 0, PhysicsGraphics,
+        editorUrl(json, redirect) {
+            let data = encodeURIComponent(JSON.stringify(json));
+            let a = document.createElement('a');
+            a.innerHTML = '편집기 열고싶다면 엔터를 쳐 주세요';
+            a.setAttribute('href', `https://kstost.github.io/PIXICS/editor.html#${data}`);
+            redirect && a.click();
+            if (redirect) return;
+            !redirect && a.setAttribute('target', `_blank`);
+            document.body.innerHTML = '';
+            document.body.append(a);
+            document.body.style.background = 'black';
+            a.style.color = 'white';
+            a.style.padding = '50px';
+            a.style.display = 'inline-block';
+            a.focus();
+        },
         transScale(v) { return v / PIXICS.worldscale; },
         createWorld(scale, ratio, gravity) {
             point._worldscale = scale;
