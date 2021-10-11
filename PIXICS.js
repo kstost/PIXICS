@@ -770,8 +770,8 @@ const PIXICS = (() => {
                 }
             } else {
                 for (let b = this.planckBody.GetContactList(); b; b = b.next) {
-                    0 && b.contact.GetFixtureA().getBody().setAwake(true); //???
-                    0 && b.contact.GetFixtureB().getBody().setAwake(true); //???
+                    b.contact.GetFixtureA().GetBody().SetAwake(true);
+                    b.contact.GetFixtureB().GetBody().SetAwake(true);
                 }
             }
         }
