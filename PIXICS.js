@@ -583,7 +583,7 @@ const PIXICS = (() => {
             if (PLANCKMODE) {
                 return this.planckBody.createFixture(shape, attr);
             } else {
-                console.log(shape)
+                // console.log(shape)
                 return this.planckBody.CreateFixture(shape);
             }
         }
