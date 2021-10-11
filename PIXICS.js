@@ -1,5 +1,5 @@
-const PLANCKMODE = !true;
 const PIXICS = (() => {
+    let PLANCKMODE;// = !true;
     const magicNumber = 60;
 
     let Ease = {};
@@ -1124,7 +1124,8 @@ const PIXICS = (() => {
             a.focus();
         },
         transScale(v) { return v / PIXICS.worldscale; },
-        createWorld(scale, ratio, gravity) {
+        createWorld(scale, ratio, gravity, useflyover) {
+            PLANCKMODE = !useflyover ? true : false;
             point._worldscale = scale;
             scale *= ratio;
             point.ratio = ratio;
