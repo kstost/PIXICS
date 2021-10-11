@@ -1,3 +1,4 @@
+const PLANCKMODE = !true;
 const PIXICS = (() => {
     const magicNumber = 60;
 
@@ -188,12 +189,25 @@ const PIXICS = (() => {
         constructor({ world }) {
             this.world = world;
             this.graphic = new PIXI.Graphics();
-            this.planckBody = world.createBody({
-                bullet: false,
-            });
-            this.planckBody.setGravityScale(1);
-            this.planckBody.setUserData(this);
-            this.planckBody.setMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
+            if (PLANCKMODE) {
+                this.planckBody = world.createBody({
+                    bullet: false,
+                });
+                this.planckBody.setGravityScale(1);
+                this.planckBody.setUserData(this);
+                this.planckBody.setMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
+            } else {
+                const bodyDef = new b2.BodyDef();
+                this.planckBody = world.CreateBody(bodyDef);
+                this.planckBody.SetGravityScale(1);
+                this.planckBody.SetUserData(this);
+                const massData = new b2.MassData();
+                massData.mass = 1.0;
+                massData.center.x = 0;//.5 * shape.m_vertex1.x + shape.m_vertex2.x;
+                massData.center.y = 0;//.5 * shape.m_vertex1.y + shape.m_vertex2.y;
+                massData.I = 1.0;
+                this.planckBody.SetMassData(massData);
+            }
         }
         isConnectedWith(thing) {
             let rtn = false;
@@ -215,11 +229,20 @@ const PIXICS = (() => {
         getContactList() {
             let bbb = this;
             let contactList = new Map();
-            for (let b = bbb.planckBody.getContactList(); b; b = b.next) {
-                let aa = b.contact.getFixtureA().getBody();
-                let bb = b.contact.getFixtureB().getBody();
-                if (bbb.planckBody !== aa) { !contactList.has(aa) && contactList.set(aa, true) }
-                if (bbb.planckBody !== bb) { !contactList.has(bb) && contactList.set(bb, true) }
+            if (PLANCKMODE) {
+                for (let b = bbb.planckBody.getContactList(); b; b = b.next) {
+                    let aa = b.contact.getFixtureA().getBody();
+                    let bb = b.contact.getFixtureB().getBody();
+                    if (bbb.planckBody !== aa) { !contactList.has(aa) && contactList.set(aa, true) }
+                    if (bbb.planckBody !== bb) { !contactList.has(bb) && contactList.set(bb, true) }
+                }
+            } else {
+                for (let b = bbb.planckBody.GetContactList(); b; b = b.next) {
+                    let aa = b.contact.GetFixtureA().getBody();
+                    let bb = b.contact.GetFixtureB().getBody();
+                    if (bbb.planckBody !== aa) { !contactList.has(aa) && contactList.set(aa, true) }
+                    if (bbb.planckBody !== bb) { !contactList.has(bb) && contactList.set(bb, true) }
+                }
             }
             return [...contactList.keys()];
         }
@@ -285,16 +308,28 @@ const PIXICS = (() => {
                     dist = acc
                 }
             }
-            this.getBody().setKinematic();
+            if (PLANCKMODE) {
+                this.getBody().setKinematic();
+            } else {
+                this.getBody().SetType(b2.BodyType.b2_kinematicBody);
+            }
             return new Promise(r => {
                 let cnt = 0;
                 pixics.update(function upf(tk) {
                     if (tasks[cnt] === undefined) {
                         if (y !== null) {
-                            _point.getBody().setLinearVelocity(planck.Vec2(0, 0))
+                            if (PLANCKMODE) {
+                                _point.getBody().setLinearVelocity(planck.Vec2(0, 0))
+                            } else {
+                                _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
+                            }
                             _point.setPosition(x, y);
                         } else {
-                            _point.getBody().setAngularVelocity(0)
+                            if (PLANCKMODE) {
+                                _point.getBody().setAngularVelocity(0)
+                            } else {
+                                _point.getBody().SetAngularVelocity(0)
+                            }
                             _point.setAngle(x);
                         }
                         pixics.unupdate(upf);
@@ -307,9 +342,17 @@ const PIXICS = (() => {
                         let s = getVelocityPerFrame(distanceToMoveOnThisTick);//*0.0001;
                         let _startPoint = point.getPosition();
                         let rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
-                        point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                        if (PLANCKMODE) {
+                            point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                        } else {
+                            point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                        }
                     } else {
-                        point.getBody().setAngularVelocity(distanceToMoveOnThisTick * magicNumber)
+                        if (PLANCKMODE) {
+                            point.getBody().setAngularVelocity(distanceToMoveOnThisTick * magicNumber)
+                        } else {
+                            point.getBody().SetAngularVelocity(distanceToMoveOnThisTick * magicNumber)
+                        }
                     }
                     cnt++;
                 });
@@ -529,11 +572,20 @@ const PIXICS = (() => {
         removeFixture(idx) {
             let fixtures = this.getFixtures();
             let fx = (fixtures.length - 1) - idx;
-            this.planckBody.destroyFixture(fixtures[fx]);
+            if (PLANCKMODE) {
+                this.planckBody.destroyFixture(fixtures[fx]);
+            } else {
+                this.planckBody.DestroyFixture(fixtures[fx]);
+            }
             this.redrawFixture();
         }
         createFixture(shape, attr) {
-            return this.planckBody.createFixture(shape, attr);
+            if (PLANCKMODE) {
+                return this.planckBody.createFixture(shape, attr);
+            } else {
+                console.log(shape)
+                return this.planckBody.CreateFixture(shape);
+            }
         }
         redrawFixture() {
             this.graphic.clear();
@@ -548,13 +600,32 @@ const PIXICS = (() => {
         }
         drawRect(x, y, width, height, color) {
             if (color === undefined) color = 0xffffff;
-            let position = planck.Vec2((x + (width / 2)) / PIXICS.worldscale, -(y + (height / 2)) / PIXICS.worldscale);
-            let shape = planck.Box(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
-            let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-            fixture.drawingProfile = { type: this._drawRect, arg: arguments };
-            fixture.drawingProfile.type.bind(this)(...arguments);
-            // this._drawRect(...arguments);
-            return fixture;
+            if (PLANCKMODE) {
+                let position = planck.Vec2((x + (width / 2)) / PIXICS.worldscale, -(y + (height / 2)) / PIXICS.worldscale);
+                let shape = planck.Box(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
+                let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
+                fixture.drawingProfile = { type: this._drawRect, arg: arguments };
+                fixture.drawingProfile.type.bind(this)(...arguments);
+                // this._drawRect(...arguments);
+                return fixture;
+            } else {
+                let position = new b2.Vec2((x + (width / 2)) / PIXICS.worldscale, -(y + (height / 2)) / PIXICS.worldscale);
+                // let shape = planck.Box(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
+                const shape = new b2.PolygonShape();
+                shape.SetAsBox(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
+
+                const fd = new b2.FixtureDef();
+                fd.shape = shape;
+                fd.density = 1;
+                fd.friction = 1;
+                fd.restitution = 0;
+
+                let fixture = this.createFixture(fd);
+                fixture.drawingProfile = { type: this._drawRect, arg: arguments };
+                fixture.drawingProfile.type.bind(this)(...arguments);
+                // this._drawRect(...arguments);
+                return fixture;
+            }
         }
         _drawPolygon(path, color) {
             if (color === undefined) color = 0xffffff;
@@ -573,17 +644,49 @@ const PIXICS = (() => {
             // 볼록한(convex) 도형만 지원한다
             // 오목한(concave) 형태의 도형은 지원하지 않으니 오목하게 하고자 하면 두개의 폴리곤을 덧대어 구현하라
             if (color === undefined) color = 0xffffff;
-            let shape = planck.Polygon((JSON.parse(JSON.stringify(path))).map(point => {
-                point.x /= PIXICS.worldscale;
-                point.y /= PIXICS.worldscale;
-                point.y *= -1
-                return point;
-            }));
-            let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-            fixture.drawingProfile = { type: this._drawPolygon, arg: arguments };
-            fixture.drawingProfile.type.bind(this)(...arguments);
-            // this._drawPolygon(...arguments);
-            return fixture;
+            if (PLANCKMODE) {
+                let shape = planck.Polygon((JSON.parse(JSON.stringify(path))).map(point => {
+                    point.x /= PIXICS.worldscale;
+                    point.y /= PIXICS.worldscale;
+                    point.y *= -1
+                    return point;
+                }));
+                let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
+                fixture.drawingProfile = { type: this._drawPolygon, arg: arguments };
+                fixture.drawingProfile.type.bind(this)(...arguments);
+                // this._drawPolygon(...arguments);
+                return fixture;
+            } else {
+                let vertices = ((JSON.parse(JSON.stringify(path))).map(point => {
+                    point.x /= PIXICS.worldscale;
+                    point.y /= PIXICS.worldscale;
+                    point.y *= -1
+                    return new b2.Vec2(point.x, point.y);
+                }));
+
+                //PolygonShape
+                // const vertices = new Array();
+                // vertices[0] = new b2.Vec2(-0.5, 0.0);
+                // vertices[1] = new b2.Vec2(0.5, 0.0);
+                // vertices[2] = new b2.Vec2(0.0, 1.5);
+                const shape = new b2.PolygonShape();
+                shape.Set(vertices);
+
+                // const shape = new b2.PolygonShape();
+                // shape.SetAsBox(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
+
+                const fd = new b2.FixtureDef();
+                fd.shape = shape;
+                fd.density = 1;
+                fd.friction = 1;
+                fd.restitution = 0;
+
+                let fixture = this.createFixture(fd);
+                fixture.drawingProfile = { type: this._drawPolygon, arg: arguments };
+                fixture.drawingProfile.type.bind(this)(...arguments);
+                // this._drawPolygon(...arguments);
+                return fixture;
+            }
         }
         _drawCircle(x, y, radius, color) {
             if (color === undefined) color = 0xffffff;
@@ -593,45 +696,83 @@ const PIXICS = (() => {
         }
         drawCircle(x, y, radius, color) {
             if (color === undefined) color = 0xffffff;
-            let position = planck.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale);
-            let shape = planck.Circle(position, radius / PIXICS.worldscale);
-            let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-            fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
-            fixture.drawingProfile.type.bind(this)(...arguments);
-            // this._drawCircle(...arguments);
-            return fixture;
+            if (PLANCKMODE) {
+                let position = planck.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale);
+                let shape = planck.Circle(position, radius / PIXICS.worldscale);
+                let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
+                fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
+                fixture.drawingProfile.type.bind(this)(...arguments);
+                // this._drawCircle(...arguments);
+                return fixture;
+            } else {
+                let position = new b2.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale);
+                const shape = new b2.CircleShape();
+                shape.m_radius = radius / PIXICS.worldscale;
+                shape.m_p.Set(position.x, position.y);
+                let fixture = this.createFixture(shape);
+                fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
+                fixture.drawingProfile.type.bind(this)(...arguments);
+                // this._drawCircle(...arguments);
+                return fixture;
+            }
         }
         syncState() {
-            this.graphic.rotation = -this.planckBody.getAngle();
-            let bodyPosition = this.planckBody.getPosition();
-            this.graphic.x = bodyPosition.x * PIXICS.worldscale;
-            this.graphic.y = -bodyPosition.y * PIXICS.worldscale;
+            if (PLANCKMODE) {
+                this.graphic.rotation = -this.planckBody.getAngle();
+                let bodyPosition = this.planckBody.getPosition();
+                this.graphic.x = bodyPosition.x * PIXICS.worldscale;
+                this.graphic.y = -bodyPosition.y * PIXICS.worldscale;
+            } else {
+                this.graphic.rotation = -this.planckBody.GetAngle();
+                let bodyPosition = this.planckBody.GetPosition();
+                this.graphic.x = bodyPosition.x * PIXICS.worldscale;
+                this.graphic.y = -bodyPosition.y * PIXICS.worldscale;
+            }
         }
         setAngle(radian) {
-            this.planckBody.setAngle(radian);
+            if (PLANCKMODE) {
+                this.planckBody.setAngle(radian);
+            } else {
+                this.planckBody.SetAngle(radian);
+            }
             this.syncState();
             this.touchContacts();
         }
         getAngle() {
-            return this.planckBody.getAngle();
+            if (PLANCKMODE) {
+                return this.planckBody.getAngle();
+            } else {
+                return this.planckBody.GetAngle();
+            }
         }
         setPosition(x, y) {
             if (x === undefined || y === undefined) return;
-            this.planckBody.setPosition(planck.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale));
+            if (PLANCKMODE) {
+                this.planckBody.setPosition(planck.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale));
+            } else {
+                this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale));
+            }
             this.syncState();
             this.touchContacts();
         }
         getPosition() {
-            let dd = this.planckBody.getPosition();
+            let dd = PLANCKMODE ? this.planckBody.getPosition() : this.planckBody.GetPosition();
             return {
                 x: dd.x * PIXICS.worldscale,
                 y: (dd.y * PIXICS.worldscale) * -1,
             }
         }
         touchContacts() {
-            for (let b = this.planckBody.getContactList(); b; b = b.next) {
-                b.contact.getFixtureA().getBody().setAwake(true);
-                b.contact.getFixtureB().getBody().setAwake(true);
+            if (PLANCKMODE) {
+                for (let b = this.planckBody.getContactList(); b; b = b.next) {
+                    b.contact.getFixtureA().getBody().setAwake(true);
+                    b.contact.getFixtureB().getBody().setAwake(true);
+                }
+            } else {
+                for (let b = this.planckBody.GetContactList(); b; b = b.next) {
+                    0 && b.contact.GetFixtureA().getBody().setAwake(true); //???
+                    0 && b.contact.GetFixtureB().getBody().setAwake(true); //???
+                }
             }
         }
         getBody() {
@@ -639,16 +780,22 @@ const PIXICS = (() => {
         }
         getFixtures() {
             let list = [];
-            for (let fixture = this.planckBody.getFixtureList(); fixture; fixture = fixture.getNext()) {
-                list.push(fixture);
+            if (PLANCKMODE) {
+                for (let fixture = this.planckBody.getFixtureList(); fixture; fixture = fixture.getNext()) {
+                    list.push(fixture);
+                }
+            } else {
+                for (let fixture = this.planckBody.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
+                    list.push(fixture);
+                }
             }
             return list;
         }
         setFixtureProp(value, propname, idx) {
             let fnname = ({
-                density: 'setDensity',
-                restitution: 'setRestitution',
-                friction: 'setFriction',
+                density: PLANCKMODE ? 'setDensity' : 'SetDensity',
+                restitution: PLANCKMODE ? 'setRestitution' : 'SetRestitution',
+                friction: PLANCKMODE ? 'setFriction' : 'SetFriction',
             })[propname];
             let fixtures = this.getFixtures();
             if (idx === undefined) {
@@ -667,9 +814,9 @@ const PIXICS = (() => {
         }
         getFixtureProp(propname, idx) {
             let fnname = ({
-                density: 'getDensity',
-                restitution: 'getRestitution',
-                friction: 'getFriction',
+                density: PLANCKMODE ? 'getDensity' : 'GetDensity',
+                restitution: PLANCKMODE ? 'getRestitution' : 'GetRestitution',
+                friction: PLANCKMODE ? 'getFriction' : 'GetFriction',
             })[propname];
             let fixtures = this.getFixtures();
             let fx;
@@ -696,10 +843,18 @@ const PIXICS = (() => {
         }
         getFriction(idx) { if (idx === undefined) { idx = 0; } return this.getFixtureProp('friction', idx); }
         setDynamic() {
-            this.planckBody.setDynamic();
+            if (PLANCKMODE) {
+                this.planckBody.setDynamic();
+            } else {
+                this.planckBody.SetType(b2.BodyType.b2_dynamicBody);
+            }
         }
         isDynamic() {
-            return this.planckBody.isDynamic();
+            if (PLANCKMODE) {
+                return this.planckBody.isDynamic();
+            } else {
+                return this.planckBody.GetType() === b2.BodyType.b2_dynamicBody;
+            }
         }
         resetBodyAndFixtures(_shape) {
             /*
@@ -707,54 +862,98 @@ const PIXICS = (() => {
                 본 함수는 fixture가 하나일때에 대해서만 대응한다
             */
             let { x, y } = this.getPosition();
-            let gravityScale = this.planckBody.getGravityScale();
-            let dynamic = this.planckBody.isDynamic();
-            let static_ = this.planckBody.isStatic();
-            let active = this.planckBody.isActive();
-            let awake = this.planckBody.isAwake();
-            let angularVelocity = this.planckBody.getAngularVelocity();
-            let linearDamping = this.planckBody.getLinearDamping();
-            let linearVelocity = this.planckBody.getLinearVelocity();
-            let bullet = this.planckBody.isBullet();
-            let kinematic = this.planckBody.isKinematic();
-            let fixedRotation = this.planckBody.isFixedRotation();
+            let gravityScale = PLANCKMODE ? this.planckBody.getGravityScale() : this.planckBody.GetGravityScale();
+            let dynamic = PLANCKMODE ? this.planckBody.isDynamic() : (this.planckBody.GetType() === b2.BodyType.b2_dynamicBody); // b2.BodyType.b2_dynamicBody
+            let static_ = PLANCKMODE ? this.planckBody.isStatic() : (this.planckBody.GetType() === b2.BodyType.b2_staticBody); // b2.BodyType.b2_staticBody
+            let active = PLANCKMODE ? this.planckBody.isActive() : true; // 이거 대응하는거 알아내야한다
+            let awake = PLANCKMODE ? this.planckBody.isAwake() : this.planckBody.IsAwake(); // IsAwake
+            let angularVelocity = PLANCKMODE ? this.planckBody.getAngularVelocity() : this.planckBody.GetAngularVelocity();
+            let linearDamping = PLANCKMODE ? this.planckBody.getLinearDamping() : this.planckBody.GetLinearDamping();
+            let linearVelocity = PLANCKMODE ? this.planckBody.getLinearVelocity() : this.planckBody.GetLinearVelocity();
+            let bullet = PLANCKMODE ? this.planckBody.isBullet() : this.planckBody.IsBullet();
+            let kinematic = PLANCKMODE ? this.planckBody.isKinematic() : (this.planckBody.GetType() === b2.BodyType.b2_kinematicBody); // b2.BodyType.b2_kinematicBody
+            let fixedRotation = PLANCKMODE ? this.planckBody.isFixedRotation() : this.planckBody.IsFixedRotation();
             let angle = this.getAngle();
             let fixtures = new Map();
             let fixtureList = [];//[...fixtures.keys()];
-            for (let fixture = this.planckBody.getFixtureList(); fixture; fixture = fixture.getNext()) {
-                fixtureList.push(fixture);
-                let shape = _shape ? _shape : fixture.getShape();
-                let restitution = fixture?.getRestitution();
-                let friction = fixture?.getFriction();
-                let density = fixture?.getDensity();
-                density = density ? density : 1;
-                fixtures.set(fixture, {
-                    shape,
-                    restitution,
-                    friction,
-                    density
-                });
+            if (PLANCKMODE) {
+                for (let fixture = this.planckBody.getFixtureList(); fixture; fixture = fixture.getNext()) {
+                    fixtureList.push(fixture);
+                    let shape = _shape ? _shape : fixture.getShape();
+                    let restitution = fixture?.getRestitution();
+                    let friction = fixture?.getFriction();
+                    let density = fixture?.getDensity();
+                    density = density ? density : 1;
+                    fixtures.set(fixture, {
+                        shape,
+                        restitution,
+                        friction,
+                        density
+                    });
+                }
+            } else {
+                for (let fixture = this.planckBody.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
+                    fixtureList.push(fixture);
+                    let shape = _shape ? _shape : fixture.GetShape();
+                    let restitution = fixture?.GetRestitution();
+                    let friction = fixture?.GetFriction();
+                    let density = fixture?.GetDensity();
+                    density = density ? density : 1;
+                    fixtures.set(fixture, {
+                        shape,
+                        restitution,
+                        friction,
+                        density
+                    });
+                }
             }
 
             // 접해있는것의 목록을 담기
             let contactList = [];
-            for (let b = this.planckBody.getContactList(); b; b = b.next) {
-                let aa = b.contact.getFixtureA().getBody();
-                let bb = b.contact.getFixtureB().getBody();
-                contactList.push(aa, bb);
+            if (PLANCKMODE) {
+                for (let b = this.planckBody.getContactList(); b; b = b.next) {
+                    let aa = b.contact.getFixtureA().getBody();
+                    let bb = b.contact.getFixtureB().getBody();
+                    contactList.push(aa, bb);
+                }
+            } else {
+                for (let b = this.planckBody.GetContactList(); b; b = b.next) {
+                    let aa = b.contact.GetFixtureA().getBody();
+                    let bb = b.contact.GetFixtureB().getBody();
+                    contactList.push(aa, bb);
+                }
             }
 
             // 픽스쳐와 바디를 제거한다
-            fixtureList.forEach(fixture => this.planckBody.destroyFixture(fixture));
-            this.planckBody.getWorld().destroyBody(this.planckBody);
+            if (PLANCKMODE) {
+                fixtureList.forEach(fixture => this.planckBody.destroyFixture(fixture));
+                this.planckBody.getWorld().destroyBody(this.planckBody);
+            } else {
+                fixtureList.forEach(fixture => this.planckBody.DestroyFixture(fixture));
+                this.planckBody.GetWorld().DestroyBody(this.planckBody);
+            }
 
             // 바디를 재생성 및 값 복원
-            this.planckBody = this.world.createBody({
-                bullet: false,
-            });
-            this.planckBody.setGravityScale(gravityScale);
-            this.planckBody.setUserData(this);
-            this.planckBody.setMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
+            if (PLANCKMODE) {
+                this.planckBody = this.world.createBody({
+                    bullet: false,
+                });
+                this.planckBody.setGravityScale(gravityScale);
+                this.planckBody.setUserData(this);
+                this.planckBody.setMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
+            } else {
+                const bodyDef = new b2.BodyDef();
+                this.planckBody = this.world.CreateBody(bodyDef);
+                this.planckBody.SetGravityScale(gravityScale);
+                this.planckBody.SetUserData(this);
+                // this.planckBody.SetMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
+                const massData = new b2.MassData();
+                massData.mass = 1.0;
+                massData.center.x = 0;//.5 * shape.m_vertex1.x + shape.m_vertex2.x;
+                massData.center.y = 0;//.5 * shape.m_vertex1.y + shape.m_vertex2.y;
+                massData.I = 1.0;
+                this.planckBody.SetMassData(massData);
+            }
 
             // 픽스쳐 재생성 및 값 복원
             fixtureList.reverse().forEach(fixture => {
@@ -765,11 +964,19 @@ const PIXICS = (() => {
                     density
                 } = fixtures.get(fixture);
                 const drawingProfile = fixture.drawingProfile;
-                fixture = this.planckBody.createFixture(shape);
-                fixture.setRestitution(restitution || 0);
-                fixture.setFriction(friction || 0);
-                fixture.setDensity(density || 0);
-                fixture.drawingProfile = drawingProfile;
+                if (PLANCKMODE) {
+                    fixture = this.planckBody.createFixture(shape);
+                    fixture.setRestitution(restitution || 0);
+                    fixture.setFriction(friction || 0);
+                    fixture.setDensity(density || 0);
+                    fixture.drawingProfile = drawingProfile;
+                } else {
+                    fixture = this.planckBody.CreateFixture(shape);
+                    fixture.SetRestitution(restitution || 0);
+                    fixture.SetFriction(friction || 0);
+                    fixture.SetDensity(density || 0);
+                    fixture.drawingProfile = drawingProfile;
+                }
             });
 
             // 바디 상태값 재조정
@@ -777,28 +984,47 @@ const PIXICS = (() => {
             this.setAngle(angle);
 
             // 다이나믹상태 복원
-            dynamic && this.planckBody.setDynamic();
+            if (PLANCKMODE) {
+                dynamic && this.planckBody.setDynamic();
+            } else {
+                dynamic && this.planckBody.SetType(b2.BodyType.b2_dynamicBody);//setDynamic();
+            }
 
             // 그외 바디의 상태값 복원
-            kinematic && this.planckBody.setKinematic(); // https://piqnt.com/planck.js/BodyTypes
-            static_ && this.planckBody.setStatic();
-            this.planckBody.setBullet(bullet);
-            this.planckBody.setAwake(awake);
-            this.planckBody.setActive(active);
-            this.planckBody.setFixedRotation(fixedRotation);
-            this.planckBody.setAngularVelocity(angularVelocity);
-            this.planckBody.setLinearDamping(linearDamping);
-            this.planckBody.setLinearVelocity(linearVelocity);
-
+            if (PLANCKMODE) {
+                kinematic && this.planckBody.setKinematic(); // https://piqnt.com/planck.js/BodyTypes
+                static_ && this.planckBody.setStatic();
+                this.planckBody.setBullet(bullet);
+                this.planckBody.setAwake(awake);
+                this.planckBody.setActive(active);
+                this.planckBody.setFixedRotation(fixedRotation);
+                this.planckBody.setAngularVelocity(angularVelocity);
+                this.planckBody.setLinearDamping(linearDamping);
+                this.planckBody.setLinearVelocity(linearVelocity);
+            } else {
+                kinematic && this.planckBody.SetType(b2.BodyType.b2_kinematicBody); // https://piqnt.com/planck.js/BodyTypes
+                static_ && this.planckBody.SetType(b2.BodyType.b2_staticBody);
+                this.planckBody.SetBullet(bullet);
+                this.planckBody.SetAwake(awake);
+                0 && this.planckBody.SetActive(active); // ????????????????
+                this.planckBody.SetFixedRotation(fixedRotation);
+                this.planckBody.SetAngularVelocity(angularVelocity);
+                this.planckBody.SetLinearDamping(linearDamping);
+                this.planckBody.SetLinearVelocity(linearVelocity);
+            }
             // 접해있던것 깨우기
-            contactList.forEach(contact => contact.setAwake(true));
+            if (PLANCKMODE) {
+                contactList.forEach(contact => contact.setAwake(true));
+            } else {
+                contactList.forEach(contact => contact.SetAwake(true));
+            }
         }
-        setActive(v) { this.getBody().setActive(v); }
-        isActive() { return this.getBody().isActive(); }
-        setAwake(v) { this.getBody().setAwake(v); }
-        isAwake() { return this.getBody().isAwake(); }
-        setStatic() { this.getBody().setStatic(); } // dynamic의 반대
-        isStatic() { return this.getBody().isStatic(); }
+        setActive(v) { PLANCKMODE ? this.getBody().setActive(v) : null; } //oo
+        isActive() { return PLANCKMODE ? this.getBody().isActive() : true; } //oo
+        setAwake(v) { PLANCKMODE ? this.getBody().setAwake(v) : this.getBody().SetAwake(v); }
+        isAwake() { return PLANCKMODE ? this.getBody().isAwake() : this.getBody().IsAwake(); }
+        setStatic() { PLANCKMODE ? this.getBody().setStatic() : this.getBody().SetType(b2.BodyType.b2_staticBody); } // dynamic의 반대
+        isStatic() { return PLANCKMODE ? this.getBody().isStatic() : this.getBody().GetType() === b2.BodyType.b2_staticBody; }
     }
     //------------------------------
     // 매 프레임마다 물리연산을 해서 나오는 수치를 픽시 그래픽요소의 상태에 반영
@@ -810,10 +1036,18 @@ const PIXICS = (() => {
         PIXI.Ticker.shared.add(dt => {
             if (!point.tickplay) return;
 /*Deboucing*/{ if (tick_accumulator === undefined) { tick_accumulator = 0; }; tick_accumulator += dt; if (tick_accumulator >= 1) { tick_accumulator = tick_accumulator - 1; } else { return; } };
-            world.step(1 / magicNumber);
-            world.clearForces();
-            for (let body = world.getBodyList(); body; body = body.getNext()) {
-                body.getUserData()?.syncState();
+            if (PLANCKMODE) {
+                world.step(1 / magicNumber);
+                world.clearForces();
+                for (let body = world.getBodyList(); body; body = body.getNext()) {
+                    body.getUserData()?.syncState();
+                }
+            } else {
+                world.Step(1 / magicNumber, 8, 3);
+                world.ClearForces();
+                for (let body = world.GetBodyList(); body; body = body.GetNext()) {
+                    body.GetUserData()?.syncState();
+                }
             }
             {
                 let it = updateList.keys();
@@ -895,7 +1129,7 @@ const PIXICS = (() => {
             scale *= ratio;
             point.ratio = ratio;
             point.worldscale = scale;
-            let world = new planck.World(gravity);
+            let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
             registUpdate(world);
             point.pixics = {
                 world,

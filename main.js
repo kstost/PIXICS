@@ -9,7 +9,7 @@ window.addEventListener('load', async () => {
 
    //------------------------------
    // 피직스월드의 준비
-   const gravity = planck.Vec2(0, -30); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
+   const gravity = PLANCKMODE ? planck.Vec2(0, -30) : new b2.Vec2(0, -30); // 중력을 설정한다. 중력의 방향이다 0, -200 으로 설정하면 아래로 200만큼의 힘으로 잡아당긴다
    const pixics = PIXICS.createWorld(100, ratio, gravity); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
    const world = pixics.world;
    const L = pixics.log;
@@ -48,7 +48,7 @@ window.addEventListener('load', async () => {
       scale값에는 ratio를 곱해주지않도록 주의하자
    */
    let polyObj = new PIXICS.PhysicsGraphics({ world });
-   let json = {"layers":[{"dots":{"polygon":[],"circle":[],"rect":[{"x":390,"y":150},{"x":1290,"y":750}]},"color":"00ffff","friction":0,"density":0,"restitution":0,"class":"rect"},{"dots":{"polygon":[],"circle":[],"rect":[{"x":300,"y":180},{"x":1140,"y":720}]},"color":"ffffff","friction":0,"density":0,"restitution":0,"class":"rect"}],"pivotpoint":{"x":840,"y":450},"scale":30}
+   let json = { "layers": [{ "dots": { "polygon": [], "circle": [], "rect": [{ "x": 390, "y": 150 }, { "x": 1290, "y": 750 }] }, "color": "00ffff", "friction": 0, "density": 0, "restitution": 0, "class": "rect" }, { "dots": { "polygon": [], "circle": [], "rect": [{ "x": 300, "y": 180 }, { "x": 1140, "y": 720 }] }, "color": "ffffff", "friction": 0, "density": 0, "restitution": 0, "class": "rect" }], "pivotpoint": { "x": 840, "y": 450 }, "scale": 30 }
    polyObj.drawJSON({ scale: 13, json });
    polyObj.setPosition((1080) * 0.5 * ratio, 1920 * 0.5 * ratio)
    polyObj.redrawFixture() // 그래픽요소의 내용을 모두 지우고서 생성된 fixture를 토대로 다시 그리기
