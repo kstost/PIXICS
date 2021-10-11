@@ -709,7 +709,14 @@ const PIXICS = (() => {
                 const shape = new b2.CircleShape();
                 shape.m_radius = radius / PIXICS.worldscale;
                 shape.m_p.Set(position.x, position.y);
-                let fixture = this.createFixture(shape);
+
+                const fd = new b2.FixtureDef();
+                fd.shape = shape;
+                fd.density = 1;
+                fd.friction = 1;
+                fd.restitution = 0;
+
+                let fixture = this.createFixture(fd);
                 fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
                 fixture.drawingProfile.type.bind(this)(...arguments);
                 // this._drawCircle(...arguments);
