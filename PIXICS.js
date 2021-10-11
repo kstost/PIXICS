@@ -238,8 +238,8 @@ const PIXICS = (() => {
                 }
             } else {
                 for (let b = bbb.planckBody.GetContactList(); b; b = b.next) {
-                    let aa = b.contact.GetFixtureA().getBody();
-                    let bb = b.contact.GetFixtureB().getBody();
+                    let aa = b.contact.GetFixtureA().GetBody();
+                    let bb = b.contact.GetFixtureB().GetBody();
                     if (bbb.planckBody !== aa) { !contactList.has(aa) && contactList.set(aa, true) }
                     if (bbb.planckBody !== bb) { !contactList.has(bb) && contactList.set(bb, true) }
                 }
@@ -925,8 +925,8 @@ const PIXICS = (() => {
                 }
             } else {
                 for (let b = this.planckBody.GetContactList(); b; b = b.next) {
-                    let aa = b.contact.GetFixtureA().getBody();
-                    let bb = b.contact.GetFixtureB().getBody();
+                    let aa = b.contact.GetFixtureA().GetBody();
+                    let bb = b.contact.GetFixtureB().GetBody();
                     contactList.push(aa, bb);
                 }
             }
