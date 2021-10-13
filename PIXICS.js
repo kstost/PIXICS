@@ -1,6 +1,21 @@
 const PIXICS = (() => {
     let PLANCKMODE;// = !true;
+    let actual_display;
     const magicNumber = 60;
+
+    function orb2(value, mode) {
+        if (!actual_display) return value;
+        const worldcenter = point.pixics.worldcenter;
+        value *= PIXICS.worldscale;
+        if (mode) {
+            //x
+            return value + (actual_display.width * worldcenter.x);
+        } else {
+            //y
+            return -value + (actual_display.height * worldcenter.y);
+        }
+    }
+
 
     let Ease = {};
 
@@ -595,8 +610,12 @@ const PIXICS = (() => {
         _drawRect(x, y, width, height, color) {
             if (color === undefined) color = 0xffffff;
             this.graphic.beginFill(color);
-            this.graphic.drawRect(x, y, width, height);
+            width = width * 2;
+            height = height * 2;
+            this.graphic.drawRect(-(width * 0.5), -(height * 0.5), width, height);
             this.graphic.endFill();
+            this.graphic.x = orb2(x, 1);
+            this.graphic.y = orb2(y, 0);
         }
         drawRect(x, y, width, height, color) {
             if (color === undefined) color = 0xffffff;
@@ -609,10 +628,10 @@ const PIXICS = (() => {
                 // this._drawRect(...arguments);
                 return fixture;
             } else {
-                let position = new b2.Vec2((x + (width / 2)) / PIXICS.worldscale, -(y + (height / 2)) / PIXICS.worldscale);
+                let position = new b2.Vec2(0, 0);
                 // let shape = planck.Box(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
                 const shape = new b2.PolygonShape();
-                shape.SetAsBox(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
+                shape.SetAsBox(width / PIXICS.worldscale, height / PIXICS.worldscale, position);
 
                 const fd = new b2.FixtureDef();
                 fd.shape = shape;
@@ -624,6 +643,7 @@ const PIXICS = (() => {
                 fixture.drawingProfile = { type: this._drawRect, arg: arguments };
                 fixture.drawingProfile.type.bind(this)(...arguments);
                 // this._drawRect(...arguments);
+                this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                 return fixture;
             }
         }
@@ -632,9 +652,9 @@ const PIXICS = (() => {
             this.graphic.beginFill(color);
             for (let i = 0; i < path.length; i++) {
                 if (i === 0) {
-                    this.graphic.moveTo((path[i].x), (path[i].y));
+                    this.graphic.moveTo((path[i].x), -(path[i].y));
                 } else {
-                    this.graphic.lineTo((path[i].x), (path[i].y));
+                    this.graphic.lineTo((path[i].x), -(path[i].y));
                 }
             }
             this.graphic.closePath();
@@ -660,7 +680,6 @@ const PIXICS = (() => {
                 let vertices = ((JSON.parse(JSON.stringify(path))).map(point => {
                     point.x /= PIXICS.worldscale;
                     point.y /= PIXICS.worldscale;
-                    point.y *= -1
                     return new b2.Vec2(point.x, point.y);
                 }));
 
@@ -691,8 +710,10 @@ const PIXICS = (() => {
         _drawCircle(x, y, radius, color) {
             if (color === undefined) color = 0xffffff;
             this.graphic.beginFill(color);
-            this.graphic.drawCircle(x, y, radius);
+            this.graphic.drawCircle(0, 0, radius);
             this.graphic.endFill();
+            this.graphic.x = orb2(x, 1);
+            this.graphic.y = orb2(y, 0);
         }
         drawCircle(x, y, radius, color) {
             if (color === undefined) color = 0xffffff;
@@ -705,10 +726,9 @@ const PIXICS = (() => {
                 // this._drawCircle(...arguments);
                 return fixture;
             } else {
-                let position = new b2.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale);
                 const shape = new b2.CircleShape();
                 shape.m_radius = radius / PIXICS.worldscale;
-                shape.m_p.Set(position.x, position.y);
+                shape.m_p.Set(0, 0);
 
                 const fd = new b2.FixtureDef();
                 fd.shape = shape;
@@ -720,6 +740,7 @@ const PIXICS = (() => {
                 fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
                 fixture.drawingProfile.type.bind(this)(...arguments);
                 // this._drawCircle(...arguments);
+                this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                 return fixture;
             }
         }
@@ -731,9 +752,9 @@ const PIXICS = (() => {
                 this.graphic.y = -bodyPosition.y * PIXICS.worldscale;
             } else {
                 this.graphic.rotation = -this.planckBody.GetAngle();
-                let bodyPosition = this.planckBody.GetPosition();
-                this.graphic.x = bodyPosition.x * PIXICS.worldscale;
-                this.graphic.y = -bodyPosition.y * PIXICS.worldscale;
+                let { x, y } = this.planckBody.GetPosition();
+                this.graphic.x = orb2(x, 1);
+                this.graphic.y = orb2(y, 0);
             }
         }
         setAngle(radian) {
@@ -757,7 +778,7 @@ const PIXICS = (() => {
             if (PLANCKMODE) {
                 this.planckBody.setPosition(planck.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale));
             } else {
-                this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale));
+                this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
             }
             this.syncState();
             this.touchContacts();
@@ -1131,7 +1152,8 @@ const PIXICS = (() => {
             a.focus();
         },
         transScale(v) { return v / PIXICS.worldscale; },
-        createWorld(scale, ratio, gravity, useflyover) {
+        createWorld(scale, ratio, gravity, useflyover, display) {
+            actual_display = display;
             PLANCKMODE = !useflyover ? true : false;
             point._worldscale = scale;
             scale *= ratio;
@@ -1142,6 +1164,7 @@ const PIXICS = (() => {
             point.pixics = {
                 world,
                 worldscale: scale,
+                worldcenter: { x: 0.5, y: 0.5 },
                 log(str, duration) {
                     let line = document.createElement('div');
                     line.style.position = 'fixed';

@@ -1478,7 +1478,7 @@
       class Pyramid extends Test {
         constructor() {
           super();
-          init(this.m_world);
+          init.bind(this)(this.m_world);
         }
         Step(settings) {
           super.Step(settings);
