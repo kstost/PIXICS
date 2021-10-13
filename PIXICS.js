@@ -1103,18 +1103,18 @@ const PIXICS = (() => {
     const getMovableMaxDistancePerFrame = () => {
         // 통과됨
         // 한 프레임당 이동할 수 있는 최대 거리를 리턴해준다
-        return (point.ratio * 2) * point._worldscale;
+        return (point.ratio * 2) * PIXICS.worldscale;
     }
     const getMoveDistancePerFrame = (벨로시티) => {
         // 통과됨
         // 벨로시티는 setLinearVelocity 에 주어지는 방향좌표값 x y 의 빗변의 길이를 뜻함
         // setLinearVelocity 에 주어지는 벨로시티값에 의해 한 프레임당 이동할 실제 거리를 계산해서 리턴한다
-        return (point._worldscale * point.ratio * 벨로시티) / magicNumber;
+        return (PIXICS.worldscale * point.ratio * 벨로시티) / magicNumber;
     }
     const getVelocityPerFrame = (거리) => {
         // 통과됨
         // 한프레임당 주어진 거리만큼을 이동하기 위해 얼마만큼의 벨로시티가 필요한지를 계산해서 리턴
-        let aa = (point._worldscale * point.ratio);
+        let aa = (PIXICS.worldscale * point.ratio);
         return (거리 * magicNumber) / aa;
     }
     const getMoveDistanceFor = (전체거리, 시간초) => {
@@ -1155,15 +1155,15 @@ const PIXICS = (() => {
         createWorld(scale, ratio, gravity, useflyover, display) {
             actual_display = display;
             PLANCKMODE = !useflyover ? true : false;
-            point._worldscale = scale;
-            scale *= ratio;
             point.ratio = ratio;
-            point.worldscale = scale;
+            point.worldscale = scale * ratio;
             let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
             registUpdate(world);
             point.pixics = {
                 world,
-                worldscale: scale,
+                get worldscale() {
+                    return point.worldscale;
+                },
                 worldcenter: { x: 0.5, y: 0.5 },
                 log(str, duration) {
                     let line = document.createElement('div');
