@@ -891,16 +891,19 @@ const PIXICS = (() => {
         setDensity(value, idx) {
             this.setFixtureProp(value, 'density', idx);
             this.resetBodyAndFixtures();
+            this.setAwake(true);
         }
         getDensity(idx) { if (idx === undefined) { idx = 0; } return this.getFixtureProp('density', idx); }
         setRestitution(value, idx) {
             this.setFixtureProp(value, 'restitution', idx);
             this.resetBodyAndFixtures();
+            this.setAwake(true);
         }
         getRestitution(idx) { if (idx === undefined) { idx = 0; } return this.getFixtureProp('restitution', idx); }
         setFriction(value, idx) {
             this.setFixtureProp(value, 'friction', idx);
             this.resetBodyAndFixtures();
+            this.setAwake(true);
         }
         getFriction(idx) { if (idx === undefined) { idx = 0; } return this.getFixtureProp('friction', idx); }
         setDynamic() {
@@ -909,6 +912,7 @@ const PIXICS = (() => {
             } else {
                 this.planckBody.SetType(b2.BodyType.b2_dynamicBody);
             }
+            this.setAwake(true);
         }
         isDynamic() {
             if (PLANCKMODE) {

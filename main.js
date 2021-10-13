@@ -43,10 +43,15 @@ window.addEventListener('load', async () => {
    // await pixics.sleep(1000);
 
    L(`현재 마찰력은 ${rectangle.getFriction()}이다 (사포처럼 까끌까끌하다)`);
-   await pixics.sleep(1000);
-
+   await pixics.sleep(2900);
+   
    L(`마찰력을 0으로 만들면 얼음처럼 미끌어진다`);
    rectangle.setFriction(0);
+   aaa=rectangle;
+   // L(`현재 마찰력은 ${rectangle.getFriction()}이다 (사포처럼 까끌까끌하다)`);
+   // rectangle.setDynamic()
+   // rectangle.setAwake()
+
    // await pixics.sleep(1000);
 
    // await pixics.sleep(1000);
