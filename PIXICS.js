@@ -7,6 +7,7 @@ const PIXICS = (() => {
         if (!actual_display) return value;
         const worldcenter = point.pixics.worldcenter;
         value *= PIXICS.worldscale;
+        // x*PIXICS.worldscale
         if (mode) {
             //x
             return value + (actual_display.width * worldcenter.x);
@@ -607,15 +608,58 @@ const PIXICS = (() => {
             let drawArgs = this.getFixtures().reverse().map(fixture => fixture.drawingProfile);
             drawArgs.forEach(arg => arg.type.bind(this)(...arg.arg));
         }
-        _drawRect(x, y, width, height, color) {
-            if (color === undefined) color = 0xffffff;
-            this.graphic.beginFill(color);
-            width = width * 2;
-            height = height * 2;
-            this.graphic.drawRect(-(width * 0.5), -(height * 0.5), width, height);
-            this.graphic.endFill();
-            this.graphic.x = orb2(x, 1);
-            this.graphic.y = orb2(y, 0);
+        fixtureShapeDrawer() {
+            let minx, miny;
+            this.graphic.clear();
+            this.getFixtures().forEach(f => {
+                if (f.drawingProfile.type === this._drawRect) {
+                    let [x, y, width, height, color] = f.drawingProfile.arg;
+                    if (color === undefined) color = 0xffffff;
+                    x -= width;
+                    y -= height;
+                    if (minx === undefined || minx > x) minx = x;
+                    if (miny === undefined || miny > y) miny = y;
+                    width = width * 2;
+                    height = height * 2;
+                    this.graphic.beginFill(color);
+                    this.graphic.drawRect(x, y, width, height);
+                    this.graphic.endFill();
+                }
+                if (f.drawingProfile.type === this._drawPolygon) {
+                    let [path, color] = f.drawingProfile.arg;
+                    if (color === undefined) color = 0xffffff;
+                    this.graphic.beginFill(color);
+                    path.forEach((dot, i) => {
+                        let { x, y } = dot;
+                        if (minx === undefined || minx > x) minx = x;
+                        if (miny === undefined || miny > y) miny = y;
+                        if (i === 0) {
+                            this.graphic.moveTo((dot.x), -(dot.y));
+                        } else {
+                            this.graphic.lineTo((dot.x), -(dot.y));
+                        }
+                    });
+                    this.graphic.closePath();
+                    this.graphic.endFill();
+                }
+                if (f.drawingProfile.type === this._drawCircle) {
+                    let [x, y, radius, color] = f.drawingProfile.arg;
+                    if (color === undefined) color = 0xffffff;
+                    if (minx === undefined || minx > x - radius) minx = x - radius;
+                    if (miny === undefined || miny > y - radius) miny = y - radius;
+                    this.graphic.beginFill(color);
+                    this.graphic.drawCircle(x, y, radius);
+                    this.graphic.endFill();
+                }
+            });
+            this.graphic.pivot.x = minx + (this.graphic.width * 0.5);
+            this.graphic.pivot.y = miny + (this.graphic.height * 0.5);
+            let { x, y } = this.planckBody.GetPosition();
+            this.graphic.x = orb2(x, 1)
+            this.graphic.y = orb2(y, 0)
+        }
+        _drawRect() {
+            this.fixtureShapeDrawer();
         }
         drawRect(x, y, width, height, color) {
             if (color === undefined) color = 0xffffff;
@@ -628,7 +672,10 @@ const PIXICS = (() => {
                 // this._drawRect(...arguments);
                 return fixture;
             } else {
-                let position = new b2.Vec2(0, 0);
+                let position = new b2.Vec2(
+                    x / PIXICS.worldscale,
+                    y / PIXICS.worldscale
+                );
                 // let shape = planck.Box(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
                 const shape = new b2.PolygonShape();
                 shape.SetAsBox(width / PIXICS.worldscale, height / PIXICS.worldscale, position);
@@ -643,22 +690,12 @@ const PIXICS = (() => {
                 fixture.drawingProfile = { type: this._drawRect, arg: arguments };
                 fixture.drawingProfile.type.bind(this)(...arguments);
                 // this._drawRect(...arguments);
-                this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
+                0 && this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                 return fixture;
             }
         }
-        _drawPolygon(path, color) {
-            if (color === undefined) color = 0xffffff;
-            this.graphic.beginFill(color);
-            for (let i = 0; i < path.length; i++) {
-                if (i === 0) {
-                    this.graphic.moveTo((path[i].x), -(path[i].y));
-                } else {
-                    this.graphic.lineTo((path[i].x), -(path[i].y));
-                }
-            }
-            this.graphic.closePath();
-            this.graphic.endFill();
+        _drawPolygon() {
+            this.fixtureShapeDrawer();
         }
         drawPolygon(path, color) {
             // 볼록한(convex) 도형만 지원한다
@@ -707,13 +744,8 @@ const PIXICS = (() => {
                 return fixture;
             }
         }
-        _drawCircle(x, y, radius, color) {
-            if (color === undefined) color = 0xffffff;
-            this.graphic.beginFill(color);
-            this.graphic.drawCircle(0, 0, radius);
-            this.graphic.endFill();
-            this.graphic.x = orb2(x, 1);
-            this.graphic.y = orb2(y, 0);
+        _drawCircle() {
+            this.fixtureShapeDrawer();
         }
         drawCircle(x, y, radius, color) {
             if (color === undefined) color = 0xffffff;
@@ -728,7 +760,7 @@ const PIXICS = (() => {
             } else {
                 const shape = new b2.CircleShape();
                 shape.m_radius = radius / PIXICS.worldscale;
-                shape.m_p.Set(0, 0);
+                shape.m_p.Set(x / PIXICS.worldscale, y / PIXICS.worldscale);
 
                 const fd = new b2.FixtureDef();
                 fd.shape = shape;
@@ -740,7 +772,7 @@ const PIXICS = (() => {
                 fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
                 fixture.drawingProfile.type.bind(this)(...arguments);
                 // this._drawCircle(...arguments);
-                this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
+                // this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                 return fixture;
             }
         }
@@ -753,8 +785,9 @@ const PIXICS = (() => {
             } else {
                 this.graphic.rotation = -this.planckBody.GetAngle();
                 let { x, y } = this.planckBody.GetPosition();
-                this.graphic.x = orb2(x, 1);
-                this.graphic.y = orb2(y, 0);
+                this.graphic.x = orb2(x, 1);/// PIXICS.worldscale
+                this.graphic.y = orb2(y, 0);//
+                // console.log(y*PIXICS.worldscale);
             }
         }
         setAngle(radian) {
