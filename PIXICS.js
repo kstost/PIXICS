@@ -1058,6 +1058,11 @@ const PIXICS = (() => {
     // 매 프레임마다 물리연산을 해서 나오는 수치를 픽시 그래픽요소의 상태에 반영
     let updateList = new Map();
     let timeoutList = new Map();
+    let syncStateAll = world => {
+        for (let body = world.GetBodyList(); body; body = body.GetNext()) {
+            body.GetUserData()?.syncState();
+        }
+    };
     let registUpdate = world => {
         point.tickplay = true;
         let tick_accumulator;
@@ -1073,9 +1078,10 @@ const PIXICS = (() => {
             } else {
                 world.Step(1 / magicNumber, 8, 3);
                 world.ClearForces();
-                for (let body = world.GetBodyList(); body; body = body.GetNext()) {
-                    body.GetUserData()?.syncState();
-                }
+                // for (let body = world.GetBodyList(); body; body = body.GetNext()) {
+                //     body.GetUserData()?.syncState();
+                // }
+                syncStateAll(world);
             }
             {
                 let it = updateList.keys();
@@ -1165,6 +1171,11 @@ const PIXICS = (() => {
                     return point.worldscale;
                 },
                 worldcenter: { x: 0.5, y: 0.5 },
+                moveWorldCenterBy(x, y) {
+                    point.pixics.worldcenter.x += x / actual_display.width;
+                    point.pixics.worldcenter.y += y / actual_display.height;
+                    syncStateAll(world);
+                },
                 log(str, duration) {
                     let line = document.createElement('div');
                     line.style.position = 'fixed';

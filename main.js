@@ -76,6 +76,11 @@ window.addEventListener('load', async () => {
    // shortground.drawRect(0, 0, width, tickness);
    // app.stage.addChild(shortground.getGraphic());
    // await pixics.sleep(1000);
+   pixics.moveWorldCenterBy(108 * ratio, 1920 * 0.5 * ratio)
+
+   // pixics.update(function (dt) {
+   //    pixics.moveWorldCenterBy(0, 0.001 * ratio)
+   // });
 
    L('흔들대는 요소 만들기');
    /*
