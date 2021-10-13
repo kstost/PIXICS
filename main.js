@@ -1,50 +1,5 @@
 window.addEventListener('load', async () => {
 
-   function setEvent(thing, names, fn) {
-      thing.interactive = true;
-      [names].flat(Infinity).forEach(name => thing.on(name, fn));
-   }
-   function setDragable(thing) {
-      let startpoint = null;
-      let base = null;
-      let dotposes = null;
-      let dn = false;
-      const onDragStart = function (event) {
-         this.data = event.data; this.dragging = true;
-         const newPosition = this.data.getLocalPosition(this.parent);
-         startpoint = (newPosition);
-         base = { x: 0, y: 0 };
-         dotposes = { x: thing.x, y: thing.y };
-         dn = thing.isDynamic();
-         thing.setStatic()
-      }
-      const onDragEnd = function () {
-         this.dragging = false; this.data = null;
-         startpoint = null;
-         base = null;
-         if (dn) thing.setDynamic()
-      }
-      const onDragMove = function (e) {
-         if (this.dragging) {
-            const newPosition = this.data.getLocalPosition(this.parent);
-            let cha = {
-               x: (newPosition.x - startpoint.x),
-               y: (newPosition.y - startpoint.y),
-            };
-            base.x += cha.x;
-            base.y += cha.y;
-            let cp = thing.getPosition();
-            cp.x += cha.x;
-            cp.y += cha.y;
-            thing.setPosition(cp.x, -cp.y);
-            startpoint = (newPosition);
-         }
-      }
-      setEvent(thing.getGraphic(), ['mousedown', 'touchstart'], onDragStart);
-      setEvent(thing.getGraphic(), ['mousemove', 'touchmove'], onDragMove);
-      setEvent(thing.getGraphic(), ['mouseup', 'mouseupoutside', 'touchend', 'touchendoutside'], onDragEnd);
-   }
-
    //------------------------------
    // 스크린의 준비
    const display = displaySystem(1080, 1920, true); // 스크린너비, 스크린높이, 성능측정모니터사용여부
@@ -60,90 +15,43 @@ window.addEventListener('load', async () => {
    const L = pixics.log;
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
-
-   L('길다란 화면너비만큼의 막대기 생성');
-   // let stick = new PIXICS.PhysicsGraphics({ world });
-   // // stick.drawRect(0, 0, 10, 10);
-   // //
-   // let qq = 1080 * 0.25 * ratio;
-   // stick.drawRect(0, qq, 1080 * 0.25 * ratio, 108 * 0.5 * ratio);
-   // stick.drawRect(0, -qq, 1080 * 0.25 * ratio, 108 * 0.5 * ratio);
-   // // stick.drawRect(0, 1, 1080 * 0.25 * ratio, 108 * 0.5 * ratio);
-   // // stick.drawRect(0, 3*ratio, 1080 * 0.5 * ratio, 108 * 0.5 * ratio);
-   // // stick.setPosition(0, -1920 * 0.5 * ratio);
-   // stick.getGraphic().tint = 0x44aa44;
-   // app.stage.addChild(stick.getGraphic());
-   // await pixics.sleep(500);
-
-
    //------------------------------
-   L('메인 코드의 시작');
-   await pixics.sleep(10);
+   L('긴 네모를 만든다 (바닥으로 쓸거다)');
+   let floor = new PIXICS.PhysicsGraphics({ world });
+   floor.drawRect(0, 0, 1080 * 0.5 * ratio, 1920 * 0.5 * ratio * 0.05, 0xffaaff);
+   app.stage.addChild(floor.getGraphic());
+   // await pixics.sleep(1000);
 
-   {
-      // polyObj.drawCircle(130+(1080 * 2) * ra * ratio, 0, 40 * ratio);
-      // polyObj.drawPolygon([
-      //    { x: 0, y: 0 },
-      //    { x: 0, y: 130 },
-      //    { x: 130, y: 130 },
-      // ]);
-      let polyObj = new PIXICS.PhysicsGraphics({ world });
-      let ra = 0.5;
-      polyObj.drawRect(0 + 0, 1920 * ra * ratio, 1080 * ra * ratio, 20 * ratio);
-      polyObj.drawRect(0 + 0, -1920 * ra * ratio, 1080 * ra * ratio, 20 * ratio);
-      polyObj.drawRect(0 + -1080 * ra * ratio, 0, 20 * ratio, 1920 * ra * ratio);
-      polyObj.drawRect(0 + 1080 * ra * ratio, 0, 20 * ratio, 1920 * ra * ratio);
-      // polyObj.setDynamic();
-      polyObj.getBody().SetGravityScale(0);
-      app.stage.addChild(polyObj.getGraphic());
-      // polyObj.drawRect(0 + (1080 * 2) * ra * ratio, 0, 20 * ratio, (1920 * 0.5) * ra * ratio);
-      // polyObj.drawCircle(0 + 0, 0, 40 * ratio,0xffff00);
-      // polyObj.getBody().SetAngularVelocity(1);
-      // polyObj.setPosition(1080 * 0.5 * ratio, 1920 * 0.5 * ratio);
-
-      // polyObj.setPosition()
-      // polyObj.setPosition(0,0)
-   }
-   {
-      for (let i = 0; i < 4; i++) {
-         await pixics.sleep(1000);
-
-         let polyObj = new PIXICS.PhysicsGraphics({ world });
-         let ra = 0.05;
-         polyObj.drawRect(0 + 0, 1920 * ra * ratio, 1080 * ra * ratio, 20 * ratio);
-         polyObj.drawRect(0 + 0, -1920 * ra * ratio, 1080 * ra * ratio, 20 * ratio);
-         polyObj.drawRect(0 + -1080 * ra * ratio, 0, 20 * ratio, 1920 * ra * ratio);
-         polyObj.drawRect(0 + 1080 * ra * ratio, 0, 20 * ratio, 1920 * ra * ratio);
-         polyObj.drawRect(0 + 108 * ra * ratio, 0, 20 * ratio, 1920 * 0.1 * ratio);
-         polyObj.setDynamic();
-         polyObj.setPosition(i * 10, 300)
-         // polyObj.getBody().SetGravityScale(0);
-         app.stage.addChild(polyObj.getGraphic());
-      }
-
-   }
-
-   // let polyObj = new PIXICS.PhysicsGraphics({ world });
-   // polyObj.drawRect(0, 0, 108 * 0.5 * ratio, 108 * 0.5 * ratio);
-   // polyObj.setDynamic();
-   // polyObj.getBody().SetGravityScale(0);
-   // app.stage.addChild(polyObj.getGraphic());
-   // polyObj.getBody().SetAngularVelocity(0.010);
-   // for(let i=0;i<10;i++){
-   // }
-   // {
-   //    let polyObj = new PIXICS.PhysicsGraphics({ world });
-   //    app.stage.addChild(polyObj.getGraphic());
-   // }
-   // {
-   //    let polyObj = new PIXICS.PhysicsGraphics({ world });
-   //    app.stage.addChild(polyObj.getGraphic());
-   // }
-   // {
-   //    let polyObj = new PIXICS.PhysicsGraphics({ world });
-   //    app.stage.addChild(polyObj.getGraphic());
-   // }
+   L('네모막대의 각도를 튼다');
+   floor.setAngle(Math.PI * 0.077)
+   // await pixics.sleep(1000);
 
 
+   L('긴 네모 위치를 이동시킨다');
+   floor.setPosition(0, -1920 * 0.4 * ratio);
+   // await pixics.sleep(1000);
+
+   L('0x0 좌표에 박스를 하나 만든다');
+   let boxsize = (1080 * 0.25 * 0.25) * ratio;
+   let rectangle = new PIXICS.PhysicsGraphics({ world });
+   rectangle.drawRect(0, 0, boxsize, boxsize, 0x00ff00);
+   app.stage.addChild(rectangle.getGraphic());
+   // await pixics.sleep(1000);
+
+   L('중력 영향받게 하기');
+   rectangle.setDynamic()
+   // await pixics.sleep(1000);
+
+   L(`현재 마찰력은 ${rectangle.getFriction()}이다 (사포처럼 까끌까끌하다)`);
+   await pixics.sleep(1000);
+
+   L(`마찰력을 0으로 만들면 얼음처럼 미끌어진다`);
+   rectangle.setFriction(0);
+   // await pixics.sleep(1000);
+
+   // await pixics.sleep(1000);
+
+   // L('탄성을 부여하기');
+   // rectangle.setRestitution(1)
 
 });

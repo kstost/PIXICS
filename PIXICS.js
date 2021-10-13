@@ -820,7 +820,7 @@ const PIXICS = (() => {
             let dd = PLANCKMODE ? this.planckBody.getPosition() : this.planckBody.GetPosition();
             return {
                 x: dd.x * PIXICS.worldscale,
-                y: (dd.y * PIXICS.worldscale) * -1,
+                y: (dd.y * PIXICS.worldscale),// * -1,
             }
         }
         touchContacts() {
