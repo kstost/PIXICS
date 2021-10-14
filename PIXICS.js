@@ -2,20 +2,113 @@ const PIXICS = (() => {
     let PLANCKMODE;// = !true;
     let actual_display;
     const magicNumber = 60;
-
-    function orb2(value, mode) {
-        if (!actual_display) return value;
-        const worldcenter = point.pixics.worldcenter;
-        value *= PIXICS.worldscale;
-        // x*PIXICS.worldscale
-        if (mode) {
-            //x
-            return value + (actual_display.width * worldcenter.x);
-        } else {
-            //y
-            return -value + (actual_display.height * worldcenter.y);
+    function makeGraphic(center) {
+        function drawPolygon(gr, path, color) {
+            gr.beginFill(color);
+            path.forEach((dot, i) => {
+                if (i === 0) {
+                    gr.moveTo((dot.x), -(dot.y));
+                } else {
+                    gr.lineTo((dot.x), -(dot.y));
+                }
+            });
+            gr.closePath();
+            gr.endFill();
         }
+        function drawCircle(gr, x, y, radius, color) {
+            // width = width * 2;
+            // height = height * 2;
+            gr.beginFill(color);
+            gr.drawCircle(x - (0 * 0.5), -y - (0 * 0.5), radius);
+            gr.endFill();
+        }
+        function drawRect(gr, x, y, width, height, color) {
+            width = width * 2;
+            height = height * 2;
+            gr.beginFill(color);
+            gr.drawRect(x - (width * 0.5), -y - (height * 0.5), width, height);
+            gr.endFill();
+        }
+        let gr = new PIXI.Graphics();
+        // app.stage.addChild(gr);
+
+        let centroid = { x: 0, y: 0 };
+        function GetLocalCenter() {
+            return centroid;
+        }
+        function SetLocalCenter(xx, yy) {
+            let gr = point;
+            centroid.x = xx;
+            centroid.y = yy;
+            let pp = { ...gr.GetLocalCenter() };
+            pp.y = -pp.y;
+            let radian = ksttool.math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
+            let leng = -(ksttool.math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
+            let rr = radian - gr.GetAngle();
+            let pont = ksttool.math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
+            gr.gr.pivot.x = pp.x;
+            gr.gr.pivot.y = pp.y;
+            gr.gr.x = center.x + pont.x + position.x
+            gr.gr.y = center.y + pont.y + -position.y
+
+        }
+        function SetAngle(angle) {
+            gr.rotation = -angle;//-1.57
+        }
+        function GetAngle() {
+            return -gr.rotation;
+        }
+        function GetPosition() {
+            let gr = point;
+            let pp = { ...gr.GetLocalCenter() };
+            pp.y = -pp.y;
+            let radian = ksttool.math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
+            let leng = -(ksttool.math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
+            let rr = radian - gr.GetAngle();
+            let pont = ksttool.math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
+            let pos = { x: gr.gr.x, y: gr.gr.y };//gr.GetPosition();
+            pos.x -= center.x + pont.x;
+            pos.y -= center.y + pont.y;
+            pos.y = -pos.y;
+            return pos;
+        }
+        let position = { x: 0, y: 0 };
+        function SetPosition(xx, yy) {
+            position.x = xx;
+            position.y = yy;
+            let gr = point;
+            let pp = { ...gr.GetLocalCenter() };
+            pp.y = -pp.y;
+            let radian = ksttool.math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
+            let leng = -(ksttool.math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
+            let rr = radian - gr.GetAngle();
+            let pont = ksttool.math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
+            gr.gr.x = center.x + pont.x + xx;
+            gr.gr.y = center.y + pont.y + -yy;
+        }
+        let point = {
+            gr,
+            body: gr,
+            SetPosition,
+            GetPosition,
+            SetLocalCenter,
+            GetLocalCenter,
+            SetAngle,
+            GetAngle,
+            drawRect(x, y, width, height, color) {
+                drawRect(gr, x, y, width, height, color);
+            },
+            drawCircle(x, y, radius, color) {
+                drawCircle(gr, x, y, radius, color);
+            },
+            drawPolygon(path, color) {
+                drawPolygon(gr, path, color);
+            }
+        };
+        SetPosition(0, 0);
+        return point;
     }
+
 
 
     let Ease = {};
@@ -199,12 +292,11 @@ const PIXICS = (() => {
         t -= 2;
         return c / 2 * (Ease.sqrt(1 - t * t) + 1) + b;
     };
-
-
+    let center = { x: 0, y: 0 };
     class PhysicsGraphics {
         constructor({ world }) {
             this.world = world;
-            this.graphic = new PIXI.Graphics();
+            this.graphic = makeGraphic(center);//new PIXI.Graphics();
             if (PLANCKMODE) {
                 this.planckBody = world.createBody({
                     bullet: false,
@@ -531,7 +623,7 @@ const PIXICS = (() => {
         // }
 
         getGraphic() {
-            return this.graphic;
+            return this.graphic.body;
         }
         drawJSON({ scale, json }) {
             let data = json;
@@ -604,64 +696,36 @@ const PIXICS = (() => {
             }
         }
         redrawFixture() {
-            this.graphic.clear();
+            this.graphic.body.clear();
             let drawArgs = this.getFixtures().reverse().map(fixture => fixture.drawingProfile);
             drawArgs.forEach(arg => arg.type.bind(this)(...arg.arg));
         }
         fixtureShapeDrawer() {
-            let minx, miny;
-            this.graphic.clear();
+            this.graphic.body.clear();
             this.getFixtures().forEach(f => {
                 if (f.drawingProfile.type === this._drawRect) {
                     let [x, y, width, height, color] = f.drawingProfile.arg;
                     if (color === undefined) color = 0xffffff;
-                    x -= width;
-                    y -= height;
-                    if (minx === undefined || minx > x) minx = x;
-                    if (miny === undefined || miny > y) miny = y;
-                    width = width * 2;
-                    height = height * 2;
-                    this.graphic.beginFill(color);
-                    this.graphic.drawRect(x, y, width, height);
-                    this.graphic.endFill();
+                    this.graphic.drawRect(x, y, width, height, color)
                 }
                 if (f.drawingProfile.type === this._drawPolygon) {
                     let [path, color] = f.drawingProfile.arg;
                     if (color === undefined) color = 0xffffff;
-                    this.graphic.beginFill(color);
-                    path.forEach((dot, i) => {
-                        let { x, y } = dot;
-                        if (minx === undefined || minx > x) minx = x;
-                        if (miny === undefined || miny > y) miny = y;
-                        if (i === 0) {
-                            this.graphic.moveTo((dot.x), -(dot.y));
-                        } else {
-                            this.graphic.lineTo((dot.x), -(dot.y));
-                        }
-                    });
-                    this.graphic.closePath();
-                    this.graphic.endFill();
+                    this.graphic.drawPolygon(path, color)
                 }
                 if (f.drawingProfile.type === this._drawCircle) {
                     let [x, y, radius, color] = f.drawingProfile.arg;
                     if (color === undefined) color = 0xffffff;
-                    if (minx === undefined || minx > x - radius) minx = x - radius;
-                    if (miny === undefined || miny > y - radius) miny = y - radius;
-                    this.graphic.beginFill(color);
-                    this.graphic.drawCircle(x, y, radius);
-                    this.graphic.endFill();
+                    this.graphic.drawCircle(x, y, radius, color);
                 }
             });
-            this.graphic.pivot.x = minx + (this.graphic.width * 0.5);
-            this.graphic.pivot.y = miny + (this.graphic.height * 0.5);
-            let { x, y } = this.planckBody.GetPosition();
-            this.graphic.x = orb2(x, 1)
-            this.graphic.y = orb2(y, 0)
         }
         _drawRect() {
             this.fixtureShapeDrawer();
         }
         drawRect(x, y, width, height, color) {
+            // y = -y
+            // y*=-1;
             if (color === undefined) color = 0xffffff;
             if (PLANCKMODE) {
                 let position = planck.Vec2((x + (width / 2)) / PIXICS.worldscale, -(y + (height / 2)) / PIXICS.worldscale);
@@ -690,7 +754,7 @@ const PIXICS = (() => {
                 fixture.drawingProfile = { type: this._drawRect, arg: arguments };
                 fixture.drawingProfile.type.bind(this)(...arguments);
                 // this._drawRect(...arguments);
-                0 && this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
+                // 0 && this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                 return fixture;
             }
         }
@@ -783,11 +847,22 @@ const PIXICS = (() => {
                 this.graphic.x = bodyPosition.x * PIXICS.worldscale;
                 this.graphic.y = -bodyPosition.y * PIXICS.worldscale;
             } else {
-                this.graphic.rotation = -this.planckBody.GetAngle();
                 let { x, y } = this.planckBody.GetPosition();
-                this.graphic.x = orb2(x, 1);/// PIXICS.worldscale
-                this.graphic.y = orb2(y, 0);//
-                // console.log(y*PIXICS.worldscale);
+                this.graphic.SetAngle(this.planckBody.GetAngle());
+                this.graphic.SetPosition(x * PIXICS.worldscale, y * PIXICS.worldscale);
+                // this.graphic.rotation = -this.planckBody.GetAngle();
+                // this.graphic.x = orb2(x, 1) + this.bojx;/// PIXICS.worldscale
+                // this.graphic.y = orb2(y, 0) + this.bojy;//
+            }
+        }
+        GetAngle() { return this.getAngle(...arguments); }
+        SetAngle() { return this.setAngle(...arguments); }
+        GetPosition() { return this.getPosition(...arguments); }
+        SetPosition() {
+            if (arguments[0].constructor === b2.Vec2) {
+                return this.setPosition(arguments[0].x, arguments[0].y);
+            } else {
+                return this.setPosition(...arguments);
             }
         }
         setAngle(radian) {
@@ -1207,10 +1282,16 @@ const PIXICS = (() => {
                 get worldscale() {
                     return point.worldscale;
                 },
-                worldcenter: { x: 0.5, y: 0.5 },
+                moveWorldCenterTo(x, y) {
+                    center.x = actual_display.width / 2;
+                    center.y = actual_display.height / 2;
+                    center.x += x;
+                    center.y += -y;
+                    syncStateAll(world);
+                },
                 moveWorldCenterBy(x, y) {
-                    point.pixics.worldcenter.x += x / actual_display.width;
-                    point.pixics.worldcenter.y += y / actual_display.height;
+                    center.x += x;
+                    center.y += -y;
                     syncStateAll(world);
                 },
                 log(str, duration) {
@@ -1270,6 +1351,8 @@ const PIXICS = (() => {
                 getVelocityFor,
 
             };
+            point.pixics.moveWorldCenterTo(0, 0);
+            point.pixics.moveWorldCenterBy(0, 0);
             return point.pixics;
         }
     };
