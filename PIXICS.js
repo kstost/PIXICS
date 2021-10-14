@@ -702,7 +702,7 @@ const PIXICS = (() => {
         }
         fixtureShapeDrawer() {
             this.graphic.body.clear();
-            this.getFixtures().forEach(f => {
+            this.getFixtures().reverse().forEach(f => {
                 if (f.drawingProfile.type === this._drawRect) {
                     let [x, y, width, height, color] = f.drawingProfile.arg;
                     if (color === undefined) color = 0xffffff;
