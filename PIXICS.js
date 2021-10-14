@@ -359,6 +359,7 @@ const PIXICS = (() => {
             f = Ease[f];
             const _point = this;
             const pixics = point.pixics;
+            const _ratio = point.ratio;
             let max = y !== null ? getMovableMaxDistancePerFrame() : Math.PI / 2;
             let ticktime = (1 / magicNumber) * 1000;
             let startPoint;// = this.getPosition();
@@ -367,6 +368,7 @@ const PIXICS = (() => {
             let moveLength;// = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
             if (y !== null) {
                 startPoint = this.getPosition();
+                startPoint.y *= -1;
                 endPoint = { x, y };
                 radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint); // 엘라스틱에서 신경쓰자.
                 moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
@@ -431,7 +433,7 @@ const PIXICS = (() => {
                             } else {
                                 _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
                             }
-                            _point.setPosition(x, y);
+                            _point.setPosition(x, -y);
                         } else {
                             if (PLANCKMODE) {
                                 _point.getBody().setAngularVelocity(0)
@@ -449,11 +451,12 @@ const PIXICS = (() => {
                     if (y !== null) {
                         let s = getVelocityPerFrame(distanceToMoveOnThisTick);//*0.0001;
                         let _startPoint = point.getPosition();
+                        _startPoint.y *= -1;
                         let rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
                         if (PLANCKMODE) {
                             point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
                         } else {
-                            point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                            point.getBody().SetLinearVelocity(new b2.Vec2((rtn.x - _startPoint.x) * _ratio, (_startPoint.y - rtn.y) * _ratio))
                         }
                     } else {
                         if (PLANCKMODE) {
@@ -532,10 +535,12 @@ const PIXICS = (() => {
         }
         async moveEaseBy(x, y, duration, f) {
             let startPoint = this.getPosition();
+            startPoint.y *= -1;
             await this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
         }
         async moveBy(x, y, duration, f) {
             let startPoint = this.getPosition();
+            startPoint.y *= -1;
             await this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
         }
         rotateEaseTo(x, duration, f) {
@@ -1248,7 +1253,6 @@ const PIXICS = (() => {
         let dist = getMoveDistanceFor(전체거리, 시간초);
         return dist * (1 / getMoveDistancePerFrame(1));
     }
-
 
     let lineList = new Map();
     let point = {

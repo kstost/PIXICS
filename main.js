@@ -16,34 +16,51 @@ window.addEventListener('load', async () => {
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
    //------------------------------
-   L('긴 네모를 만든다 (바닥으로 쓸거다)');
-   let floor = new PIXICS.PhysicsGraphics({ world });
-   floor.drawRect(0, 0, 1080 * 0.5 * ratio, 1920 * 0.5 * ratio * 0.05, 0xffaaff);
-   app.stage.addChild(floor.getGraphic());
 
-   L('긴 네모 위치를 이동시킨다');
-   floor.setPosition(0, -1920 * 0.5 * ratio);
-   await pixics.sleep(0);
 
-   L('0x0 좌표에 동그라미를 하나 만든다');
-   let boxsize = (1080 * 0.25 * 0.25) * ratio;
-   let ball = new PIXICS.PhysicsGraphics({ world });
-   app.stage.addChild(ball.getGraphic());
+   //------------------------------
+   L('메인 코드의 시작');
+   await pixics.sleep(10);
 
-   ball.drawRect(0, 0, boxsize, boxsize, 0xaa55aa);
-   ball.drawRect(0, boxsize * 2, boxsize, boxsize, 0x00ddf0);
-   ball.drawRect(boxsize * 2, 0, boxsize, boxsize, 0xffaa00);
-   ball.drawCircle(-boxsize, 0, boxsize, 0xffdd00);
+   L('붉은막대 생성');
+   let shortground = new PIXICS.PhysicsGraphics({ world });
+   shortground.drawRect(
+      0,
+      0,
+      1080 * 0.5 * 1 * ratio,
+      30 * ratio
+   );
+   shortground.getGraphic().tint = 0xaa0000;
+   // shortground.setPosition(0, -1920 * 0.5 * ratio)
+   app.stage.addChild(shortground.getGraphic());
 
-   // ball.setPosition(0, 0)
 
-   L('각도바꾸기 (동그라미라 각도를 바꿔도 티가 안난다)');
-   // ball.setAngle(-Math.PI * 0.17)
+   L('붉은 막대를 계속 움직여주는 작동을 한다. 이 작동은 무한히 반복된다');
+   // 이동할 거리값에 ratio 를 붙이는것을 잊지말자
+   // await shortground.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad');
+   // await shortground.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad');
+   // await shortground.moveEaseBy(0, 1920 * 0.1 * ratio, 300, 'easeInOutQuad');
+   // let half = 1920 * 0.5 * ratio;
+   // console.log(shortground.getPosition())
+   // console.log(height, half)
+   // console.log(height, half)
+   // await shortground.moveEaseTo(0 * 1 * ratio, -1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
+   // await shortground.moveEaseTo(0 * 1 * ratio, 1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
+   // await shortground.moveEaseTo(0 * 1 * ratio, 1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
+   // await shortground.moveEaseTo(0 * 1 * ratio, 1920 * 2 * 0.5 * ratio, 1000, 'easeInOutQuad');
+   // await shortground.moveEaseBy(0 * 1 * ratio, 1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
+   while (true) {
+      L('위로');
+      await shortground.moveEaseBy(-1080 * 1 * ratio, -1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
+      L('아래로');
+      await shortground.moveEaseBy(1080 * 1 * ratio, 1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
+   }
 
-   L('중력 영향받게 하기');
-   // ball.setDynamic()
 
-   L('탄성을 부여하기');
-   ball.setRestitution(0.5)
+
+
+
+
+
 
 });
