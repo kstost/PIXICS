@@ -16,51 +16,34 @@ window.addEventListener('load', async () => {
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
    //------------------------------
-
-
-   //------------------------------
    L('메인 코드의 시작');
    await pixics.sleep(10);
 
    L('붉은막대 생성');
-   let shortground = new PIXICS.PhysicsGraphics({ world });
-   shortground.drawRect(
-      0,
-      0,
-      1080 * 0.5 * 1 * ratio,
-      30 * ratio
-   );
-   shortground.getGraphic().tint = 0xaa0000;
-   // shortground.setPosition(0, -1920 * 0.5 * ratio)
-   app.stage.addChild(shortground.getGraphic());
+   let redbar = new PIXICS.PhysicsGraphics({ world });
+   redbar.drawRect(0, 0, 1000 * ratio, 30 * ratio);
+   redbar.getGraphic().tint = 0xaa0000;
+   app.stage.addChild(redbar.getGraphic());
+   await pixics.sleep(100);
 
+   L('중력 영향 받는 요소생성');
+   let ball = new PIXICS.PhysicsGraphics({ world });
+   ball.drawCircle(0, 0, 100 * ratio);
+   ball.getGraphic().tint = 0xddaa00;
+   app.stage.addChild(ball.getGraphic());
+   ball.setPosition(0, 1920 * 0.25 * ratio)
+   ball.setDynamic()
+   await pixics.sleep(100);
 
    L('붉은 막대를 계속 움직여주는 작동을 한다. 이 작동은 무한히 반복된다');
    // 이동할 거리값에 ratio 를 붙이는것을 잊지말자
-   // await shortground.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad');
-   // await shortground.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad');
-   // await shortground.moveEaseBy(0, 1920 * 0.1 * ratio, 300, 'easeInOutQuad');
-   // let half = 1920 * 0.5 * ratio;
-   // console.log(shortground.getPosition())
-   // console.log(height, half)
-   // console.log(height, half)
-   // await shortground.moveEaseTo(0 * 1 * ratio, -1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
-   // await shortground.moveEaseTo(0 * 1 * ratio, 1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
-   // await shortground.moveEaseTo(0 * 1 * ratio, 1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
-   // await shortground.moveEaseTo(0 * 1 * ratio, 1920 * 2 * 0.5 * ratio, 1000, 'easeInOutQuad');
-   // await shortground.moveEaseBy(0 * 1 * ratio, 1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
-   while (true) {
+   await redbar.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad');
+
+   while (!true) {
       L('위로');
-      await shortground.moveEaseBy(-1080 * 1 * ratio, -1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
+      await redbar.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad');
       L('아래로');
-      await shortground.moveEaseBy(1080 * 1 * ratio, 1920 * 0.5 * ratio, 1000, 'easeInOutQuad');
+      await redbar.moveEaseBy(0, 1920 * 0.1 * ratio, 1000, 'easeInOutQuad');
    }
-
-
-
-
-
-
-
 
 });

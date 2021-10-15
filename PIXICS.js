@@ -456,7 +456,7 @@ const PIXICS = (() => {
                         if (PLANCKMODE) {
                             point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
                         } else {
-                            point.getBody().SetLinearVelocity(new b2.Vec2((rtn.x - _startPoint.x) * _ratio, (_startPoint.y - rtn.y) * _ratio))
+                            point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
                         }
                     } else {
                         if (PLANCKMODE) {
@@ -1226,33 +1226,33 @@ const PIXICS = (() => {
     const getMovableMaxDistancePerFrame = () => {
         // 통과됨
         // 한 프레임당 이동할 수 있는 최대 거리를 리턴해준다
-        return (point.ratio * 2) * PIXICS.worldscale;
+        return PIXICS.worldscale * 2;
     }
-    const getMoveDistancePerFrame = (벨로시티) => {
-        // 통과됨
-        // 벨로시티는 setLinearVelocity 에 주어지는 방향좌표값 x y 의 빗변의 길이를 뜻함
-        // setLinearVelocity 에 주어지는 벨로시티값에 의해 한 프레임당 이동할 실제 거리를 계산해서 리턴한다
-        return (PIXICS.worldscale * point.ratio * 벨로시티) / magicNumber;
-    }
+    // const getMoveDistancePerFrame = (벨로시티) => {
+    //     // 통과됨
+    //     // 벨로시티는 setLinearVelocity 에 주어지는 방향좌표값 x y 의 빗변의 길이를 뜻함
+    //     // setLinearVelocity 에 주어지는 벨로시티값에 의해 한 프레임당 이동할 실제 거리를 계산해서 리턴한다
+    //     return (PIXICS.worldscale * point.ratio * 벨로시티) / magicNumber;
+    // }
     const getVelocityPerFrame = (거리) => {
         // 통과됨
         // 한프레임당 주어진 거리만큼을 이동하기 위해 얼마만큼의 벨로시티가 필요한지를 계산해서 리턴
-        let aa = (PIXICS.worldscale * point.ratio);
+        let aa = (PIXICS.worldscale);
         return (거리 * magicNumber) / aa;
     }
-    const getMoveDistanceFor = (전체거리, 시간초) => {
-        // 통과됨
-        // 주어진 거리를 주어진 시간동안 이동한다면 한프레임당 얼마만큼의 거리를 이동해야하는가 계산
-        // 시간초는 밀리세컨드로주자
-        return 전체거리 / (magicNumber * (시간초 / 1000));
-    }
-    const getVelocityFor = (전체거리, 시간초) => {
-        // 통과됨
-        // 주어진 거리를 주어진 시간동안 이동하기 위해 필요한 벨로시티를 계산해준다
-        // 시간초는 밀리세컨드로주자
-        let dist = getMoveDistanceFor(전체거리, 시간초);
-        return dist * (1 / getMoveDistancePerFrame(1));
-    }
+    // const getMoveDistanceFor = (전체거리, 시간초) => {
+    //     // 통과됨
+    //     // 주어진 거리를 주어진 시간동안 이동한다면 한프레임당 얼마만큼의 거리를 이동해야하는가 계산
+    //     // 시간초는 밀리세컨드로주자
+    //     return 전체거리 / (magicNumber * (시간초 / 1000));
+    // }
+    // const getVelocityFor = (전체거리, 시간초) => {
+    //     // 통과됨
+    //     // 주어진 거리를 주어진 시간동안 이동하기 위해 필요한 벨로시티를 계산해준다
+    //     // 시간초는 밀리세컨드로주자
+    //     let dist = getMoveDistanceFor(전체거리, 시간초);
+    //     return dist * (1 / getMoveDistancePerFrame(1));
+    // }
 
     let lineList = new Map();
     let point = {
@@ -1347,12 +1347,12 @@ const PIXICS = (() => {
                         this.setTimeout(r, time);
                     });
                 },
-                getMoveDistancePerFrame,
-                getVelocityPerFrame,
+                // getMoveDistancePerFrame,
+                // getVelocityPerFrame,
                 // 한프레임당이동하기를원하는벨로시티,
-                getMovableMaxDistancePerFrame,
-                getMoveDistanceFor,
-                getVelocityFor,
+                // getMovableMaxDistancePerFrame,
+                // getMoveDistanceFor,
+                // getVelocityFor,
 
             };
             point.pixics.moveWorldCenterTo(0, 0);
