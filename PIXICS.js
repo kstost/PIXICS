@@ -642,7 +642,7 @@ const PIXICS = (() => {
                     let data_ = layer.dots[class_].map(dot => {
                         return {
                             x: ((dot.x - data.pivotpoint.x) / data.scale) * scale * ratio,
-                            y: ((dot.y - data.pivotpoint.y) / data.scale) * scale * ratio,
+                            y: -((dot.y - data.pivotpoint.y) / data.scale) * scale * ratio,
                         }
                     });
                     fixture = data_.length && butter.drawPolygon(data_, color);
@@ -652,9 +652,11 @@ const PIXICS = (() => {
                     let another = layer.dots[class_][1];
                     let width = another.x - center.x;
                     let height = another.y - center.y;
+                    width *= 0.5;
+                    height *= 0.5;
                     fixture = butter.drawRect(
-                        ((center.x - data.pivotpoint.x) / data.scale) * scale * ratio,
-                        ((center.y - data.pivotpoint.y) / data.scale) * scale * ratio,
+                        (((center.x - data.pivotpoint.x) + width) / data.scale) * scale * ratio,
+                        -(((center.y - data.pivotpoint.y) + height) / data.scale) * scale * ratio,
                         (width / data.scale) * scale * ratio,
                         (height / data.scale) * scale * ratio,
                         color
@@ -666,7 +668,7 @@ const PIXICS = (() => {
                     let r = ksttool.math.get_distance_between_two_point(center, another);
                     fixture = butter.drawCircle(
                         ((center.x - data.pivotpoint.x) / data.scale) * scale * ratio,
-                        ((center.y - data.pivotpoint.y) / data.scale) * scale * ratio,
+                        -((center.y - data.pivotpoint.y) / data.scale) * scale * ratio,
                         (r / data.scale) * scale * ratio,
                         color
                     );
