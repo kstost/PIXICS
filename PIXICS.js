@@ -359,7 +359,6 @@ const PIXICS = (() => {
             f = Ease[f];
             const _point = this;
             const pixics = point.pixics;
-            const _ratio = point.ratio;
             let max = y !== null ? getMovableMaxDistancePerFrame() : Math.PI / 2;
             let ticktime = (1 / magicNumber) * 1000;
             let startPoint;// = this.getPosition();
