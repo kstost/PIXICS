@@ -1287,6 +1287,9 @@ const PIXICS = (() => {
                 get worldscale() {
                     return point.worldscale;
                 },
+                getWorldCenter() {
+                    return center;
+                },
                 moveWorldCenterTo(x, y) {
                     center.x = actual_display.width / 2;
                     center.y = actual_display.height / 2;
