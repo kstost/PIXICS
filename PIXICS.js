@@ -1210,6 +1210,21 @@ const PIXICS = (() => {
         isAwake() { return PLANCKMODE ? this.getBody().isAwake() : this.getBody().IsAwake(); }
         setStatic() { PLANCKMODE ? this.getBody().setStatic() : this.getBody().SetType(b2.BodyType.b2_staticBody); } // dynamic의 반대
         isStatic() { return PLANCKMODE ? this.getBody().isStatic() : this.getBody().GetType() === b2.BodyType.b2_staticBody; }
+        destroy() {
+            // console.log()
+            point.pixics.getJointList().forEach(jj=>{
+                let jp =jj.GetUserData();
+                if(jp.joints.map(j=>j.body).includes(this)){
+                    jp.destroy();
+                }
+            })
+            const body = this.getBody();
+            const graphic = this.getGraphic();
+            body.GetWorld().DestroyBody(body);
+            graphic.parent?.removeChild(graphic);
+            // return this.planckBody;
+
+        }
     }
     //------------------------------
     // 매 프레임마다 물리연산을 해서 나오는 수치를 픽시 그래픽요소의 상태에 반영
@@ -1376,9 +1391,9 @@ const PIXICS = (() => {
                             jointWire.tint = c;
                         },
                         destroy() {
-                            roundCap && roundCap.parent.removeChild(roundCap);
-                            roundECap && roundECap.parent.removeChild(roundECap);
-                            jointWire && jointWire.parent.removeChild(jointWire);
+                            roundCap && roundCap.parent?.removeChild(roundCap);
+                            roundECap && roundECap.parent?.removeChild(roundECap);
+                            jointWire && jointWire.parent?.removeChild(jointWire);
                             design.thickness && pixics.unupdate(update);
                             world.DestroyJoint(joint);
                         }
@@ -1494,7 +1509,7 @@ const PIXICS = (() => {
                     for (let joint = world.GetJointList(); joint; joint = joint.GetNext()) {
                         list.push(joint);
                     }
-                    return list;
+                    return list.reverse();
                 }
 
                 // getMoveDistancePerFrame,
