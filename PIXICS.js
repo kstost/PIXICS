@@ -1323,6 +1323,102 @@ const PIXICS = (() => {
             let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
             registUpdate(world);
             point.pixics = {
+                setDistanceJoint(ball1, ball2, anchor1, anchor2, design) {
+                    const pixics = point.pixics;
+                    design = !design ? { color: 0x00ffff, thickness: 0.5 * ratio } : design;
+                    const app = design.app;
+                    let body1 = ball1;
+                    let ball1Origin = { ...ball1.getPosition() };
+                    let ball1Anchor = anchor1;
+                    let body2 = ball2;
+                    let ball2Origin = { ...ball2.getPosition() };
+                    let ball2Anchor = anchor2;
+                    const jd = new b2.DistanceJointDef();
+                    let p1 = new b2.Vec2(ball1Anchor.x / pixics.worldscale, ball1Anchor.y / pixics.worldscale);
+                    let p2 = new b2.Vec2(ball2Anchor.x / pixics.worldscale, ball2Anchor.y / pixics.worldscale);
+                    jd.Initialize(body2.getBody(), body1.getBody(), p2, p1);
+                    jd.collideConnected = true;
+                    let joint = world.CreateJoint(jd);
+                    joint.SetUserData({
+                        joints: [
+                            {
+                                body: body2,
+                                origin: ball2Origin,
+                                anchor: ball2Anchor
+                            },
+                            {
+                                body: body1,
+                                origin: ball1Origin,
+                                anchor: ball1Anchor
+                            }
+                        ],
+                        getJointWire() {
+                            return jointWire;
+                        },
+                        setWireThickness(v) {
+                            if (!app || !design.thickness) return;
+                            jointWire.thickness = v;
+                            roundCap.clear();
+                            roundCap.beginFill(0xffffff);
+                            roundCap.drawCircle(0, 0, v * 0.5);
+                            roundCap.endFill();
+                            roundECap.clear();
+                            roundECap.beginFill(0xffffff);
+                            roundECap.drawCircle(0, 0, v * 0.5);
+                            roundECap.endFill();
+                        },
+                        setColor(c) {
+                            if (!app || !design.thickness) return;
+                            roundCap.tint = c;
+                            roundECap.tint = c;
+                            jointWire.tint = c;
+                        },
+                        destroy() {
+                            roundCap && roundCap.parent.removeChild(roundCap);
+                            roundECap && roundECap.parent.removeChild(roundECap);
+                            jointWire && jointWire.parent.removeChild(jointWire);
+                            design.thickness && pixics.unupdate(update);
+                            world.DestroyJoint(joint);
+                        }
+                    });
+                    let roundCap;
+                    let roundECap;
+                    let jointWire;
+                    if (app && design.thickness) {
+                        roundCap = new PIXI.Graphics();
+                        roundECap = new PIXI.Graphics();
+                        jointWire = new PIXICS.Line();
+                        app.stage.addChild(roundCap);
+                        app.stage.addChild(roundECap);
+                        app.stage.addChild(jointWire);
+                    }
+                    joint.GetUserData().setWireThickness(design.thickness);
+                    joint.GetUserData().setColor(design.color);
+                    function update(dt) {
+                        joint.GetUserData().joints.forEach((jinfo, i) => {
+                            let { body, origin, anchor } = jinfo;
+                            anchor = { ...anchor };
+                            anchor.x = -anchor.x;
+                            let radian = ksttool.math.get_angle_in_radian_between_two_points(anchor, origin);
+                            let leng = ksttool.math.get_distance_between_two_point(origin, anchor);
+                            let center = pixics.getWorldCenter();
+                            let point = ksttool.math.get_coordinate_distance_away_from_center_with_radian(leng, body.getPosition(), (-radian) + body.getAngle())
+                            if (i === 0) {
+                                jointWire.ax = point.x + center.x;
+                                jointWire.ay = -point.y + center.y;
+                                roundCap.x = jointWire.ax;
+                                roundCap.y = jointWire.ay;
+                            } else {
+                                jointWire.bx = point.x + center.x;
+                                jointWire.by = -point.y + center.y;
+                                roundECap.x = jointWire.bx;
+                                roundECap.y = jointWire.by;
+                            }
+                        });
+                    }
+                    app && design.thickness && pixics.update(update);
+                    return joint;
+                },
                 world,
                 get worldscale() {
                     return point.worldscale;
@@ -1391,6 +1487,14 @@ const PIXICS = (() => {
                         this.setTimeout(r, time);
                     });
                 },
+                getJointList() {
+                    let list = [];
+                    for (let joint = world.GetJointList(); joint; joint = joint.GetNext()) {
+                        list.push(joint);
+                    }
+                    return list;
+                }
+
                 // getMoveDistancePerFrame,
                 // getVelocityPerFrame,
                 // 한프레임당이동하기를원하는벨로시티,
