@@ -1323,7 +1323,7 @@ const PIXICS = (() => {
             let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
             registUpdate(world);
             point.pixics = {
-                setDistanceJoint(ball1, ball2, anchor1, anchor2, design) {
+                setDistanceJoint(ball1, ball2, anchor1, anchor2, jinfo, design) {
                     const pixics = point.pixics;
                     design = !design ? { color: 0x00ffff, thickness: 0.5 * ratio } : design;
                     const app = design.app;
@@ -1337,7 +1337,9 @@ const PIXICS = (() => {
                     let p1 = new b2.Vec2(ball1Anchor.x / pixics.worldscale, ball1Anchor.y / pixics.worldscale);
                     let p2 = new b2.Vec2(ball2Anchor.x / pixics.worldscale, ball2Anchor.y / pixics.worldscale);
                     jd.Initialize(body2.getBody(), body1.getBody(), p2, p1);
-                    jd.collideConnected = true;
+                    Object.keys(jinfo).forEach(propName => {
+                        jd[propName] = jinfo[propName];
+                    })
                     let joint = world.CreateJoint(jd);
                     joint.SetUserData({
                         joints: [

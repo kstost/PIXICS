@@ -111,9 +111,9 @@ window.addEventListener('load', async () => {
    ball3.getGraphic().tint = 0xff00ff
 
    L('조인트 연결');
-   let joint1 = pixics.setDistanceJoint(ball1, ball2, { x: 0 * ratio, y: -5 * ratio }, { x: 5 * ratio, y: -7 * ratio }, { app, color: 0x00ffff, thickness: 2.5 * ratio })
-   let joint2 = pixics.setDistanceJoint(ball2, ball3, { x: 15 * ratio, y: -17 * ratio }, { x: 15 * ratio, y: -19 * ratio }, { app, color: 0x00ffff, thickness: 0.5 * ratio })
-   let joint3 = pixics.setDistanceJoint(ball2, ball3, { x: -5 * ratio, y: -17 * ratio }, { x: -5 * ratio, y: -19 * ratio }, { app, color: 0x00ffff, thickness: 0.5 * ratio })
+   let joint1 = pixics.setDistanceJoint(ball1, ball2, { x: 0 * ratio, y: -5 * ratio }, { x: 5 * ratio, y: -7 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 2.5 * ratio })
+   let joint2 = pixics.setDistanceJoint(ball2, ball3, { x: 15 * ratio, y: -17 * ratio }, { x: 15 * ratio, y: -19 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 0.5 * ratio })
+   let joint3 = pixics.setDistanceJoint(ball2, ball3, { x: -5 * ratio, y: -17 * ratio }, { x: -5 * ratio, y: -19 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 0.5 * ratio })
 
    // joint3.GetUserData().getJointWire().thickness = 0.1 * ratio;
    // joint3.GetUserData().getJointWire().alpha = 0.5;
