@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        let bbx = document.createElement('div');
+        bbx.style.width = '100px';
+        bbx.style.height = '100px';
+        bbx.style.top = '0px';
+        bbx.style.left = '100px';
+        bbx.style.position = 'absolute';
+        bbx.style.background = 'white';
+        document.body.appendChild(bbx);
+        setTimeout(() => {
+            bbx.style.transition = '10s';
+            bbx.style.top = `${window.innerHeight}px`;
+
+        });
+
+    </script>
+</body>
+
+</html>
