@@ -1212,9 +1212,9 @@ const PIXICS = (() => {
         isStatic() { return PLANCKMODE ? this.getBody().isStatic() : this.getBody().GetType() === b2.BodyType.b2_staticBody; }
         destroy() {
             // console.log()
-            point.pixics.getJointList().forEach(jj=>{
-                let jp =jj.GetUserData();
-                if(jp.joints.map(j=>j.body).includes(this)){
+            point.pixics.getJointList().forEach(jj => {
+                let jp = jj.GetUserData();
+                if (jp.joints.map(j => j.body).includes(this)) {
                     jp.destroy();
                 }
             })
@@ -1339,14 +1339,20 @@ const PIXICS = (() => {
             registUpdate(world);
             point.pixics = {
                 setDistanceJoint(ball1, ball2, anchor1, anchor2, jinfo, design) {
+                    let b1p = ball1.getPosition();
+                    let b2p = ball2.getPosition();
+                    anchor1.x -= b1p.x;
+                    anchor1.y += b1p.y;
+                    anchor2.x -= b2p.x;
+                    anchor2.y += b2p.y;
                     const pixics = point.pixics;
                     design = !design ? { color: 0x00ffff, thickness: 0.5 * ratio } : design;
                     const app = design.app;
                     let body1 = ball1;
-                    let ball1Origin = { ...ball1.getPosition() };
+                    let ball1Origin = { ...b1p };
                     let ball1Anchor = anchor1;
                     let body2 = ball2;
-                    let ball2Origin = { ...ball2.getPosition() };
+                    let ball2Origin = { ...b2p };
                     let ball2Anchor = anchor2;
                     const jd = new b2.DistanceJointDef();
                     let p1 = new b2.Vec2(ball1Anchor.x / pixics.worldscale, ball1Anchor.y / pixics.worldscale);

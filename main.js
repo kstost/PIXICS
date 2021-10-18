@@ -75,57 +75,71 @@ window.addEventListener('load', async () => {
    L('도형생성');
    let ball1 = new PIXICS.PhysicsGraphics({ world });
    ball1.drawRect(0, 0, 5 * ratio, 5 * ratio)
-   ball1.setDynamic();
    ball1.getBody().SetType(b2.BodyType.b2_kinematicBody);
-   ball1.getBody().SetAngularVelocity(1)
-   ball1.getBody().SetGravityScale(-2)
    ball1.setFriction(0, 0);
-   ball1.getGraphic().alpha = 0.5;
    app.stage.addChild(ball1.getGraphic());
    setDragable(ball1)
+   ball1.setPosition(10 * ratio, 10 * ratio);
 
    L('도형생성');
    let ball2 = new PIXICS.PhysicsGraphics({ world });
    ball2.drawRect(0, 0, 5 * ratio, 5 * ratio)
-   ball2.drawRect(10 * ratio, 0, 5 * ratio, 5 * ratio)
+   ball2.getBody().SetType(b2.BodyType.b2_kinematicBody);
    ball2.setFriction(0, 0);
-   ball2.setFriction(0, 1);
-   ball2.setDynamic();
    ball2.getGraphic().alpha = 0.5;
    app.stage.addChild(ball2.getGraphic());
    setDragable(ball2)
-   ball2.setPosition(0, -12 * ratio)
-   ball2.getGraphic().tint = 0xff00ff
+   ball2.setPosition(10 * ratio, -40 * ratio);
 
-   L('도형생성');
-   let ball3 = new PIXICS.PhysicsGraphics({ world });
-   ball3.drawRect(0, 0, 5 * ratio, 5 * ratio)
-   ball3.drawRect(10 * ratio, 0, 5 * ratio, 5 * ratio)
-   ball3.setFriction(0, 0);
-   ball3.setFriction(0, 1);
-   ball3.setDynamic();
-   ball3.getGraphic().alpha = 0.5;
-   app.stage.addChild(ball3.getGraphic());
-   setDragable(ball3)
-   ball3.setPosition(0, -24 * ratio)
-   ball3.getGraphic().tint = 0xff00ff
 
-   L('조인트 연결');
-   let joint1 = pixics.setDistanceJoint(ball1, ball2, { x: 0 * ratio, y: -5 * ratio }, { x: 5 * ratio, y: -7 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 1.5 * ratio })
-   let joint2 = pixics.setDistanceJoint(ball2, ball3, { x: 15 * ratio, y: -17 * ratio }, { x: 15 * ratio, y: -19 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 0.5 * ratio })
-   let joint3 = pixics.setDistanceJoint(ball2, ball3, { x: -5 * ratio, y: -17 * ratio }, { x: -5 * ratio, y: -19 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 0.5 * ratio })
 
-   console.log(pixics.getJointList()[0] === joint1)
-   console.log(pixics.getJointList()[1] === joint2)
-   console.log(pixics.getJointList()[2] === joint3)
+   pixics.setDistanceJoint(ball1, ball2,
+      { x: 0 * ratio, y: 0 * ratio },
+      { x: 0 * ratio, y: 0 * ratio },
+      { collideConnected: true }, { app, color: 0x00aaff, thickness: 1.5 * ratio })
 
-   await pixics.sleep(2000);
-   L('조인트 파괴');
-   joint2.GetUserData().destroy()
+   // L('도형생성');
+   // let ball2 = new PIXICS.PhysicsGraphics({ world });
+   // ball2.drawRect(0, 0, 5 * ratio, 5 * ratio)
+   // ball2.drawRect(10 * ratio, 0, 5 * ratio, 5 * ratio)
+   // ball2.setFriction(0, 0);
+   // ball2.setFriction(0, 1);
+   // ball2.setDynamic();
+   // ball2.getGraphic().alpha = 0.5;
+   // app.stage.addChild(ball2.getGraphic());
+   // setDragable(ball2)
+   // ball2.setPosition(0, -12 * ratio)
+   // ball2.getGraphic().tint = 0xff00ff
 
-   await pixics.sleep(2000);
-   L('도형 파괴');
-   ball1.destroy();
+   // L('도형생성');
+   // let ball3 = new PIXICS.PhysicsGraphics({ world });
+   // ball3.drawRect(0, 0, 5 * ratio, 5 * ratio)
+   // ball3.drawRect(10 * ratio, 0, 5 * ratio, 5 * ratio)
+   // ball3.setFriction(0, 0);
+   // ball3.setFriction(0, 1);
+   // ball3.setDynamic();
+   // ball3.getGraphic().alpha = 0.5;
+   // app.stage.addChild(ball3.getGraphic());
+   // setDragable(ball3)
+   // ball3.setPosition(0, -24 * ratio)
+   // ball3.getGraphic().tint = 0xff00ff
+
+   // L('조인트 연결');
+   // let joint1 = pixics.setDistanceJoint(ball1, ball2, { x: 0 * ratio, y: -5 * ratio }, { x: 5 * ratio, y: -7 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 1.5 * ratio })
+   // let joint2 = pixics.setDistanceJoint(ball2, ball3, { x: 15 * ratio, y: -17 * ratio }, { x: 15 * ratio, y: -19 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 0.5 * ratio })
+   // let joint3 = pixics.setDistanceJoint(ball2, ball3, { x: -5 * ratio, y: -17 * ratio }, { x: -5 * ratio, y: -19 * ratio }, { collideConnected: true }, { app, color: 0x00ffff, thickness: 0.5 * ratio })
+
+   // console.log(pixics.getJointList()[0] === joint1)
+   // console.log(pixics.getJointList()[1] === joint2)
+   // console.log(pixics.getJointList()[2] === joint3)
+
+   // await pixics.sleep(2000);
+   // L('조인트 파괴');
+   // joint2.GetUserData().destroy()
+
+   // await pixics.sleep(2000);
+   // L('도형 파괴');
+   // ball1.destroy();
 
 
 });
