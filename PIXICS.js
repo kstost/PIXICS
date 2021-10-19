@@ -1041,6 +1041,10 @@ const PIXICS = (() => {
                 return this.planckBody.GetType() === b2.BodyType.b2_dynamicBody;
             }
         }
+        setGravityScale(v) { this.getBody().SetGravityScale(v); }
+        getGravityScale() { return this.getBody().GetGravityScale(); }
+        setKinematic() { this.planckBody.SetType(b2.BodyType.b2_kinematicBody); }
+        isKinematic() { return this.planckBody.GetType() === b2.BodyType.b2_kinematicBody; }
         resetBodyAndFixtures(_shape) {
             /*
                 setDynamic() 을 하고난 뒤에 Fixture의 Shape을 바꾸거나 density를 바꾸고자 할때에는 아예 body를 제거하고 새롭게 재정의 해야한다
@@ -1338,7 +1342,10 @@ const PIXICS = (() => {
             let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
             registUpdate(world);
             point.pixics = {
-                setDistanceJoint(ball1, ball2, anchor1, anchor2, jinfo, design) {
+                setDistanceJoint(anchor1, anchor2, jinfo, design) {
+                    let ball1 = anchor1.body;
+                    let ball2 = anchor2.body;
+                    if (!ball1 || !ball2) return;
                     let b1p = ball1.getPosition();
                     let b2p = ball2.getPosition();
                     anchor1.x -= b1p.x;
@@ -1355,8 +1362,8 @@ const PIXICS = (() => {
                     let ball2Origin = { ...b2p };
                     let ball2Anchor = anchor2;
                     const jd = new b2.DistanceJointDef();
-                    let p1 = new b2.Vec2(ball1Anchor.x / pixics.worldscale, ball1Anchor.y / pixics.worldscale);
-                    let p2 = new b2.Vec2(ball2Anchor.x / pixics.worldscale, ball2Anchor.y / pixics.worldscale);
+                    let p1 = new b2.Vec2((ball1Anchor.x + b1p.x * 2) / pixics.worldscale, ball1Anchor.y / pixics.worldscale);
+                    let p2 = new b2.Vec2((ball2Anchor.x + b2p.x * 2) / pixics.worldscale, ball2Anchor.y / pixics.worldscale);
                     jd.Initialize(body2.getBody(), body1.getBody(), p2, p1);
                     Object.keys(jinfo).forEach(propName => {
                         jd[propName] = jinfo[propName];
