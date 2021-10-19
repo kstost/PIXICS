@@ -1362,8 +1362,22 @@ const PIXICS = (() => {
                     let ball2Origin = { ...b2p };
                     let ball2Anchor = anchor2;
                     const jd = new b2.DistanceJointDef();
-                    let p1 = new b2.Vec2((ball1Anchor.x + b1p.x * 2) / pixics.worldscale, ball1Anchor.y / pixics.worldscale);
-                    let p2 = new b2.Vec2((ball2Anchor.x + b2p.x * 2) / pixics.worldscale, ball2Anchor.y / pixics.worldscale);
+                    function angle(v) {
+                        var radians = (Math.PI * 2) - v.angle;
+                        var cos = Math.cos(radians);
+                        var sin = Math.sin(radians);
+                        let point2 = v;
+                        let point1 = v.pos;
+                        let vv = {
+                            x: (cos * (point2.x - point1.x)) + (sin * (point2.y - point1.y)) + point1.x,
+                            y: (cos * (point2.y - point1.y)) - (sin * (point2.x - point1.x)) + point1.y
+                        }
+                        return vv;
+                    }
+                    let afa1 = angle({ pos: b1p, x: ball1Anchor.x + b1p.x * 2, y: ball1Anchor.y, angle: ball1.getAngle() });
+                    let afa2 = angle({ pos: b2p, x: ball2Anchor.x + b2p.x * 2, y: ball2Anchor.y, angle: ball2.getAngle() });
+                    let p1 = new b2.Vec2(afa1.x / pixics.worldscale, afa1.y / pixics.worldscale);
+                    let p2 = new b2.Vec2(afa2.x / pixics.worldscale, afa2.y / pixics.worldscale);
                     jd.Initialize(body2.getBody(), body1.getBody(), p2, p1);
                     Object.keys(jinfo).forEach(propName => {
                         jd[propName] = jinfo[propName];
