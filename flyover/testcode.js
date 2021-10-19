@@ -4,8 +4,11 @@ function delay(t) {
 }
 async function init(m_world) {
     let ball1 = this.m_world.CreateBody();
-    const shape1 = new b2.CircleShape();
-    shape1.m_radius = 5;
+    //     const shape = new b2.PolygonShape();
+    //     shape.SetAsBox(0.5, 0.5);
+
+    const shape1 = new b2.PolygonShape();
+    shape1.SetAsBox(5, 5);
     const fixture1 = new b2.FixtureDef();
     fixture1.shape = shape1;
     fixture1.friction = 1;
@@ -16,8 +19,8 @@ async function init(m_world) {
     ball1.SetPosition(new b2.Vec2(0, -0));
 
     let ball2 = this.m_world.CreateBody();
-    const shape2 = new b2.CircleShape();
-    shape2.m_radius = 5;
+    const shape2 = new b2.PolygonShape();
+    shape2.SetAsBox(5, 5);
     const fixture2 = new b2.FixtureDef();
     fixture2.shape = shape2;
     fixture2.density = 1;
@@ -26,8 +29,8 @@ async function init(m_world) {
     ball2.SetType(b2.BodyType.b2_dynamicBody)
     ball2.SetPosition(new b2.Vec2(0, -12));
 
-    const jd = new b2.DistanceJointDef();
-    jd.Initialize(ball2, ball1, new b2.Vec2(0.0, -7.0), new b2.Vec2(0.0, -5));
+    const jd = new b2.RevoluteJointDef();
+    jd.Initialize(ball2, ball1, {x:5,y:0});
     jd.collideConnected = true;
     // this.m_length = jd.length;
     // this.m_minLength = jd.minLength = jd.length - 3;

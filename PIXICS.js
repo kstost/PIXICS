@@ -1342,7 +1342,16 @@ const PIXICS = (() => {
             let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
             registUpdate(world);
             point.pixics = {
+                setJoint(anchor1, anchor2, jinfo, design) {
+                    point.pixics.setDistanceJoint(...arguments);
+                },
                 setDistanceJoint(anchor1, anchor2, jinfo, design) {
+                    let coord1 = !(anchor1.x === undefined || anchor1.y === undefined);
+                    let coord2 = !(anchor2.x === undefined || anchor2.y === undefined);
+                    if (!coord2) {
+                        anchor2.x = 0;
+                        anchor2.y = 0;
+                    }
                     let ball1 = anchor1.body;
                     let ball2 = anchor2.body;
                     if (!ball1 || !ball2) return;
@@ -1361,7 +1370,12 @@ const PIXICS = (() => {
                     let body2 = ball2;
                     let ball2Origin = { ...b2p };
                     let ball2Anchor = anchor2;
-                    const jd = new b2.DistanceJointDef();
+                    let jd;
+                    if (coord2) {
+                        jd = new b2.DistanceJointDef();
+                    } else {
+                        jd = new b2.RevoluteJointDef();
+                    }
                     function angle(v) {
                         var radians = (Math.PI * 2) - v.angle;
                         var cos = Math.cos(radians);
@@ -1378,7 +1392,13 @@ const PIXICS = (() => {
                     let afa2 = angle({ pos: b2p, x: ball2Anchor.x + b2p.x * 2, y: ball2Anchor.y, angle: ball2.getAngle() });
                     let p1 = new b2.Vec2(afa1.x / pixics.worldscale, afa1.y / pixics.worldscale);
                     let p2 = new b2.Vec2(afa2.x / pixics.worldscale, afa2.y / pixics.worldscale);
-                    jd.Initialize(body2.getBody(), body1.getBody(), p2, p1);
+                    let argus;
+                    if (coord2) {
+                        argus = [body2.getBody(), body1.getBody(), p2, p1];
+                    } else {
+                        argus = [body2.getBody(), body1.getBody(), p1];
+                    }
+                    jd.Initialize(...argus);
                     Object.keys(jinfo).forEach(propName => {
                         jd[propName] = jinfo[propName];
                     })
