@@ -57,7 +57,6 @@ window.addEventListener('load', async () => {
    const pixics = PIXICS.createWorld(7, ratio, gravity, true, display); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
    const world = pixics.world;
    const L = pixics.log;
-   // pixics.moveWorldCenterBy(110, 100);
 
    //------------------------------
    L('메인 코드의 시작');
@@ -74,14 +73,14 @@ window.addEventListener('load', async () => {
    app.stage.addChild(boundary.getGraphic());
 
    {
-      L('도형생성');
+
       let ball1 = new PIXICS.PhysicsGraphics({ world });
       ball1.drawRect(0 * ratio, 0 * ratio, 5 * ratio, 5 * ratio)
       ball1.getBody().SetType(b2.BodyType.b2_kinematicBody);
       app.stage.addChild(ball1.getGraphic());
       ball1.setPosition(-40 * ratio, 60 * ratio);
 
-      L('도형생성');
+
       let ball2 = new PIXICS.PhysicsGraphics({ world });
       ball2.drawRect(00 * ratio, 0 * ratio, 10 * ratio, 5 * ratio)
       ball2.getGraphic().alpha = 0.5;
@@ -93,7 +92,7 @@ window.addEventListener('load', async () => {
          ball2.getBody().SetLinearVelocity(new b2.Vec2(10, 0));
       });
 
-      0&&pixics.setDistanceJoint(
+      pixics.setDistanceJoint(
          { body: ball1, x: 0 * ratio, y: 0 * ratio },
          { body: ball2, x: 0 * ratio, y: 0 * ratio },
          { collideConnected: true },
@@ -101,20 +100,20 @@ window.addEventListener('load', async () => {
       );
    }
    {
-      L('도형생성');
+
       let ball1 = new PIXICS.PhysicsGraphics({ world });
       ball1.drawRect(0 * ratio, 0 * ratio, 5 * ratio, 5 * ratio)
       ball1.getBody().SetType(b2.BodyType.b2_kinematicBody);
       app.stage.addChild(ball1.getGraphic());
-      ball1.setPosition(0 * ratio, 60 * ratio);
+      ball1.setPosition(-10 * ratio, 60 * ratio);
 
-      L('도형생성');
+
       let ball2 = new PIXICS.PhysicsGraphics({ world });
       ball2.drawRect(0 * ratio, 0 * ratio, 10 * ratio, 5 * ratio)
       ball2.getGraphic().alpha = 0.5;
       app.stage.addChild(ball2.getGraphic());
-      ball2.setPosition(0 * ratio, 40 * ratio);
-      // ball2.setAngle((Math.PI/2));
+      ball2.setPosition(-10 * ratio, 40 * ratio);
+      ball2.setAngle((Math.PI / 2));
       ball2.setDynamic();
       ball2.getGraphic().interactive = true;
       ball2.getGraphic().on('mousedown', e => {
@@ -128,7 +127,121 @@ window.addEventListener('load', async () => {
          { app, color: 0x00aaff, thickness: 1.5 * ratio }
       );
    }
+   {
+
+      let ball1 = new PIXICS.PhysicsGraphics({ world });
+      ball1.drawRect(0 * ratio, 0 * ratio, 5 * ratio, 5 * ratio)
+      ball1.getBody().SetType(b2.BodyType.b2_kinematicBody);
+      app.stage.addChild(ball1.getGraphic());
+      ball1.setPosition(20 * ratio, 60 * ratio);
 
 
+      let ball2 = new PIXICS.PhysicsGraphics({ world });
+      ball2.drawRect(0 * ratio, 0 * ratio, 10 * ratio, 5 * ratio)
+      ball2.getGraphic().alpha = 0.5;
+      app.stage.addChild(ball2.getGraphic());
+      ball2.setPosition(20 * ratio, 40 * ratio);
+      ball2.setAngle((Math.PI / 2));
+      ball2.setDynamic();
+      ball2.getGraphic().interactive = true;
+      ball2.getGraphic().on('mousedown', e => {
+         ball2.getBody().SetLinearVelocity(new b2.Vec2(10, 0));
+      });
+
+      pixics.setDistanceJoint(
+         { body: ball1, x: 0 * ratio, y: 0 * ratio },
+         { body: ball2, x: 10 * ratio, y: 0 * ratio },
+         { collideConnected: true },
+         { app, color: 0x00aaff, thickness: 1.5 * ratio }
+      );
+   }
+   {
+
+      let ball1 = new PIXICS.PhysicsGraphics({ world });
+      ball1.drawRect(40 * ratio, 0 * ratio, 5 * ratio, 5 * ratio)
+      ball1.getBody().SetType(b2.BodyType.b2_kinematicBody);
+      app.stage.addChild(ball1.getGraphic());
+      ball1.setPosition(10 * ratio, 60 * ratio);
+
+
+      let ball2 = new PIXICS.PhysicsGraphics({ world });
+      ball2.drawRect(40 * ratio, 0 * ratio, 10 * ratio, 5 * ratio)
+      ball2.getGraphic().alpha = 0.5;
+      app.stage.addChild(ball2.getGraphic());
+      ball2.setPosition(10 * ratio, 40 * ratio);
+      ball2.setDynamic();
+      ball2.getGraphic().interactive = true;
+      ball2.getGraphic().on('mousedown', e => {
+         ball2.getBody().SetLinearVelocity(new b2.Vec2(10, 0));
+      });
+
+      pixics.setDistanceJoint(
+         { body: ball1, x: 40 * ratio, y: 0 * ratio },
+         { body: ball2, x: 39 * ratio, y: 5 * ratio },
+         { collideConnected: true },
+         { app, color: 0x00ff00, thickness: 1.5 * ratio }
+      );
+   }
+   {
+      let ball1 = new PIXICS.PhysicsGraphics({ world });
+      ball1.drawCircle(0 * ratio, 0 * ratio, 10 * ratio)
+      // ball1.getBody().SetType(b2.BodyType.b2_kinematicBody);
+      ball1.setDynamic();
+      ball1.setGravityScale(0)
+      app.stage.addChild(ball1.getGraphic());
+      ball1.setPosition(0 * ratio, -20 * ratio);
+      ball1.getGraphic().tint = 0x55aaaa;
+      ball1.getGraphic().interactive = true;
+      // ball1.getGraphic().on('mousedown', e => {
+      //    ball1.getBody().SetLinearVelocity(new b2.Vec2(0, 10));
+      // });
+      (async () => {
+         let tog = false;
+         while (true) {
+            tog = !tog;
+            await ball1.moveEaseBy(0, (30 * ratio) * (tog ? -1 : 1), 1000, 'easeInOutQuad');
+         }
+      })();
+
+      let cnt = 20;
+      let prev;
+      let first;
+      for (let i = 0; i < cnt; i++) {
+         let pll = 30 * ratio;
+         let ann = (Math.PI * 2) * (i / cnt);
+         var pos = ksttool.math.get_coordinate_distance_away_from_center_with_radian(pll, ball1.getPosition(), ann);
+         let arc = new PIXICS.PhysicsGraphics({ world });
+         arc.drawRect(0 * ratio, 0 * ratio, 3 * ratio, 1 * ratio)
+         arc.getBody().SetType(b2.BodyType.b2_kinematicBody);
+         app.stage.addChild(arc.getGraphic());
+         arc.setPosition(pos.x, pos.y);
+         arc.setDynamic();
+         arc.setGravityScale(0);
+         arc.getBody().SetLinearVelocity(new b2.Vec2(1 - Math.random(), 1 - Math.random()))
+         arc.setAngle((ann) + (Math.PI / 2));
+         if (i === 0) {
+            arc.getGraphic().tint = 0xffdd00;
+            arc.setGravityScale(1);
+            first = arc;
+         }
+         if (prev) {
+            // jd.minLength = jd.length
+            pixics.setDistanceJoint(
+               { body: arc, x: 3 * ratio, y: 0 * ratio },
+               { body: prev, x: -3 * ratio, y: 0 * ratio },
+               { collideConnected: true, minLength: 0 * ratio, maxLength: 0.5 },
+               { app, color: 0x00aa00, thickness: 0.5 * ratio }
+            );
+         }
+         prev = arc;
+      }
+      pixics.setDistanceJoint(
+         { body: first, x: 3 * ratio, y: 0 * ratio },
+         { body: prev, x: -3 * ratio, y: 0 * ratio },
+         { collideConnected: true, minLength: 0 * ratio, maxLength: 0.5 },
+         { app, color: 0x00aa00, thickness: 0.5 * ratio }
+      );
+
+   }
 
 });
