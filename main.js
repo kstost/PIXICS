@@ -1,49 +1,5 @@
 window.addEventListener('load', async () => {
 
-   function setEvent(thing, names, fn) {
-      thing.interactive = true;
-      [names].flat(Infinity).forEach(name => thing.on(name, fn));
-   }
-   function setDragable(thing) {
-      let startpoint = null;
-      let base = null;
-      let dotposes = null;
-      let dn = false;
-      const onDragStart = function (event) {
-         this.data = event.data; this.dragging = true;
-         const newPosition = this.data.getLocalPosition(this.parent);
-         startpoint = (newPosition);
-         base = { x: 0, y: 0 };
-         dotposes = { x: thing.x, y: thing.y };
-         dn = thing.isDynamic();
-         thing.setStatic()
-      }
-      const onDragEnd = function () {
-         this.dragging = false; this.data = null;
-         startpoint = null;
-         base = null;
-         if (dn) thing.setDynamic()
-      }
-      const onDragMove = function (e) {
-         if (this.dragging) {
-            const newPosition = this.data.getLocalPosition(this.parent);
-            let cha = {
-               x: (newPosition.x - startpoint.x),
-               y: (newPosition.y - startpoint.y),
-            };
-            base.x += cha.x;
-            base.y += cha.y;
-            let cp = thing.getPosition();
-            cp.x += cha.x;
-            cp.y += -cha.y;
-            thing.setPosition(cp.x, cp.y);
-            startpoint = (newPosition);
-         }
-      }
-      setEvent(thing.getGraphic(), ['mousedown', 'touchstart'], onDragStart);
-      setEvent(thing.getGraphic(), ['mousemove', 'touchmove'], onDragMove);
-      setEvent(thing.getGraphic(), ['mouseup', 'mouseupoutside', 'touchend', 'touchendoutside'], onDragEnd);
-   }
    //------------------------------
    // 스크린의 준비
    const display = displaySystem(130, 150, true); // 스크린너비, 스크린높이, 성능측정모니터사용여부
@@ -76,29 +32,22 @@ window.addEventListener('load', async () => {
 
       let ball1 = new PIXICS.PhysicsGraphics({ world });
       ball1.drawRect(0 * ratio, 0 * ratio, 5 * ratio, 5 * ratio)
-      ball1.getBody().SetType(b2.BodyType.b2_kinematicBody);
+      // ball1.getBody().SetType(b2.BodyType.b2_kinematicBody);
+      ball1.setDynamic()
+      ball1.setGravityScale(0)
       app.stage.addChild(ball1.getGraphic());
-      ball1.setPosition(-40 * ratio, 60 * ratio);
-
-
-      let ball2 = new PIXICS.PhysicsGraphics({ world });
-      ball2.drawRect(00 * ratio, 0 * ratio, 10 * ratio, 5 * ratio)
-      ball2.getGraphic().alpha = 0.5;
-      app.stage.addChild(ball2.getGraphic());
-      ball2.setPosition(-30 * ratio, 40 * ratio);
-      ball2.setDynamic();
-      ball2.getGraphic().interactive = true;
-      ball2.getGraphic().on('mousedown', e => {
-         ball2.getBody().SetLinearVelocity(new b2.Vec2(10, 0));
+      ball1.setPosition(0 * ratio, 50 * ratio);
+      // ent.body.applyForceToCenter(appliedDrag, true);
+      ball1.getGraphic().interactive = true;
+      ball1.getGraphic().on('mousedown', e => {
+         ball1.getBody().SetLinearVelocity(new b2.Vec2(0, -10))
+         ball1.setResistance(0.02, e => console.log('end'));
       });
 
-      pixics.setJoint(
-         { body: ball1, x: 0 * ratio, y: 0 * ratio },
-         { body: ball2 },
-         { collideConnected: true },
-         { app, color: 0x00aaff, thickness: 1.5 * ratio }
-      );
-   }
+      // setTimeout(function () {
+      //    ball1.getBody().ApplyForceToCenter(new b2.Vec2(0, 1000));
+      // }, 100)
 
+   }
 
 });

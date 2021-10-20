@@ -333,6 +333,7 @@ const PIXICS = (() => {
         }
     }
     class PhysicsGraphics {
+        resistanceFn = null;
         constructor({ world }) {
             this.world = world;
             this.graphic = makeGraphic(center);//new PIXI.Graphics();
@@ -1228,6 +1229,34 @@ const PIXICS = (() => {
             graphic.parent?.removeChild(graphic);
             // return this.planckBody;
 
+        }
+        setResistance(fric, cb) {
+            let ball1 = this;
+            let prev;
+            this.resistanceFn && point.pixics.unupdate(this.resistanceFn);
+            let resist = function () {
+                let cur = ball1.getBody().GetLinearVelocity();
+                let zero = { x: 0, y: 0 };
+                let radian = ksttool.math.get_angle_in_radian_between_two_points(zero, cur);
+                let resistance = (1 - fric);
+                if (resistance < 0) resistance = 0;
+                let vv = ksttool.math.get_distance_between_two_point(zero, cur);
+                let dist = Math.abs(vv) * resistance;
+                let rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(dist, zero, radian);
+                ball1.getBody().SetLinearVelocity(rtn);
+                if (prev) {
+                    let dist2 = (ksttool.math.get_distance_between_two_point(ball1.getGraphic().position, prev));
+                    if (dist2 < 0.01) {
+                        ball1.getBody().SetLinearVelocity(new b2.Vec2(0, 0));
+                        point.pixics.unupdate(resist);
+                        ball1.resistanceFn = null;
+                        cb && cb();
+                    }
+                }
+                prev = { x: ball1.getGraphic().x, y: ball1.getGraphic().y };
+            };
+            this.resistanceFn = resist;
+            point.pixics.update(resist);
         }
     }
     //------------------------------

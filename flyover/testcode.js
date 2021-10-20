@@ -15,8 +15,8 @@ async function init(m_world) {
     fixture1.density = 100000000;
     ball1.SetGravityScale(0)
     ball1.CreateFixture(fixture1);
-    ball1.SetType(b2.BodyType.b2_dynamicBody)
-    ball1.SetPosition(new b2.Vec2(0, -0));
+    // ball1.SetType(b2.BodyType.b2_dynamicBody)
+    ball1.SetPosition(new b2.Vec2(10, -0));
 
     let ball2 = this.m_world.CreateBody();
     const shape2 = new b2.PolygonShape();
@@ -27,10 +27,15 @@ async function init(m_world) {
     fixture2.friction = 1;
     ball2.CreateFixture(fixture2);
     ball2.SetType(b2.BodyType.b2_dynamicBody)
-    ball2.SetPosition(new b2.Vec2(0, -12));
+    ball2.SetPosition(new b2.Vec2(20, 0));
 
     const jd = new b2.RevoluteJointDef();
-    jd.Initialize(ball2, ball1, {x:5,y:0});
+    jd.bodyA = ball2;
+    jd.bodyB = ball1;
+    // jd.Initialize(ball2, ball1, { x: 5, y: 0 });
+    jd.localAnchorB = { x: 10, y: 0 };
+    jd.localAnchorA = { x: -2, y: 30 };
+
     jd.collideConnected = true;
     // this.m_length = jd.length;
     // this.m_minLength = jd.minLength = jd.length - 3;
