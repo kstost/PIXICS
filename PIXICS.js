@@ -361,6 +361,59 @@ const PIXICS = (() => {
                 this.planckBody.SetMassData(massData);
             }
         }
+        setTag(v) {
+            this.tag = v;
+        }
+        getTag() {
+            return this.tag;
+        }
+        getContactCount() {
+            return this.contacts.size;
+        }
+        addIgnoreContact(body) {
+            this.ignoreContact.set(body, true);
+        }
+        removeIgnoreContact(body) {
+            this.ignoreContact.delete(body);
+        }
+        getIgnoreContacts() {
+            return this.ignoreContact;
+        }
+        setContactState(body, mode) {
+            if (this.ignoreContact.has(body)) return;
+            if (mode) {
+                if (!this.contacts.has(body)) {
+                    this.contacts.set(body, mode);
+                    let cb = this.getCBFunc(body, 'contact');
+                    cb && cb(body);
+                }
+            } else {
+                if (this.contacts.has(body)) {
+                    this.contacts.delete(body);
+                    let cb = this.getCBFunc(body, 'untact');
+                    cb && cb(body);
+                }
+            }
+        }
+        getCBFunc(boundary, mode) {
+            let dt = this.stickState.get(boundary);
+            return dt?.cbs[mode]?.cbf
+        }
+        removeEvent(mode, boundary) {
+            let dt = this.stickState.get(boundary);
+            dt && delete dt.cbs[mode];
+            if (Object.keys(dt.cbs).length === 0) {
+                this.stickState.delete(boundary)
+            }
+        }
+        addEvent(mode, boundary, cbf) {
+            let dt = this.stickState.get(boundary);
+            if (dt) { } else {
+                dt = { body: boundary, prevstate: false, cbs: {} };
+                this.stickState.set(boundary, dt);
+            };
+            dt.cbs[mode] = { cbf }
+        }
         isConnectedWith(thing) {
             let rtn = false;
             let mebody = this.getBody();
