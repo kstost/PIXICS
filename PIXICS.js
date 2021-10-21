@@ -293,6 +293,28 @@ const PIXICS = (() => {
         return c / 2 * (Ease.sqrt(1 - t * t) + 1) + b;
     };
     let center = { x: 0, y: 0 };
+    class ContactListener extends b2.ContactListener {
+        constructor() {
+            super();
+        }
+        askFire(contact, contactmode) {
+            let wba = contact.GetFixtureA().GetBody().GetUserData();
+            let wbb = contact.GetFixtureB().GetBody().GetUserData();
+            wbb.setContactState(wba, contactmode);
+            wba.setContactState(wbb, contactmode);
+        }
+        BeginContact(contact) {
+            this.askFire(contact, true);
+        }
+        EndContact(contact) {
+            this.askFire(contact, false);
+        }
+        PreSolve(contact, oldManifold) {
+        }
+        PostSolve(contact, impulse) {
+        }
+
+    }
     class Rectangle extends PIXI.Sprite {
         constructor() {
             //PIXI.Texture.WHITE
@@ -334,6 +356,10 @@ const PIXICS = (() => {
     }
     class PhysicsGraphics {
         resistanceFn = null;
+        stickState = new Map();
+        contacts = new Map();
+        ignoreContact = new Map();
+        tag = null;
         constructor({ world }) {
             this.world = world;
             this.graphic = makeGraphic(center);//new PIXI.Graphics();
@@ -356,6 +382,59 @@ const PIXICS = (() => {
                 massData.I = 1.0;
                 this.planckBody.SetMassData(massData);
             }
+        }
+        setTag(v) {
+            this.tag = v;
+        }
+        getTag() {
+            return this.tag;
+        }
+        getContactCount() {
+            return this.contacts.size;
+        }
+        addIgnoreContact(body) {
+            this.ignoreContact.set(body, true);
+        }
+        removeIgnoreContact(body) {
+            this.ignoreContact.delete(body);
+        }
+        getIgnoreContacts() {
+            return this.ignoreContact;
+        }
+        setContactState(body, mode) {
+            if (this.ignoreContact.has(body)) return;
+            if (mode) {
+                if (!this.contacts.has(body)) {
+                    this.contacts.set(body, mode);
+                    let cb = this.getCBFunc(body, 'contact');
+                    cb && cb(body);
+                }
+            } else {
+                if (this.contacts.has(body)) {
+                    this.contacts.delete(body);
+                    let cb = this.getCBFunc(body, 'untact');
+                    cb && cb(body);
+                }
+            }
+        }
+        getCBFunc(boundary, mode) {
+            let dt = this.stickState.get(boundary);
+            return dt?.cbs[mode]?.cbf
+        }
+        removeEvent(mode, boundary) {
+            let dt = this.stickState.get(boundary);
+            dt && delete dt.cbs[mode];
+            if (Object.keys(dt.cbs).length === 0) {
+                this.stickState.delete(boundary)
+            }
+        }
+        addEvent(mode, boundary, cbf) {
+            let dt = this.stickState.get(boundary);
+            if (dt) { } else {
+                dt = { body: boundary, prevstate: false, cbs: {} };
+                this.stickState.set(boundary, dt);
+            };
+            dt.cbs[mode] = { cbf }
         }
         isConnectedWith(thing) {
             let rtn = false;
@@ -1272,7 +1351,8 @@ const PIXICS = (() => {
         point.tickplay = true;
         let tick_accumulator;
         PIXI.Ticker.shared.add(dt => {
-            if (!point.tickplay) return;
+            if (!point.goOneStep && !point.tickplay) return;
+            point.goOneStep = false;
 /*Deboucing*/{ if (tick_accumulator === undefined) { tick_accumulator = 0; }; tick_accumulator += dt; if (tick_accumulator >= 1) { tick_accumulator = tick_accumulator - 1; } else { return; } };
             if (PLANCKMODE) {
                 world.step(1 / magicNumber);
@@ -1370,6 +1450,7 @@ const PIXICS = (() => {
             point.worldscale = scale * ratio;
             let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
             registUpdate(world);
+            world.SetContactListener(new ContactListener());
             point.pixics = {
                 setJoint(anchor1, anchor2, jinfo, design) {
                     point.pixics.setDistanceJoint(...arguments);
@@ -1565,6 +1646,10 @@ const PIXICS = (() => {
                 },
                 setPlay() {
                     point.tickplay = !point.tickplay;
+                },
+                goOneStep() {
+                    point.tickplay = false;
+                    point.goOneStep = true;
                 },
                 update: function (cb) {
                     updateList.set(cb);
