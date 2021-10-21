@@ -1422,12 +1422,34 @@ const PIXICS = (() => {
         },
         transScale(v) { return v / PIXICS.worldscale; },
         createWorld(scale, ratio, gravity, useflyover, display) {
+            class ContactListener extends b2.ContactListener {
+                constructor() {
+                    super();
+                }
+                askFire(contact, contactmode) {
+                    let wba = contact.GetFixtureA().GetBody().GetUserData();
+                    let wbb = contact.GetFixtureB().GetBody().GetUserData();
+                    wbb.setContactState(wba, contactmode);
+                    wba.setContactState(wbb, contactmode);
+                }
+                BeginContact(contact) {
+                    this.askFire(contact, true);
+                }
+                EndContact(contact) {
+                    this.askFire(contact, false);
+                }
+                PreSolve(contact, oldManifold) {
+                }
+                PostSolve(contact, impulse) {
+                }
+            }
             actual_display = display;
             PLANCKMODE = !useflyover ? true : false;
             point.ratio = ratio;
             point.worldscale = scale * ratio;
             let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
             registUpdate(world);
+            world.SetContactListener(new ContactListener());
             point.pixics = {
                 setJoint(anchor1, anchor2, jinfo, design) {
                     point.pixics.setDistanceJoint(...arguments);
