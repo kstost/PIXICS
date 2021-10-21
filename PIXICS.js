@@ -1329,7 +1329,8 @@ const PIXICS = (() => {
         point.tickplay = true;
         let tick_accumulator;
         PIXI.Ticker.shared.add(dt => {
-            if (!point.tickplay) return;
+            if (!point.goOneStep && !point.tickplay) return;
+            point.goOneStep = false;
 /*Deboucing*/{ if (tick_accumulator === undefined) { tick_accumulator = 0; }; tick_accumulator += dt; if (tick_accumulator >= 1) { tick_accumulator = tick_accumulator - 1; } else { return; } };
             if (PLANCKMODE) {
                 world.step(1 / magicNumber);
