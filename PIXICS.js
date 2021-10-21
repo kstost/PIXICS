@@ -334,6 +334,10 @@ const PIXICS = (() => {
     }
     class PhysicsGraphics {
         resistanceFn = null;
+        stickState = new Map();
+        contacts = new Map();
+        ignoreContact = new Map();
+        tag = null;
         constructor({ world }) {
             this.world = world;
             this.graphic = makeGraphic(center);//new PIXI.Graphics();
