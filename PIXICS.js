@@ -1624,6 +1624,10 @@ const PIXICS = (() => {
                 setPlay() {
                     point.tickplay = !point.tickplay;
                 },
+                goOneStep() {
+                    point.tickplay = false;
+                    point.goOneStep = true;
+                },
                 update: function (cb) {
                     updateList.set(cb);
                 },
