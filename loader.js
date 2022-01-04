@@ -1,4 +1,4 @@
-async function initPixics() {
+async function initPixics(initValue) {
     let scriptlist = [
         "https://pixijs.download/v6.1.2/pixi.js",
         "https://cdn.jsdelivr.net/gh/kstost/ksttool/ksttool.js",
@@ -15,5 +15,31 @@ async function initPixics() {
             scr.addEventListener('load', resolve);
         });
     }
-    return { displaySystem, };
+    if (false) {
+        const { app, display, pixics } = await initPixics({
+            resolution: { width: 1080, height: 1920 },
+            fpsmonitor: true,
+            container: document.querySelector('body'),
+            gravity: { x: 0, y: -30 },
+            worldscale: 100,
+        });
+    }
+    if (initValue) {
+
+        // 스크린의 준비
+        const display = displaySystem(initValue.width, initValue.height, !!initValue.fpsmonitor); // 스크린너비, 스크린높이, 성능측정모니터사용여부
+        const app = display.createPIXIApp(); // 화면을 생성한다 PIXI Application Stage 를 생성한다
+        const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
+        initValue.container.appendChild(app.view);
+
+        // 피직스월드의 준비
+        const pixics = PIXICS.createWorld(initValue.worldscale, ratio, initValue.gravity, true, display); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
+        const world = pixics.world;
+        return {
+            app,
+            pixics,
+            world,
+            display: { ratio, width, height },
+        }
+    }
 }
