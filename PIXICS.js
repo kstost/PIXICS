@@ -22,11 +22,11 @@ const PIXICS = (() => {
             gr.drawCircle(x - (0 * 0.5), -y - (0 * 0.5), radius);
             gr.endFill();
         }
-        function drawRect(gr, x, y, width, height, color) {
+        function DRDAWRECT(gr, x, y, width, height, color) {
             width = width * 2;
             height = height * 2;
             gr.beginFill(color);
-            gr.drawRect(x - (width * 0.5), -y - (height * 0.5), width, height);
+            gr.DRDAWRECT(x - (width * 0.5), -y - (height * 0.5), width, height);
             gr.endFill();
         }
         let gr = new PIXI.Graphics();
@@ -95,8 +95,8 @@ const PIXICS = (() => {
             GetLocalCenter,
             SetAngle,
             GetAngle,
-            drawRect(x, y, width, height, color) {
-                drawRect(gr, x, y, width, height, color);
+            DRDAWRECT(x, y, width, height, color) {
+                DRDAWRECT(gr, x, y, width, height, color);
             },
             drawCircle(x, y, radius, color) {
                 drawCircle(gr, x, y, radius, color);
@@ -751,7 +751,7 @@ const PIXICS = (() => {
                     let height = another.y - center.y;
                     width *= 0.5;
                     height *= 0.5;
-                    fixture = butter.drawRect(
+                    fixture = butter.DRDAWRECT(
                         (((center.x - data.pivotpoint.x) + width) / data.scale) * scale * ratio,
                         -(((center.y - data.pivotpoint.y) + height) / data.scale) * scale * ratio,
                         (width / data.scale) * scale * ratio,
@@ -809,7 +809,7 @@ const PIXICS = (() => {
                 if (f.drawingProfile.type === this._drawRect) {
                     let [x, y, width, height, color] = f.drawingProfile.arg;
                     if (color === undefined) color = 0xffffff;
-                    this.graphic.drawRect(x, y, width, height, color)
+                    this.graphic.DRDAWRECT(x, y, width, height, color)
                 }
                 if (f.drawingProfile.type === this._drawPolygon) {
                     let [path, color] = f.drawingProfile.arg;
@@ -827,6 +827,9 @@ const PIXICS = (() => {
             this.fixtureShapeDrawer();
         }
         drawRect(x, y, width, height, color) {
+            this.DRDAWRECT(x, y, width * 2, height * 2, color);
+        }
+        DRDAWRECT(x, y, width, height, color) {
             // y = -y
             // y*=-1;
             if (color === undefined) color = 0xffffff;
