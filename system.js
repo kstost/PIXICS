@@ -19,6 +19,7 @@ let displaySystem = (width, height, fps, container) => {
             display.width = app.screen.width;
             display.height = app.screen.height;
             app.stage.sortableChildren = true;
+            display.container.innerText = '';
             display.container.appendChild(app.view);
             return app;
         },
@@ -26,6 +27,7 @@ let displaySystem = (width, height, fps, container) => {
         },
         getRatio() {
             const { width, height } = container.getBoundingClientRect();
+            if (!width || !height) throw new Error({ width, height, reason: '부모의 크기가 작아요' });
             let ratio = height / original.height;
             if (original.width * ratio > width) {
                 ratio = width / original.width;
