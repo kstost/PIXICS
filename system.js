@@ -27,10 +27,11 @@ let displaySystem = (width, height, fps, container) => {
         },
         getRatio() {
             let { width, height } = container.getBoundingClientRect();
-            if (!width || !height) throw new Error(`부모의 크기가 작아요`);
             if (container.constructor === HTMLBodyElement) {
                 width = window.innerWidth;
                 height = window.innerHeight;
+            } else {
+                if (!width || !height) throw new Error(`부모의 크기가 작거나 돔트리에 붙어있지 않은 상태로 보입니다`);
             }
             let ratio = height / original.height;
             if (original.width * ratio > width) {
