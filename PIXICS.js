@@ -829,16 +829,11 @@ const PIXICS = (() => {
         drawRect(x, y, width, height, color) {
             width *= 0.5;
             height *= 0.5;
+            let argument = [x, y, width, height, color];
             // y = -y
             // y*=-1;
             if (color === undefined) color = 0xffffff;
             if (PLANCKMODE) {
-                let position = planck.Vec2((x + (width / 2)) / PIXICS.worldscale, -(y + (height / 2)) / PIXICS.worldscale);
-                let shape = planck.Box(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
-                let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-                fixture.drawingProfile = { type: this._drawRect, arg: arguments };
-                fixture.drawingProfile.type.bind(this)(...arguments);
-                return fixture;
             } else {
                 let position = new b2.Vec2(
                     x / PIXICS.worldscale,
@@ -855,8 +850,8 @@ const PIXICS = (() => {
                 fd.restitution = 0;
 
                 let fixture = this.createFixture(fd);
-                fixture.drawingProfile = { type: this._drawRect, arg: arguments };
-                fixture.drawingProfile.type.bind(this)(...arguments);
+                fixture.drawingProfile = { type: this._drawRect, arg: argument };
+                fixture.drawingProfile.type.bind(this)(...argument);
                 // 0 && this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                 return fixture;
             }
