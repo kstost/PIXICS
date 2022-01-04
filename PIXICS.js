@@ -827,6 +827,8 @@ const PIXICS = (() => {
             this.fixtureShapeDrawer();
         }
         drawRect(x, y, width, height, color) {
+            width *= 0.5;
+            height *= 0.5;
             // y = -y
             // y*=-1;
             if (color === undefined) color = 0xffffff;

@@ -1,11 +1,11 @@
 window.addEventListener('load', async () => {
 
     const { app, pixics, world, size, PIXICS, b2 } = await initPixics({
-        resolution: { width: 100, height: 130 },
+        resolution: { width: 1080, height: 1920 },
         fpsmonitor: true,
-        container: document.querySelector('.container'),
-        gravity: { x: 0, y: -10 },
-        worldscale: 7,
+        container: document.querySelector('body'),
+        gravity: { x: 0, y: -30 },
+        worldscale: 100,
     });
 
     // let box = new PIXICS.PhysicsGraphics({ world });
