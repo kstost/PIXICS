@@ -19,6 +19,7 @@ let displaySystem = (width, height, fps, container) => {
             display.width = app.screen.width;
             display.height = app.screen.height;
             app.stage.sortableChildren = true;
+            display.container.appendChild(app.view);
             return app;
         },
         log(v) {

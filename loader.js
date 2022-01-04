@@ -33,9 +33,8 @@ async function initPixics(initValue) {
     if (initValue) {
 
         // 스크린의 준비
-        const display = displaySystem(initValue.resolution.width, initValue.resolution.height, !!initValue.fpsmonitor); // 스크린너비, 스크린높이, 성능측정모니터사용여부
+        const display = displaySystem(initValue.resolution.width, initValue.resolution.height, !!initValue.fpsmonitor, initValue.container); // 스크린너비, 스크린높이, 성능측정모니터사용여부
         const app = display.createPIXIApp(); // 화면을 생성한다 PIXI Application Stage 를 생성한다
-        initValue.container.appendChild(app.view);
         const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
 
         // 피직스월드의 준비
