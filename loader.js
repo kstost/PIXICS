@@ -7,14 +7,15 @@ async function initPixics(initValue) {
         "https://cdn.jsdelivr.net/gh/flyover/box2d.ts@4bea859e7b1bab55429d76e03f72b1de72edc5f8/dist/box2d.umd.js",
         // "https://rawcdn.githack.com/flyover/box2d.ts/master/dist/box2d.umd.js",
     ];
-    for (let i = 0; i < scriptlist.length; i++) {
+    await Promise.all(scriptlist.map(addr => {
         let scr = document.createElement('script');
-        scr.src = scriptlist[i];
         document.querySelector('head').appendChild(scr);
-        await new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             scr.addEventListener('load', resolve);
+            scr.addEventListener('error', reject);
+            scr.src = addr;
         });
-    }
+    }));
     if (false) {
         const { app, pixics, world, ratio, width, height } = await initPixics({
             resolution: { width: 1080, height: 1920 },
