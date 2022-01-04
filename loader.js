@@ -2,8 +2,8 @@ async function initPixics(initValue) {
     let scriptlist = [
         "https://pixijs.download/v6.2.1/pixi.min.js",
         "https://cdn.jsdelivr.net/gh/kstost/ksttool/ksttool.js",
-        "https://cdn.jsdelivr.net/gh/kstost/PIXICS@f6204bd/PIXICS.js",
-        "https://cdn.jsdelivr.net/gh/kstost/PIXICS@f6204bd/system.js",
+        "https://cdn.jsdelivr.net/gh/kstost/PIXICS@96b32d4/PIXICS.js",
+        "https://cdn.jsdelivr.net/gh/kstost/PIXICS@96b32d4/system.js",
         "https://cdn.jsdelivr.net/gh/flyover/box2d.ts@4bea859e7b1bab55429d76e03f72b1de72edc5f8/dist/box2d.umd.js",
         // "https://rawcdn.githack.com/flyover/box2d.ts/master/dist/box2d.umd.js",
     ];
