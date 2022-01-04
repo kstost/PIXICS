@@ -1,6 +1,6 @@
 async function initPixics(initValue) {
     let scriptlist = [
-        "https://pixijs.download/v6.1.2/pixi.js",
+        "https://pixijs.download/v6.2.1/pixi.min.js",
         "https://cdn.jsdelivr.net/gh/kstost/ksttool/ksttool.js",
         "https://cdn.jsdelivr.net/gh/kstost/PIXICS@latest/PIXICS.js",
         "https://cdn.jsdelivr.net/gh/kstost/PIXICS@latest/system.js",
@@ -22,7 +22,7 @@ async function initPixics(initValue) {
     for (let i = 0; i < syncList.length; i++) await new Promise(promiseCb.bind({ url: syncList[i], scr: genScript() }));
     await Promise.all(scriptlist.map(url => new Promise(promiseCb.bind({ url, scr: genScript() }))));
     if (false) {
-        const { app, pixics, world, ratio, width, height, PIXICS } = await initPixics({
+        const { app, pixics, world, ratio, width, height, PIXICS, b2 } = await initPixics({
             resolution: { width: 1080, height: 1920 },
             fpsmonitor: true,
             container: document.querySelector('body'),
@@ -39,9 +39,10 @@ async function initPixics(initValue) {
         const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
 
         // 피직스월드의 준비
-        const pixics = PIXICS.createWorld(initValue.worldscale, display.ratio, initValue.gravity, true, display); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
+        const pixics = PIXICS.createWorld(initValue.worldscale, ratio, initValue.gravity, true, display); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
         const world = pixics.world;
         return {
+            b2,
             PIXICS,
             app,
             pixics,
