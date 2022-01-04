@@ -827,7 +827,7 @@ const PIXICS = (() => {
             this.fixtureShapeDrawer();
         }
         drawRect(x, y, width, height, color) {
-            this.DRDAWRECT(x, y, width * 2, height * 2, color);
+            this.DRDAWRECT(x, y, width * 0.5, height * 0.5, color);
         }
         DRDAWRECT(x, y, width, height, color) {
             // y = -y
