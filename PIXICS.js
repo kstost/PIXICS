@@ -26,7 +26,7 @@ const PIXICS = (() => {
             width = width * 2;
             height = height * 2;
             gr.beginFill(color);
-            gr.DRDAWRECT(x - (width * 0.5), -y - (height * 0.5), width, height);
+            gr.drawRect(x - (width * 0.5), -y - (height * 0.5), width, height);
             gr.endFill();
         }
         let gr = new PIXI.Graphics();
@@ -809,7 +809,7 @@ const PIXICS = (() => {
                 if (f.drawingProfile.type === this._drawRect) {
                     let [x, y, width, height, color] = f.drawingProfile.arg;
                     if (color === undefined) color = 0xffffff;
-                    this.graphic.DRDAWRECT(x, y, width, height, color)
+                    this.graphic.drawRect(x, y, width, height, color)
                 }
                 if (f.drawingProfile.type === this._drawPolygon) {
                     let [path, color] = f.drawingProfile.arg;
