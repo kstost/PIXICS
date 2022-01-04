@@ -809,7 +809,7 @@ const PIXICS = (() => {
                 if (f.drawingProfile.type === this._drawRect) {
                     let [x, y, width, height, color] = f.drawingProfile.arg;
                     if (color === undefined) color = 0xffffff;
-                    this.graphic.drawRect(x, y, width, height, color)
+                    this.graphic.DRDAWRECT(x, y, width, height, color)
                 }
                 if (f.drawingProfile.type === this._drawPolygon) {
                     let [path, color] = f.drawingProfile.arg;
