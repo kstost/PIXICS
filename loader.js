@@ -22,7 +22,7 @@ async function initPixics(initValue) {
     for (let i = 0; i < syncList.length; i++) await new Promise(promiseCb.bind({ url: syncList[i], scr: genScript() }));
     await Promise.all(scriptlist.map(url => new Promise(promiseCb.bind({ url, scr: genScript() }))));
     if (false) {
-        const { app, pixics, world, ratio, width, height } = await initPixics({
+        const { app, pixics, world, ratio, width, height, PIXICS } = await initPixics({
             resolution: { width: 1080, height: 1920 },
             fpsmonitor: true,
             container: document.querySelector('body'),
@@ -42,6 +42,7 @@ async function initPixics(initValue) {
         const pixics = PIXICS.createWorld(initValue.worldscale, display.ratio, initValue.gravity, true, display); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
         const world = pixics.world;
         return {
+            PIXICS,
             app,
             pixics,
             world,
