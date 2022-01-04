@@ -7,15 +7,20 @@ async function initPixics(initValue) {
         "https://cdn.jsdelivr.net/gh/flyover/box2d.ts@4bea859e7b1bab55429d76e03f72b1de72edc5f8/dist/box2d.umd.js",
         // "https://rawcdn.githack.com/flyover/box2d.ts/master/dist/box2d.umd.js",
     ];
-    await Promise.all(scriptlist.map(addr => {
+    function genScript() {
         let scr = document.createElement('script');
         document.querySelector('head').appendChild(scr);
-        return new Promise((resolve, reject) => {
-            scr.addEventListener('load', resolve);
-            scr.addEventListener('error', reject);
-            scr.src = addr;
-        });
-    }));
+        return scr;
+    }
+    function promiseCb(resolve, reject) {
+        const scr = this.scr;
+        scr.addEventListener('load', resolve);
+        scr.addEventListener('error', reject);
+        scr.src = this.url;
+    }
+    let syncList = scriptlist.splice(0, 1);
+    for (let i = 0; i < syncList.length; i++) await new Promise(promiseCb.bind({ url: syncList[i], scr: genScript() }));
+    await Promise.all(scriptlist.map(url => new Promise(promiseCb.bind({ url, scr: genScript() }))));
     if (false) {
         const { app, pixics, world, ratio, width, height } = await initPixics({
             resolution: { width: 1080, height: 1920 },
