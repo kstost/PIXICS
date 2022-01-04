@@ -22,11 +22,11 @@ const PIXICS = (() => {
             gr.drawCircle(x - (0 * 0.5), -y - (0 * 0.5), radius);
             gr.endFill();
         }
-        function DRDAWRECT(gr, x, y, width, height, color) {
+        function internalRectDrawer(gr, x, y, width, height, color) {
             width = width * 2;
             height = height * 2;
             gr.beginFill(color);
-            gr.drawRect(x - (width * 0.5), -y - (height * 0.5), width, height);
+            gr.drawRect(x - (width * 0.5), -y - (height * 0.5), width, height); // 픽시꺼.
             gr.endFill();
         }
         let gr = new PIXI.Graphics();
@@ -95,8 +95,8 @@ const PIXICS = (() => {
             GetLocalCenter,
             SetAngle,
             GetAngle,
-            DRDAWRECT(x, y, width, height, color) {
-                DRDAWRECT(gr, x, y, width, height, color);
+            drawingRectangle(x, y, width, height, color) {
+                internalRectDrawer(gr, x, y, width, height, color);
             },
             drawCircle(x, y, radius, color) {
                 drawCircle(gr, x, y, radius, color);
@@ -751,11 +751,11 @@ const PIXICS = (() => {
                     let height = another.y - center.y;
                     width *= 0.5;
                     height *= 0.5;
-                    fixture = butter.DRDAWRECT(
+                    fixture = butter.drawRect( // PhysicsGraphics
                         (((center.x - data.pivotpoint.x) + width) / data.scale) * scale * ratio,
                         -(((center.y - data.pivotpoint.y) + height) / data.scale) * scale * ratio,
-                        (width / data.scale) * scale * ratio,
-                        (height / data.scale) * scale * ratio,
+                        2 * (width / data.scale) * scale * ratio,
+                        2 * (height / data.scale) * scale * ratio,
                         color
                     );
                 }
@@ -809,7 +809,7 @@ const PIXICS = (() => {
                 if (f.drawingProfile.type === this._drawRect) {
                     let [x, y, width, height, color] = f.drawingProfile.arg;
                     if (color === undefined) color = 0xffffff;
-                    this.graphic.DRDAWRECT(x, y, width, height, color)
+                    this.graphic.drawingRectangle(x, y, width, height, color)
                 }
                 if (f.drawingProfile.type === this._drawPolygon) {
                     let [path, color] = f.drawingProfile.arg;
@@ -827,9 +827,8 @@ const PIXICS = (() => {
             this.fixtureShapeDrawer();
         }
         drawRect(x, y, width, height, color) {
-            this.DRDAWRECT(x, y, width * 0.5, height * 0.5, color);
-        }
-        DRDAWRECT(x, y, width, height, color) {
+            width *= 0.5;
+            height *= 0.5;
             // y = -y
             // y*=-1;
             if (color === undefined) color = 0xffffff;
@@ -839,7 +838,6 @@ const PIXICS = (() => {
                 let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
                 fixture.drawingProfile = { type: this._drawRect, arg: arguments };
                 fixture.drawingProfile.type.bind(this)(...arguments);
-                // this._drawRect(...arguments);
                 return fixture;
             } else {
                 let position = new b2.Vec2(
@@ -859,7 +857,6 @@ const PIXICS = (() => {
                 let fixture = this.createFixture(fd);
                 fixture.drawingProfile = { type: this._drawRect, arg: arguments };
                 fixture.drawingProfile.type.bind(this)(...arguments);
-                // this._drawRect(...arguments);
                 // 0 && this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                 return fixture;
             }
