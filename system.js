@@ -26,8 +26,12 @@ let displaySystem = (width, height, fps, container) => {
         log(v) {
         },
         getRatio() {
-            const { width, height } = container.getBoundingClientRect();
-            if (!width || !height) throw new Error({ width, height, reason: '부모의 크기가 작아요' });
+            let { width, height } = container.getBoundingClientRect();
+            if (!width || !height) throw new Error(`부모의 크기가 작아요`);
+            if (container.constructor === HTMLBodyElement) {
+                width = window.innerWidth;
+                height = window.innerHeight;
+            }
             let ratio = height / original.height;
             if (original.width * ratio > width) {
                 ratio = width / original.width;
