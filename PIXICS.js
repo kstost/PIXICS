@@ -23,8 +23,8 @@ const PIXICS = (() => {
             gr.endFill();
         }
         function internalRectDrawer(gr, x, y, width, height, color) {
-            width = width * 2;
-            height = height * 2;
+            // width = width * 2;
+            // height = height * 2;
             gr.beginFill(color);
             gr.drawRect(x - (width * 0.5), -y - (height * 0.5), width, height); // 픽시꺼.
             gr.endFill();
