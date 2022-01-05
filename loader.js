@@ -48,12 +48,13 @@ async function initPixics(initValue) {
         // 피직스월드의 준비
         const pixics = PIXICS.createWorld(initValue.worldscale, ratio, initValue.gravity, true, display); // 첫번째 인자의 숫자는 커질수록 요소의 움직임이 빨라진다. 빨라지는 이유는 실제 화면상 픽셀수와 피직스월드의 수치와의 스케일을 나타내는 값이기 때문이다.
         const world = pixics.world;
+        let size = initValue.resolution ? {
+            ratio,
+            resolution: initValue.resolution,
+            actualSize: { width, height },
+        } : { ratio };
         return {
-            size: {
-                ratio,
-                resolution: initValue.resolution,
-                actualSize: { width, height },
-            },
+            size,
             b2,
             PIXICS,
             app,
