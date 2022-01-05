@@ -2,7 +2,7 @@ async function initPixics(initValue) {
     let scriptlist = [
         "https://pixijs.download/v6.2.1/pixi.min.js",
         "https://cdn.jsdelivr.net/gh/kstost/ksttool/ksttool.js",
-        "https://cdn.jsdelivr.net/gh/kstost/PIXICS@6f667a9/PIXICS.js",
+        "https://cdn.jsdelivr.net/gh/kstost/PIXICS@ccdfc2b/PIXICS.js",
         "https://cdn.jsdelivr.net/gh/flyover/box2d.ts@4bea859e7b1bab55429d76e03f72b1de72edc5f8/dist/box2d.umd.js",
         // "https://rawcdn.githack.com/flyover/box2d.ts/master/dist/box2d.umd.js",
     ];
@@ -39,7 +39,9 @@ async function initPixics(initValue) {
     if (initValue) {
 
         // 스크린의 준비
-        const display = PIXICS.displaySystem([initValue.resolution.width, initValue.resolution.height], !!initValue.fpsmonitor, initValue.container); // 스크린너비, 스크린높이, 성능측정모니터사용여부
+        const display = PIXICS.displaySystem(
+            initValue.resolution ? [initValue.resolution.width, initValue.resolution.height] : [],
+            !!initValue.fpsmonitor, initValue.container); // 스크린너비, 스크린높이, 성능측정모니터사용여부
         const app = display.createPIXIApp(); // 화면을 생성한다 PIXI Application Stage 를 생성한다
         const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
 
