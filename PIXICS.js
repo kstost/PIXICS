@@ -1410,7 +1410,16 @@ const pixiInst = function () {
 
         let lineList = new Map();
         let point = {
-            displaySystem: (width, height, fps, container) => {
+            displaySystem: (scs, fps, container) => {
+                let [width, height] = scs;
+                let resizeCb;
+                let resizable = false;
+                if (scs.length < 2) {
+                    resizable = true;
+                    width = ksttool.math.EPSILON;
+                    height = ksttool.math.EPSILON;
+                    window.addEventListener('resize', e => resizable && resizeCb && resizeCb())
+                }
                 if (fps) {
                     (function () { var script = document.createElement('script'); script.onload = function () { var stats = new Stats(); document.body.appendChild(stats.dom); requestAnimationFrame(function loop() { stats.update(); requestAnimationFrame(loop) }); }; script.src = '//mrdoob.github.io/stats.js/build/stats.min.js'; document.head.appendChild(script); })();
                 }
@@ -1433,13 +1442,17 @@ const pixiInst = function () {
                         app.stage.sortableChildren = true;
                         display.container.innerText = '';
                         display.container.appendChild(app.view);
+                        if (resizable) {
+                            resizeCb = () => app.renderer.resize(window.innerWidth, window.innerHeight);
+                            resizeCb()
+                        }
                         return app;
                     },
                     log(v) {
                     },
                     getRatio() {
-                        let { width, height } = container.getBoundingClientRect();
-                        if (container.constructor === HTMLBodyElement) {
+                        let { width, height } = resizable ? original : container.getBoundingClientRect();
+                        if (!resizable && container.constructor === HTMLBodyElement) {
                             width = window.innerWidth;
                             height = window.innerHeight;
                         } else {

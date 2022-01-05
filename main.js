@@ -1,15 +1,15 @@
 window.addEventListener('load', async () => {
-   let list = [...document.querySelectorAll('.container')];
-   console.log(list);
+   let list = [...document.querySelectorAll('body')];
    for (let i = 0; i < list.length; i++) {
       (async () => {
          // console.log(1);
          // 스크린의 준비
          const PIXICS = pixiInst();
-         const display = PIXICS.displaySystem(1080, 1920, true, list[i]); // 스크린너비, 스크린높이, 성능측정모니터사용여부
+         const display = PIXICS.displaySystem([], !true, list[i]); // 스크린너비, 스크린높이, 성능측정모니터사용여부
          const app = display.createPIXIApp(); // 화면을 생성한다 PIXI Application Stage 를 생성한다
          const { ratio, width, height } = display; // 계산된 실제 화면크기를 얻는다. width/ratio 한 값은 displaySystem 함수 첫번째인자로 넣은 숫자와 같다.
          display.container.appendChild(app.view);
+         console.log(ratio)
 
          //------------------------------
          // 피직스월드의 준비
@@ -22,12 +22,13 @@ window.addEventListener('load', async () => {
 
          //------------------------------
          let redbar = new PIXICS.PhysicsGraphics({ world });
-         redbar.drawRect(0, 0, 1000 * ratio, 30 * ratio);
+         redbar.drawRect(0, 0, 1080 / 2 * ratio, 100 * ratio);
          redbar.getGraphic().tint = 0xaa0000;
          app.stage.addChild(redbar.getGraphic());
-         await pixics.sleep(1000);
+         // await pixics.sleep(1000);
+         // console.log()
 
-         while (true) {
+         while (!true) {
             L('위로');
             await redbar.moveEaseBy(0, -1920 * 0.1 * ratio, 1000, '');
             L('아래로');
