@@ -18,9 +18,15 @@ async function initPixics(initValue) {
         scr.addEventListener('error', reject);
         scr.src = this.url;
     }
-    let syncList = scriptlist.splice(0, 1);
-    for (let i = 0; i < syncList.length; i++) await new Promise(promiseCb.bind({ url: syncList[i], scr: genScript() }));
-    await Promise.all(scriptlist.map(url => new Promise(promiseCb.bind({ url, scr: genScript() }))));
+    if (initPixics.status === undefined) {
+        initPixics.status = 1;
+        let syncList = scriptlist.splice(0, 1);
+        for (let i = 0; i < syncList.length; i++) await new Promise(promiseCb.bind({ url: syncList[i], scr: genScript() }));
+        await Promise.all(scriptlist.map(url => new Promise(promiseCb.bind({ url, scr: genScript() }))));
+        initPixics.status = 2;
+    } else {
+        while (initPixics.status !== 2) await new Promise(r => setTimeout(r))
+    }
     if (false) {
         const { app, pixics, world, ratio, width, height, PIXICS, b2 } = await initPixics({
             resolution: { width: 1080, height: 1920 },
