@@ -1419,7 +1419,9 @@ const pixiInst = function () {
                     resizable = true;
                     width = ksttool.math.EPSILON;
                     height = ksttool.math.EPSILON;
-                    window.addEventListener('resize', e => resizable && resizeCb && resizeCb())
+                    if (resizable && isBodyContainer) {
+                        window.addEventListener('resize', e => resizable && resizeCb && resizeCb());
+                    }
                 }
                 if (fps) {
                     (function () { var script = document.createElement('script'); script.onload = function () { var stats = new Stats(); document.body.appendChild(stats.dom); requestAnimationFrame(function loop() { stats.update(); requestAnimationFrame(loop) }); }; script.src = '//mrdoob.github.io/stats.js/build/stats.min.js'; document.head.appendChild(script); })();
@@ -1452,18 +1454,23 @@ const pixiInst = function () {
                     log(v) {
                     },
                     getRatio() {
+                        // let width, height;
                         let { width, height } = resizable ? original : container.getBoundingClientRect();
-                        if (!resizable && isBodyContainer) {
-                            width = window.innerWidth;
-                            height = window.innerHeight;
-                        }
-                        else if (resizable && isBodyContainer) {
-                            container.style.margin = '0px';
-                            container.style.backgroundColor = '#000';
-                            container.style.overflow = 'hidden';
-                        }
-                        else {
-                            if (!width || !height) throw new Error(`부모의 크기가 작거나 돔트리에 붙어있지 않은 상태로 보입니다`);
+                        if (isBodyContainer) {
+                            if (!resizable) {
+                                width = window.innerWidth;
+                                height = window.innerHeight;
+                            }
+                            else {
+                                container.style.margin = '0px';
+                                container.style.backgroundColor = '#000';
+                                container.style.overflow = 'hidden';
+                            }
+                        } else {
+                            if (!resizable) {
+                                if (!width || !height) throw new Error(`부모의 크기가 작거나 돔트리에 붙어있지 않은 상태로 보입니다`);
+                            } else {
+                            }
                         }
                         let ratio = height / original.height;
                         if (original.width * ratio > width) {
