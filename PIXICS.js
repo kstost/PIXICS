@@ -1412,6 +1412,7 @@ const pixiInst = function () {
         let point = {
             displaySystem: (scs, fps, container) => {
                 let [width, height] = scs;
+                let isBodyContainer = container.constructor === HTMLBodyElement;
                 let resizeCb;
                 let resizable = false;
                 if (scs.length < 2) {
@@ -1442,9 +1443,9 @@ const pixiInst = function () {
                         app.stage.sortableChildren = true;
                         display.container.innerText = '';
                         display.container.appendChild(app.view);
-                        if (resizable) {
+                        if (resizable && isBodyContainer) {
                             resizeCb = () => app.renderer.resize(window.innerWidth, window.innerHeight);
-                            resizeCb()
+                            resizeCb();
                         }
                         return app;
                     },
@@ -1452,11 +1453,11 @@ const pixiInst = function () {
                     },
                     getRatio() {
                         let { width, height } = resizable ? original : container.getBoundingClientRect();
-                        if (!resizable && container.constructor === HTMLBodyElement) {
+                        if (!resizable && isBodyContainer) {
                             width = window.innerWidth;
                             height = window.innerHeight;
                         }
-                        else if (resizable && container.constructor === HTMLBodyElement) {
+                        else if (resizable && isBodyContainer) {
                             container.style.margin = '0px';
                             container.style.backgroundColor = '#000';
                             container.style.overflow = 'hidden';
