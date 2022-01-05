@@ -1455,7 +1455,13 @@ const pixiInst = function () {
                         if (!resizable && container.constructor === HTMLBodyElement) {
                             width = window.innerWidth;
                             height = window.innerHeight;
-                        } else {
+                        }
+                        else if (resizable && container.constructor === HTMLBodyElement) {
+                            container.style.margin = '0px';
+                            container.style.backgroundColor = '#000';
+                            container.style.overflow = 'hidden';
+                        }
+                        else {
                             if (!width || !height) throw new Error(`부모의 크기가 작거나 돔트리에 붙어있지 않은 상태로 보입니다`);
                         }
                         let ratio = height / original.height;
