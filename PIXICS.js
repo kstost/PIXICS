@@ -532,27 +532,60 @@ const pixiInst = function () {
                 } else {
                     this.getBody().SetType(b2.BodyType.b2_kinematicBody);
                 }
-                return new Promise(r => {
+                class SeqPromise extends Promise {
+                    running = true;
+                    drop = false;
+                    constructor(cb) {
+                        super(cb);
+                    }
+                    pause() {
+                        this.running = false;
+                    }
+                    play() {
+                        this.running = !false;
+                    }
+                    abort() {
+                        this.drop = true;
+                        return this;
+                        // if (!this.drop) {
+                        //     return true;
+                        // }
+                        // return false;
+                    }
+                }
+                let prm = new SeqPromise(function (r, stop) {
                     let cnt = 0;
+                    let fangle = _point.getAngle();
+                    let startT = new Date();
                     pixics.update(function upf(tk) {
-                        if (tasks[cnt] === undefined) {
+                        // console.log(prm.running);
+                        if (!prm.running) {
+                            _point.getBody().SetAngularVelocity(0)
+                            return;
+                        }
+                        if (prm.drop || tasks[cnt] === undefined) {
                             if (y !== null) {
                                 if (PLANCKMODE) {
                                     _point.getBody().setLinearVelocity(planck.Vec2(0, 0))
                                 } else {
                                     _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
                                 }
-                                _point.setPosition(x, -y);
+                                !prm.drop && _point.setPosition(x, -y);
                             } else {
                                 if (PLANCKMODE) {
                                     _point.getBody().setAngularVelocity(0)
                                 } else {
                                     _point.getBody().SetAngularVelocity(0)
                                 }
-                                _point.setAngle(x);
+                                !prm.drop && _point.setAngle(x);
                             }
                             pixics.unupdate(upf);
-                            r();
+                            !prm.drop && r();
+                            prm.drop && r({
+                                difference: _point.getAngle() - fangle,
+                                duration: new Date() - startT
+                            });
+                            prm.drop = true;
                             return;
                         }
                         let distanceToMoveOnThisTick = tasks[cnt];
@@ -577,8 +610,9 @@ const pixiInst = function () {
                         cnt++;
                     });
                 });
+                // prm[Symbol.for("val")] = 4;
 
-
+                return prm;
                 // console.log('w', whole);
                 // console.log(acc-d)
                 // let lastAmount = d%ticktime;
@@ -638,9 +672,9 @@ const pixiInst = function () {
             //         });
             //     })
             // }
-            async rotateEaseBy(x, duration, f) {
+            rotateEaseBy(x, duration, f) {
                 let startPoint = this.getAngle();
-                await this.rotateEaseTo(startPoint + x, duration, f);
+                return this.rotateEaseTo(startPoint + x, duration, f);
             }
             async moveEaseBy(x, y, duration, f) {
                 let startPoint = this.getPosition();
@@ -1280,6 +1314,10 @@ const pixiInst = function () {
             isAwake() { return PLANCKMODE ? this.getBody().isAwake() : this.getBody().IsAwake(); }
             setStatic() { PLANCKMODE ? this.getBody().setStatic() : this.getBody().SetType(b2.BodyType.b2_staticBody); } // dynamic의 반대
             isStatic() { return PLANCKMODE ? this.getBody().isStatic() : this.getBody().GetType() === b2.BodyType.b2_staticBody; }
+            isDestroy() {
+                const graphic = this.getGraphic();
+                return !graphic.parent;
+            }
             destroy() {
                 // console.log()
                 point.pixics.getJointList().forEach(jj => {
