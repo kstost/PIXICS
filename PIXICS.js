@@ -518,7 +518,7 @@ const pixiInst = function () {
                 */
                 //getContactable
                 let lss = [...this.contacts.keys()];
-                if (mode) lss = lss.filter(a => a.getContactable());
+                if (!mode) lss = lss.filter(a => a.getContactable());
                 // if (mode) lss = lss.map(a => a.getBody());
                 return lss;
             }
@@ -1612,8 +1612,10 @@ const pixiInst = function () {
                         this.askFire(contact, false);
                     }
                     PreSolve(contact, oldManifold) {
+                        this.askFire(contact, true);
                     }
                     PostSolve(contact, impulse) {
+                        this.askFire(contact, true);
                     }
                 }
                 actual_display = display;
