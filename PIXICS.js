@@ -369,6 +369,7 @@ const pixiInst = function () {
             constructor({ world }) {
                 this.world = world;
                 this.graphic = makeGraphic(center);//new PIXI.Graphics();
+                this.setContactable(true);
                 if (PLANCKMODE) {
                     this.planckBody = world.createBody({
                         bullet: false,
@@ -388,6 +389,18 @@ const pixiInst = function () {
                     massData.I = 1.0;
                     this.planckBody.SetMassData(massData);
                 }
+            }
+            setContactable(mode) {
+                if (!mode) {
+                    // 컨택트되지 못하게 하면 일단 만약 컨택트되어있었던것들에 대해서는 untact 이벤트를 발생시켜줌
+                    this.getContactList().forEach(body => {
+                        this.setContactState(body, false, true);
+                    });
+                }
+                this.contactable = mode;
+            }
+            getContactable() {
+                return this.contactable;
             }
             isUpdating(f) {
                 return this.updateQueue.has(f);
@@ -455,8 +468,11 @@ const pixiInst = function () {
             getIgnoreContacts() {
                 return this.ignoreContact;
             }
-            setContactState(body, mode) {
-                if (this.ignoreContact.has(body)) return;
+            setContactState(body, mode, force) {
+                if (!force) {
+                    if (!this.getContactable() || !body.getContactable()) return;
+                    if (this.ignoreContact.has(body)) return;
+                }
                 if (mode) {
                     if (!this.contacts.has(body)) {
                         this.contacts.set(body, mode);
