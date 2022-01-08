@@ -69,15 +69,15 @@ window.addEventListener('load', async () => {
    let destroyRun = false;
    let ballColors = [
       0xa0af00,
-      0xf0afa0,
-      0x0fafa0,
-      0xf0faa0,
-      0xa0aff0,
+      // 0xf0afa0,
+      // 0x0fafa0,
+      // 0xf0faa0,
+      // 0xa0aff0,
    ];
    let bars = [
-      { type: 1, pos: { x: -200, y: 600 }, width: 600, color: 0x0f00ff },
-      { type: 0, pos: { x: 100, y: 200 }, width: 800 },
-      { type: 1, pos: { x: -200, y: -200 }, width: 600, color: 0x0f00ff },
+      // { type: 1, pos: { x: -200, y: 600 }, width: 600, color: 0x0f00ff },
+      // { type: 0, pos: { x: 100, y: 200 }, width: 800 },
+      // { type: 1, pos: { x: -200, y: -200 }, width: 600, color: 0x0f00ff },
    ];
    bars.forEach(info => movingBars.push(new MovingBar(info)));
    let giuri = {
@@ -166,14 +166,17 @@ window.addEventListener('load', async () => {
       for (let i = 0; i < balls.length; i++) {
          for (let j = 0; j < goals.length; j++) {
             goals[j].addEvent('contact', balls[i], async function (ball) {
-               if (destroyRun) return;
-               if (ball.getTag() === goals[j].getTag()) {
-                  remObj(ball)
-                  remObj(goals[j])
-               } else {
-                  await destroy()
-                  init();
-               }
+               // ball.destroy()
+               goals[j].destroy()
+               // goals[j].getGraphic().tint=0x00ff00
+               // remObj(ball)
+               // remObj(goals[j])
+               // if (destroyRun) return;
+               // if (ball.getTag() === goals[j].getTag()) {
+               // } else {
+               //    await destroy()
+               //    init();
+               // }
             });
             goals[j].addEvent('untact', balls[i], function (ball) { });
          }
@@ -188,10 +191,10 @@ window.addEventListener('load', async () => {
 
 
 
-   setTimeout(() => {
-      console.log(balls[3].getRelations())
-      console.log(balls[3].isRelatedTo(goals[3]))
-   }, 1000)
+   // setTimeout(() => {
+   //    console.log(balls[3].getRelations())
+   //    console.log(balls[3].isRelatedTo(goals[3]))
+   // }, 1000)
    // console.log();
 
 

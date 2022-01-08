@@ -364,6 +364,7 @@ const pixiInst = function () {
             contacts = new Map();
             ignoreContact = new Map();
             tag = null;
+            preCallbackQueue = [];
             constructor({ world }) {
                 this.world = world;
                 this.graphic = makeGraphic(center);//new PIXI.Graphics();
@@ -441,13 +442,13 @@ const pixiInst = function () {
                     if (!this.contacts.has(body)) {
                         this.contacts.set(body, mode);
                         let cb = this.getCBFunc(body, 'contact');
-                        cb && cb(body);
+                        cb && this.preCallbackQueue.push([cb, body]);
                     }
                 } else {
                     if (this.contacts.has(body)) {
                         this.contacts.delete(body);
                         let cb = this.getCBFunc(body, 'untact');
-                        cb && cb(body);
+                        cb && this.preCallbackQueue.push([cb, body]);
                     }
                 }
             }
@@ -1413,7 +1414,14 @@ const pixiInst = function () {
         let timeoutList = new Map();
         let syncStateAll = world => {
             for (let body = world.GetBodyList(); body; body = body.GetNext()) {
-                body.GetUserData()?.syncState();
+                let bdv = body.GetUserData();
+                let len = bdv.preCallbackQueue.length;
+                for (let i = 0; i < len; i++) {
+                    let [cb, _body] = bdv.preCallbackQueue[i];
+                    cb(_body);
+                }
+                bdv.preCallbackQueue.splice(0, len);
+                bdv?.syncState();
             }
         };
         let registUpdate = world => {
