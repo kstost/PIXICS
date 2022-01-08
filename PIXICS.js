@@ -1,5 +1,18 @@
 'use strict';
 const pixiInst = function () {
+    const typeChecker = {
+        isNumber() {
+            // console.log(arguments)
+            let cnt = 0;
+            for (let i = 0; i < arguments.length; i++) {
+                let n = arguments[i];
+                if (n.constructor === Number && !Number.isNaN(n)) {
+                    cnt++;
+                }
+            }
+            return cnt === arguments.length;
+        }
+    };
     const PIXICS = (() => {
         function makeid(length) {
             var result = '';
@@ -495,6 +508,8 @@ const pixiInst = function () {
                 return [...contactList.keys()];
             }
             easingTo(x, y, d, f) {
+                if (!typeChecker.isNumber(x, d)) throw 'adsfuih';
+                if (y !== null && !typeChecker.isNumber(y)) throw 'weirouh';
                 if (!f) f = 'linearTween';
                 f = Ease[f];
                 const _point = this;
