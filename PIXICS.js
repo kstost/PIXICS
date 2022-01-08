@@ -463,11 +463,11 @@ const pixiInst = function () {
             getIgnoreContacts() {
                 return this.ignoreContact;
             }
-            setContactState(body, mode, force) {
-                if (!force) {
-                    if (!this.getContactable() || !body.getContactable()) return;
-                    if (this.ignoreContact.has(body)) return;
-                }
+            setContactState(body, mode) {
+                // if (!force) {
+                //     if (!this.getContactable() || !body.getContactable()) return;
+                // }
+                if (this.ignoreContact.has(body)) return;
                 if (mode) {
                     if (!this.contacts.has(body)) {
                         this.contacts.set(body, mode);
