@@ -391,6 +391,14 @@ const pixiInst = function () {
                 }
             }
             setContactable(mode) {
+                /*
+                    contactable 값은 다음 함수의 작동에 영향을 준다
+                    이 값이 거짓이면 다음 함수들의 작동 상 거짓인 자료는 없는 셈 치게된다
+                        - getContactCount
+                        - getContactList
+                        - getRelations
+                        - isRelatedTo
+                */
                 this.contactable = mode;
             }
             getContactable() {
