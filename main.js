@@ -1,3 +1,5 @@
+let balls = [];
+let goals = [];
 window.addEventListener('load', async () => {
 
    const PIXICS = pixiInst();
@@ -63,8 +65,7 @@ window.addEventListener('load', async () => {
          }
       }
    }
-   let balls = [];
-   let goals = [];
+   //getContactCount
    let destroyRun = false;
    let ballColors = [
       0xa0af00,
@@ -184,5 +185,15 @@ window.addEventListener('load', async () => {
       setContacts();
    }
    init()
+
+
+
+   setTimeout(() => {
+      console.log(balls[3].getRelations())
+      console.log(balls[3].isRelatedTo(goals[3]))
+   }, 1000)
+   // console.log();
+
+
 
 });

@@ -380,6 +380,36 @@ const pixiInst = function () {
             getTag() {
                 return this.tag;
             }
+            isRelatedTo(checkBody) {
+                return this.getRelations(checkBody);
+            }
+            getRelations(checkBody) {
+                let body = this;
+                if (checkBody && checkBody === body) return true;
+                let done = new Map();
+                let task = new Map();
+                // let list = new Map();
+                task.set(body);
+                while (true) {
+                    let first = task.keys().next();
+                    let body = first.value;
+                    if (!body || first.done) break;
+                    // !list.has(body) && list.set(body);
+                    let contacts = body.getContactList();
+                    for (let i = 0; i < contacts.length; i++) {
+                        let _body = contacts[i].GetUserData();
+                        if (checkBody && checkBody === _body) return true;
+                        if (!task.has(_body) && !done.has(_body)) task.set(_body)
+                    }
+                    task.delete(body);
+                    done.set(body);
+                }
+                if (checkBody) {
+                    return false;
+                } else {
+                    return [...done.keys()];
+                }
+            }
             getContactCount() {
                 return this.contacts.size;
             }
