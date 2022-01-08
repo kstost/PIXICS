@@ -391,12 +391,6 @@ const pixiInst = function () {
                 }
             }
             setContactable(mode) {
-                if (!mode) {
-                    // 컨택트되지 못하게 하면 일단 만약 컨택트되어있었던것들에 대해서는 untact 이벤트를 발생시켜줌
-                    this.getContactList().forEach(body => {
-                        this.setContactState(body, false, true);
-                    });
-                }
                 this.contactable = mode;
             }
             getContactable() {
@@ -457,7 +451,8 @@ const pixiInst = function () {
                 }
             }
             getContactCount() {
-                return this.contacts.size;
+                //oK
+                return this.getContactList().length;
             }
             addIgnoreContact(body) {
                 this.ignoreContact.set(body, true);
@@ -508,11 +503,15 @@ const pixiInst = function () {
             }
             getContactList(mode) {
                 /*
+                oK
                 이 함수는 this.getBody().GetContactList 의 문제를 보완해서 만든 함수이다
                 this.getBody().GetContactList 이 함수는 좀 오작동을 하는것으로 보이니 쓰지 말도록하자
+                mode 를 true로 하면 contactable 하지 않은것도 포함시켜준다
                 */
+                //getContactable
                 let lss = [...this.contacts.keys()];
-                if (mode) lss = lss.map(a => a.getBody());
+                if (mode) lss = lss.filter(a => a.getContactable());
+                // if (mode) lss = lss.map(a => a.getBody());
                 return lss;
             }
             easingTo(x, y, d, f) {
@@ -1097,7 +1096,7 @@ const pixiInst = function () {
                 }
             }
             touchContacts() {
-                let list = this.getContactList();
+                let list = this.getContactList(true);
                 this.getBody().SetAwake(true);
                 for (let i = 0; i < list.length; i++)list[i].getBody().SetAwake(true);
             }
@@ -1243,7 +1242,7 @@ const pixiInst = function () {
                 }
 
                 // 접해있는것의 목록을 담기
-                let contactList = [this, ...this.getContactList()];// = [];
+                let contactList = [this, ...this.getContactList(true)];// = [];
 
                 // 픽스쳐와 바디를 제거한다
                 if (PLANCKMODE) {

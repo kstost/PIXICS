@@ -49,16 +49,28 @@ window.addEventListener('load', async () => {
       };
       ball.setUpdate(detect);
       setEvent(ball.getGraphic(), ['mousedown', 'touchstart'], e => {
-         console.log(ball.getContactList(true));
-         if (ball.isUpdating(detect)) {
-            ball.getGraphic().tint = 0xaa00aa;
-            ball.remUpdate(detect);
+         console.log(ball.getContactable());
+         if (ball.getContactable()) {
+            ball.setContactable(false);
          } else {
-            ball.setUpdate(detect);
+            ball.setContactable(!false);
          }
+
+         // console.log(ball.getContactList(true));
+         // if (ball.isUpdating(detect)) {
+         //    ball.getGraphic().tint = 0xaa00aa;
+         //    ball.remUpdate(detect);
+         // } else {
+         //    ball.setUpdate(detect);
+         // }
       });
    }
-   setInterval(() => genBalls(), 500)
+   let cnt = 0;
+   let pid = setInterval(() => {
+      genBalls();
+      cnt++;
+      if (cnt > 100) clearInterval(pid);
+   }, 50)
 
 
    let json = { "layers": [{ "dots": { "polygon": [{ "x": 630, "y": 60 }, { "x": 780, "y": 450 }, { "x": 750, "y": 480 }, { "x": 600, "y": 60 }], "circle": [], "rect": [] }, "color": "ffffff", "friction": 0, "density": 0, "restitution": 0, "class": "polygon" }, { "dots": { "polygon": [{ "x": 960, "y": 450 }, { "x": 1140, "y": 60 }, { "x": 1170, "y": 60 }, { "x": 990, "y": 480 }], "circle": [], "rect": [] }, "color": "ffffff", "friction": 0, "density": 0, "restitution": 0, "class": "polygon" }, { "dots": { "polygon": [{ "x": 780, "y": 450 }, { "x": 960, "y": 450 }, { "x": 990, "y": 480 }, { "x": 750, "y": 480 }], "circle": [], "rect": [] }, "color": "ffffff", "friction": 0, "density": 0, "restitution": 0, "class": "polygon" }], "pivotpoint": { "x": 870, "y": 480 }, "scale": 30 }
