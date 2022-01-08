@@ -365,6 +365,7 @@ const pixiInst = function () {
             ignoreContact = new Map();
             tag = null;
             preCallbackQueue = [];
+            updateQueue = new Map();
             constructor({ world }) {
                 this.world = world;
                 this.graphic = makeGraphic(center);//new PIXI.Graphics();
@@ -386,6 +387,23 @@ const pixiInst = function () {
                     massData.center.y = 0;//.5 * shape.m_vertex1.y + shape.m_vertex2.y;
                     massData.I = 1.0;
                     this.planckBody.SetMassData(massData);
+                }
+            }
+            isUpdating(f) {
+                return this.updateQueue.has(f);
+            }
+            setUpdate(f, rem) {
+                if (rem) {
+                    this.remUpdate(f);
+                    return;
+                }
+                if (!this.updateQueue.has(f)) {
+                    this.updateQueue.set(f);
+                }
+            }
+            remUpdate(f) {
+                if (this.updateQueue.has(f)) {
+                    this.updateQueue.delete(f);
                 }
             }
             setTag(v) {
@@ -411,7 +429,7 @@ const pixiInst = function () {
                     // !list.has(body) && list.set(body);
                     let contacts = body.getContactList();
                     for (let i = 0; i < contacts.length; i++) {
-                        let _body = contacts[i].GetUserData();
+                        let _body = contacts[i];//.GetUserData();
                         if (checkBody && checkBody === _body) return true;
                         if (!task.has(_body) && !done.has(_body)) task.set(_body)
                     }
@@ -421,6 +439,7 @@ const pixiInst = function () {
                 if (checkBody) {
                     return false;
                 } else {
+                    done.delete(body);
                     return [...done.keys()];
                 }
             }
@@ -471,42 +490,10 @@ const pixiInst = function () {
                 };
                 dt.cbs[mode] = { cbf }
             }
-            isConnectedWith(thing) {
-                let rtn = false;
-                let mebody = this.getBody();
-                let history = new Map();
-                function looking(thing) {
-                    if (rtn || history.has(thing)) return;
-                    history.set(thing);
-                    let list = thing.getContactList();
-                    for (let i = 0; i < list.length; i++) {
-                        let _thing = list[i].getUserData();
-                        if (list[i] === mebody) { rtn = true; return; }
-                        looking(_thing);
-                    }
-                }
-                looking(thing);
-                return rtn;
-            }
-            getContactList() {
-                let bbb = this;
-                let contactList = new Map();
-                if (PLANCKMODE) {
-                    for (let b = bbb.planckBody.getContactList(); b; b = b.next) {
-                        let aa = b.contact.getFixtureA().getBody();
-                        let bb = b.contact.getFixtureB().getBody();
-                        if (bbb.planckBody !== aa) { !contactList.has(aa) && contactList.set(aa, true) }
-                        if (bbb.planckBody !== bb) { !contactList.has(bb) && contactList.set(bb, true) }
-                    }
-                } else {
-                    for (let b = bbb.planckBody.GetContactList(); b; b = b.next) {
-                        let aa = b.contact.GetFixtureA().GetBody();
-                        let bb = b.contact.GetFixtureB().GetBody();
-                        if (bbb.planckBody !== aa) { !contactList.has(aa) && contactList.set(aa, true) }
-                        if (bbb.planckBody !== bb) { !contactList.has(bb) && contactList.set(bb, true) }
-                    }
-                }
-                return [...contactList.keys()];
+            getContactList(mode) {
+                let lss = [...this.contacts.keys()];
+                if (mode) lss = lss.map(a => a.getBody());
+                return lss;
             }
             easingTo(x, y, d, f) {
                 if (!typeChecker.isNumber(x, d)) throw 'adsfuih';
@@ -1090,17 +1077,9 @@ const pixiInst = function () {
                 }
             }
             touchContacts() {
-                if (PLANCKMODE) {
-                    for (let b = this.planckBody.getContactList(); b; b = b.next) {
-                        b.contact.getFixtureA().getBody().setAwake(true);
-                        b.contact.getFixtureB().getBody().setAwake(true);
-                    }
-                } else {
-                    for (let b = this.planckBody.GetContactList(); b; b = b.next) {
-                        b.contact.GetFixtureA().GetBody().SetAwake(true);
-                        b.contact.GetFixtureB().GetBody().SetAwake(true);
-                    }
-                }
+                let list = this.getContactList();
+                this.getBody().SetAwake(true);
+                for (let i = 0; i < list.length; i++)list[i].getBody().SetAwake(true);
             }
             getBody() {
                 return this.planckBody;
@@ -1244,20 +1223,7 @@ const pixiInst = function () {
                 }
 
                 // 접해있는것의 목록을 담기
-                let contactList = [];
-                if (PLANCKMODE) {
-                    for (let b = this.planckBody.getContactList(); b; b = b.next) {
-                        let aa = b.contact.getFixtureA().getBody();
-                        let bb = b.contact.getFixtureB().getBody();
-                        contactList.push(aa, bb);
-                    }
-                } else {
-                    for (let b = this.planckBody.GetContactList(); b; b = b.next) {
-                        let aa = b.contact.GetFixtureA().GetBody();
-                        let bb = b.contact.GetFixtureB().GetBody();
-                        contactList.push(aa, bb);
-                    }
-                }
+                let contactList = [this, ...this.getContactList()];// = [];
 
                 // 픽스쳐와 바디를 제거한다
                 if (PLANCKMODE) {
@@ -1349,9 +1315,8 @@ const pixiInst = function () {
                 }
                 // 접해있던것 깨우기
                 if (PLANCKMODE) {
-                    contactList.forEach(contact => contact.setAwake(true));
                 } else {
-                    contactList.forEach(contact => contact.SetAwake(true));
+                    contactList.forEach(contact => contact.getBody().SetAwake(true));
                 }
             }
             setActive(v) { PLANCKMODE ? this.getBody().setActive(v) : null; } //oo
@@ -1421,6 +1386,13 @@ const pixiInst = function () {
                     cb(_body);
                 }
                 bdv.preCallbackQueue.splice(0, len);
+                // console.log()
+                let keys = bdv.updateQueue.keys();
+                while (true) {
+                    let val = keys.next();
+                    if (val.done) break;
+                    val.value();
+                }
                 bdv?.syncState();
             }
         };
