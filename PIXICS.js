@@ -491,6 +491,10 @@ const pixiInst = function () {
                 dt.cbs[mode] = { cbf }
             }
             getContactList(mode) {
+                /*
+                이 함수는 this.getBody().GetContactList 의 문제를 보완해서 만든 함수이다
+                this.getBody().GetContactList 이 함수는 좀 오작동을 하는것으로 보이니 쓰지 말도록하자
+                */
                 let lss = [...this.contacts.keys()];
                 if (mode) lss = lss.map(a => a.getBody());
                 return lss;
