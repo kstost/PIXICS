@@ -1302,6 +1302,7 @@ const pixiInst = function () {
 
         let lineList = new Map();
         let point = {
+            math,
             displaySystem: (scs, fps, container) => {
                 let [width, height] = scs;
                 let isBodyContainer = container.constructor === HTMLBodyElement;
