@@ -1,6 +1,6 @@
 window.addEventListener('load', async () => {
 
-   const { app, pixics, world, size, PIXICS, b2 } = await initPixics({
+   const { app, pixics, world, size, PIXICS, b2, math } = await initPixics({
       resolution: { width: 1080, height: 1920 },
       fpsmonitor: true,
       libPath: '../src/pixics.js',
