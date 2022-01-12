@@ -581,8 +581,8 @@ const pixiInst = function () {
                 let ticktime = (1 / magicNumber) * 1000;
                 let startPoint;// = this.getPosition();
                 let endPoint;// = { x, y };
-                let radian;// = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint); // 엘라스틱에서 신경쓰자.
-                let moveLength;// = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
+                let radian;
+                let moveLength;
                 if (y !== null) {
                     startPoint = this.getPosition();
                     startPoint.y *= -1;
@@ -729,57 +729,6 @@ const pixiInst = function () {
                 // console.log(f)
 
             }
-            // async moveBy(x, y, s) {
-            //     let startPoint = this.getPosition();
-            //     await this.moveTo(startPoint.x + x, startPoint.y + y, s);
-            // }
-            // moveTo(x, y, s) {
-            //     //working
-            //     const pixics = point.pixics;
-            //     this.getBody().setKinematic();
-            //     return new Promise(r => {
-            //         let point = this;
-            //         let startPoint = point.getPosition();
-            //         let endPoint = { x, y };
-            //         var moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint); // 충돌벽 길이
-            //         let moveDistance = getMoveDistancePerFrame(s);
-            //         let maxDistance = getMovableMaxDistancePerFrame();
-            //         let frid = moveDistance >= maxDistance ? maxDistance : moveDistance;
-            //         if (frid > moveLength) s = getVelocityPerFrame(moveLength)
-            //         var radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
-            //         var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, startPoint, radian);
-            //         point.getBody().setLinearVelocity(planck.Vec2(rtn.x - startPoint.x, startPoint.y - rtn.y))
-            //         let beforeLength = 0;
-            //         let endtrigger = false;
-            //         pixics.update(function upf() {
-            //             let currentPoint = point.getPosition();
-            //             var currentLength = ksttool.math.get_distance_between_two_point(startPoint, currentPoint); // 충돌벽 길이
-            //             let moveStep = currentLength - beforeLength;
-            //             0 && console.log('*뭅', moveStep);
-            //             beforeLength = currentLength;
-            //             function final() {
-            //                 point.getBody().setLinearVelocity(planck.Vec2(0, 0))
-            //                 1 && point.setPosition(x, y);
-            //                 0 && console.log('끝');
-            //                 pixics.unupdate(upf);
-            //                 r();
-            //             }
-            //             if (!endtrigger && moveLength <= currentLength + moveStep) {
-            //                 endtrigger = true;
-            //                 let currentLength2 = ksttool.math.get_distance_between_two_point(currentPoint, endPoint);
-            //                 if (currentLength2 > Number.EPSILON * 100000000) {
-            //                     let s = pixics.getVelocityPerFrame(currentLength2);
-            //                     var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, currentPoint, radian);
-            //                     point.getBody().setLinearVelocity(planck.Vec2(rtn.x - currentPoint.x, currentPoint.y - rtn.y))
-            //                 } else {
-            //                     final();
-            //                 }
-            //             } else {
-            //                 endtrigger && final();
-            //             }
-            //         });
-            //     })
-            // }
             rotateEaseBy(x, duration, f) {
                 let startPoint = this.getAngle();
                 return this.rotateEaseTo(startPoint + x, duration, f);
@@ -803,81 +752,6 @@ const pixiInst = function () {
             moveTo(x, y, duration, f) {
                 return this.easingTo(x, y, duration, f);
             }
-            // xxxxeasingTo(x, y, duration, f) {
-            //     const pixics = point.pixics;
-            //     const ratio = point.ratio;
-            //     if (!f) f = 'linearTween';
-            //     f = Ease[f];
-            //     this.getBody().setKinematic();
-            //     return new Promise(r => {
-            //         let _point = this;
-            //         let startPoint;// = _point.getPosition();
-            //         let endPoint;// = { x, y };
-            //         if (y !== null) {
-            //             startPoint = _point.getPosition();
-            //             endPoint = { x, y };
-            //         } else {
-            //             startPoint = _point.getAngle();
-            //             endPoint = x;
-            //         }
-            //         let startTime = 0;//new Date();
-            //         let boj = magicNumber * (1 / (PIXICS.worldscale / ratio));
-            //         let moveLength;
-            //         let radian;
-            //         if (y !== null) {
-            //             moveLength = ksttool.math.get_distance_between_two_point({
-            //                 x: startPoint.x / ratio * boj,
-            //                 y: startPoint.y / ratio * boj,
-            //             }, {
-            //                 x: endPoint.x / ratio * boj,
-            //                 y: endPoint.y / ratio * boj,
-            //             }); // 충돌벽 길이
-            //             radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint);
-            //         } else {
-            //             moveLength = (endPoint - startPoint) * magicNumber;
-            //         }
-            //         let bf = 0;
-            //         pixics.update(function upf(dt) {
-            //             // console.log(dt);
-            //             startTime += dt;
-            //             let currentTime = (startTime / magicNumber) * 1000;//new Date() - startTime;
-            //             let rat = currentTime / duration;
-            //             if (rat >= 1) { rat = 1; }
-            //             let fv = f(rat, 0, 1, 1);
-            //             let st = (fv - bf)
-            //             bf = fv;
-            //             // let cur = ksttool.math.get_coordinate_between_two_points(startPoint, endPoint, fv);
-            //             if (false) {
-            //                 // _point.setPosition(cur.x, cur.y)
-            //             } else {
-            //                 if (y !== null) {
-            //                     var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(st * moveLength, startPoint, radian);
-            //                     _point.getBody().setLinearVelocity(planck.Vec2(rtn.x - startPoint.x, startPoint.y - rtn.y))
-            //                 } else {
-            //                     _point.getBody().setAngularVelocity((st * moveLength))
-            //                 }
-            //             }
-            //             if (rat === 1) {
-            //                 if (y !== null) {
-            //                     // var rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(st * moveLength, startPoint, radian);
-            //                     _point.getBody().setLinearVelocity(planck.Vec2(0, 0))
-            //                     _point.setPosition(x, y);
-            //                 } else {
-            //                     _point.getBody().setAngularVelocity(0)
-            //                     _point.setAngle(x);
-            //                 }
-            //                 // if (y !== null) {
-            //                 //     _point.setPosition(x, y);
-            //                 // } else {
-            //                 //     _point.setAngle(x);
-            //                 // }
-            //                 pixics.unupdate(upf);
-            //                 r();
-            //             }
-            //         });
-            //     })
-            // }
-
             getGraphic() {
                 return this.graphic.body;
             }
@@ -985,8 +859,6 @@ const pixiInst = function () {
                 width *= 0.5;
                 height *= 0.5;
                 let argument = [x, y, width, height, color];
-                // y = -y
-                // y*=-1;
                 if (color === undefined) color = 0xffffff;
                 if (PLANCKMODE) {
                 } else {
@@ -994,7 +866,6 @@ const pixiInst = function () {
                         x / PIXICS.worldscale,
                         y / PIXICS.worldscale
                     );
-                    // let shape = planck.Box(width / 2 / PIXICS.worldscale, height / 2 / PIXICS.worldscale, position);
                     const shape = new b2.PolygonShape();
                     shape.SetAsBox(width / PIXICS.worldscale, height / PIXICS.worldscale, position);
 
@@ -1007,7 +878,6 @@ const pixiInst = function () {
                     let fixture = this.createFixture(fd);
                     fixture.drawingProfile = { type: this._drawRect, arg: argument };
                     fixture.drawingProfile.type.bind(this)(...argument);
-                    // 0 && this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                     return fixture;
                 }
             }
