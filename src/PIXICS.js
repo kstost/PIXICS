@@ -1,3 +1,4 @@
+
 'use strict';
 const pixiInst = function () {
     const Ease = {
