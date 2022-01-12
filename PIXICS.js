@@ -390,6 +390,49 @@ const pixiInst = function () {
                     this.planckBody.SetMassData(massData);
                 }
             }
+            getPinGravities() {
+                return [...this.pinGravity.keys()];
+            }
+            remPinGravity(pin) {
+                if (this.pinGravity) {
+                    this.pinGravity.delete(pin);
+                    if (!(this.getPinGravities().length)) {
+                        this.remUpdate(this.pinUpdateGravity);
+                    }
+                }
+            }
+            setPinGravity(pin) {
+                if (!this.pinGravity) this.pinGravity = new Map();
+
+                if (pin.constructor !== Array) pin = [pin];
+                pin.forEach(pin => {
+                    this.pinGravity.set(pin);
+                    if (!this.pinUpdateGravity) {
+                        this.pinUpdateGravity = () => this.applyForceByPinGravities();
+                        this.setUpdate(this.pinUpdateGravity);
+                    }
+                })
+            }
+            applyForceByPinGravities() {
+                this.getPinGravities().forEach(pin => {
+                    // console.log('1')
+                    this.applyForceByPinGravity(pin);
+                });
+            }
+            applyForceByPinGravity(pin) {
+                let { force, pos } = pin;
+                let body = this.getBody();
+                let position = body.GetPosition();
+                // let force = 1;
+                if (pos.constructor === PIXICS.PhysicsGraphics) {
+                    pos = pos.getPosition()
+                }
+                let npin = new b2.Vec2(pos.x / PIXICS.worldscale, pos.y / PIXICS.worldscale);
+                let d = b2.Vec2.SubVV(npin, position, new b2.Vec2());
+                if (d.LengthSquared() < b2.epsilon_sq) return;
+                d.Normalize();
+                body.ApplyForce(b2.Vec2.MulSV(force, d, new b2.Vec2()), position);
+            }
             setContactable(mode) {
                 /*
                     contactable 값은 다음 함수의 작동에 영향을 준다
@@ -1129,6 +1172,7 @@ const pixiInst = function () {
                     density: PLANCKMODE ? 'setDensity' : 'SetDensity',
                     restitution: PLANCKMODE ? 'setRestitution' : 'SetRestitution',
                     friction: PLANCKMODE ? 'setFriction' : 'SetFriction',
+                    sensor: 'SetSensor',
                 })[propname];
                 let fixtures = this.getFixtures();
                 if (idx === undefined) {
@@ -1150,6 +1194,7 @@ const pixiInst = function () {
                     density: PLANCKMODE ? 'getDensity' : 'GetDensity',
                     restitution: PLANCKMODE ? 'getRestitution' : 'GetRestitution',
                     friction: PLANCKMODE ? 'getFriction' : 'GetFriction',
+                    sensor: 'IsSensor',
                 })[propname];
                 let fixtures = this.getFixtures();
                 let fx;
@@ -1160,6 +1205,12 @@ const pixiInst = function () {
                 }
                 return fx[fnname]();
             }
+            setSensor(value, idx) {
+                this.setFixtureProp(value, 'sensor', idx);
+                this.resetBodyAndFixtures();
+                this.setAwake(true);
+            }
+            isSensor(idx) { if (idx === undefined) { idx = 0; } return this.getFixtureProp('sensor', idx); }
             setDensity(value, idx) {
                 this.setFixtureProp(value, 'density', idx);
                 this.resetBodyAndFixtures();
@@ -1239,12 +1290,14 @@ const pixiInst = function () {
                         let restitution = fixture?.GetRestitution();
                         let friction = fixture?.GetFriction();
                         let density = fixture?.GetDensity();
+                        let sensor = fixture?.IsSensor();
                         density = density ? density : 1;
                         fixtures.set(fixture, {
                             shape,
                             restitution,
                             friction,
-                            density
+                            density,
+                            sensor
                         });
                     }
                 }
@@ -1289,7 +1342,8 @@ const pixiInst = function () {
                         shape,
                         restitution,
                         friction,
-                        density
+                        density,
+                        sensor
                     } = fixtures.get(fixture);
                     const drawingProfile = fixture.drawingProfile;
                     if (PLANCKMODE) {
@@ -1303,6 +1357,7 @@ const pixiInst = function () {
                         fixture.SetRestitution(restitution || 0);
                         fixture.SetFriction(friction || 0);
                         fixture.SetDensity(density || 0);
+                        fixture.SetSensor(sensor);
                         fixture.drawingProfile = drawingProfile;
                     }
                 });
@@ -1356,8 +1411,12 @@ const pixiInst = function () {
                 const graphic = this.getGraphic();
                 return !graphic.parent;
             }
+            remAllpinGravities() {
+                this.getPinGravities().forEach(pin => this.remPinGravity(pin));
+            }
             destroy() {
                 // console.log()
+                this.remAllpinGravities();
                 point.pixics.getJointList().forEach(jj => {
                     let jp = jj.GetUserData();
                     if (jp.joints.map(j => j.body).includes(this)) {
