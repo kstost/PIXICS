@@ -3,7 +3,7 @@ async function initPixics(initValue) {
         "https://pixijs.download/v6.2.1/pixi.min.js",
         // "https://cdn.jsdelivr.net/gh/kstost/ksttool/ksttool.js",
         "https://cdn.jsdelivr.net/gh/kstost/PIXICS@f1d6501/PIXICS.js",
-        "https://cdn.jsdelivr.net/gh/flyover/box2d.ts@4bea859e7b1bab55429d76e03f72b1de72edc5f8/dist/box2d.umd.js",
+        "https://cdn.jsdelivr.net/gh/flyover/box2d.ts@52eb0773a59592dc573c4bc4d0f1451676a43ef9/dist/box2d.umd.js",
         // "https://rawcdn.githack.com/flyover/box2d.ts/master/dist/box2d.umd.js",
     ];
     function genScript() {
