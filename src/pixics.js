@@ -260,6 +260,7 @@ const pixiInst = function () {
                 }
             }
             getPinGravities() {
+                if (!this.pinGravity) return [];
                 return [...this.pinGravity.keys()];
             }
             remPinGravity(pin) {
