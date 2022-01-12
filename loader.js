@@ -54,7 +54,7 @@ async function initPixics(initValue) {
             actualSize: { width, height },
         } : { ratio };
         return {
-            math: PIXICS.displaySystem,
+            math: PIXICS.math,
             size,
             b2,
             PIXICS,
