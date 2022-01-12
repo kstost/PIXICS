@@ -1310,8 +1310,8 @@ const pixiInst = function () {
                 let resizable = false;
                 if (scs.length < 2) {
                     resizable = true;
-                    width = ksttool.math.EPSILON;
-                    height = ksttool.math.EPSILON;
+                    width = math.EPSILON;
+                    height = math.EPSILON;
                     if (resizable && isBodyContainer) {
                         window.addEventListener('resize', e => resizable && resizeCb && resizeCb());
                     }
