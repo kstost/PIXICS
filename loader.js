@@ -27,15 +27,6 @@ async function initPixics(initValue) {
         while (initPixics.status !== 2) await new Promise(r => setTimeout(r))
     }
     const PIXICS = pixiInst();
-    // if (false) {
-    //     const { app, pixics, world, ratio, width, height, PIXICS, b2 } = await initPixics({
-    //         resolution: { width: 1080, height: 1920 },
-    //         fpsmonitor: true,
-    //         container: document.querySelector('body'),
-    //         gravity: { x: 0, y: -30 },
-    //         worldscale: 100,
-    //     });
-    // }
     if (initValue) {
 
         // 스크린의 준비
@@ -62,7 +53,7 @@ async function initPixics(initValue) {
             pixics,
             world,
             display,
-            ...{ ratio, width, height }
+            ratio, width, height
         }
     }
 }
