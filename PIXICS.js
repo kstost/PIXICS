@@ -396,21 +396,23 @@ const pixiInst = function () {
             remPinGravity(pin) {
                 if (this.pinGravity) {
                     this.pinGravity.delete(pin);
-                    if (!(this.getPinGravities().length)) {
-                        this.remUpdate(this.pinUpdateGravity);
-                    }
+                    // if (!(this.getPinGravities().length)) {
+                    //     this.remUpdate(this.pinUpdateGravity);
+                    // }
                 }
             }
             setPinGravity(pin) {
-                if (!this.pinGravity) this.pinGravity = new Map();
+                if (!this.pinGravity) {
+                    this.pinGravity = new Map();
+                    this.setUpdate(() => this.applyForceByPinGravities());
+                }
 
                 if (pin.constructor !== Array) pin = [pin];
                 pin.forEach(pin => {
                     this.pinGravity.set(pin);
-                    if (!this.pinUpdateGravity) {
-                        this.pinUpdateGravity = () => this.applyForceByPinGravities();
-                        this.setUpdate(this.pinUpdateGravity);
-                    }
+                    // if (!this.pinUpdateGravity) {
+                    //     this.pinUpdateGravity = () => this.applyForceByPinGravities();
+                    // }
                 })
             }
             applyForceByPinGravities() {
@@ -426,7 +428,10 @@ const pixiInst = function () {
                 // let force = 1;
                 if (pos.constructor === PIXICS.PhysicsGraphics) {
                     pos = pos.getPosition()
+                } else if (pos.constructor === Function) {
+                    pos = pos()
                 }
+                //getCenter
                 let npin = new b2.Vec2(pos.x / PIXICS.worldscale, pos.y / PIXICS.worldscale);
                 let d = b2.Vec2.SubVV(npin, position, new b2.Vec2());
                 if (d.LengthSquared() < b2.epsilon_sq) return;
