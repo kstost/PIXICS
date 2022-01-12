@@ -1,8 +1,59 @@
 'use strict';
 const pixiInst = function () {
+    const Ease = {
+        easeOutElastic = function (t, b, c, d) { var s = 1.70158; var p = 0; var a = c; if (t == 0) return b; if ((t /= d) == 1) return b + c; if (!p) p = d * .3; if (a < Math.abs(c)) { a = c; var s = p / 4; } else var s = p / (2 * Math.PI) * Math.asin(c / a); return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b; },
+        linearTween = function (t, b, c, d) { return c * t / d + b; },// simple linear tweening - no easing, no acceleration
+        easeInQuad = function (t, b, c, d) { t /= d; return c * t * t + b; },// quadratic easing in - accelerating from zero velocity
+        easeOutQuad = function (t, b, c, d) { t /= d; return -c * t * (t - 2) + b; },// quadratic easing out - decelerating to zero velocity
+        easeInOutQuad = function (t, b, c, d) { t /= d / 2; if (t < 1) return c / 2 * t * t + b; t--; return -c / 2 * (t * (t - 2) - 1) + b; },// quadratic easing in/out - acceleration until halfway, then deceleration
+        easeInCubic = function (t, b, c, d) { t /= d; return c * t * t * t + b; },// cubic easing in - accelerating from zero velocity
+        easeOutCubic = function (t, b, c, d) { t /= d; t--; return c * (t * t * t + 1) + b; },// cubic easing out - decelerating to zero velocity
+        easeInOutCubic = function (t, b, c, d) { t /= d / 2; if (t < 1) return c / 2 * t * t * t + b; t -= 2; return c / 2 * (t * t * t + 2) + b; },// cubic easing in/out - acceleration until halfway, then deceleration
+        easeInQuart = function (t, b, c, d) { t /= d; return c * t * t * t * t + b; },// quartic easing in - accelerating from zero velocity
+        easeOutQuart = function (t, b, c, d) { t /= d; t--; return -c * (t * t * t * t - 1) + b; },// quartic easing out - decelerating to zero velocity
+        easeInOutQuart = function (t, b, c, d) { t /= d / 2; if (t < 1) return c / 2 * t * t * t * t + b; t -= 2; return -c / 2 * (t * t * t * t - 2) + b; },// quartic easing in/out - acceleration until halfway, then deceleration
+        easeInQuint = function (t, b, c, d) { t /= d; return c * t * t * t * t * t + b; },// quintic easing in - accelerating from zero velocity
+        easeOutQuint = function (t, b, c, d) { t /= d; t--; return c * (t * t * t * t * t + 1) + b; },// quintic easing out - decelerating to zero velocity
+        easeInOutQuint = function (t, b, c, d) { t /= d / 2; if (t < 1) return c / 2 * t * t * t * t * t + b; t -= 2; return c / 2 * (t * t * t * t * t + 2) + b; },// quintic easing in/out - acceleration until halfway, then deceleration
+        easeInSine = function (t, b, c, d) { return -c * Math.cos(t / d * (Math.PI / 2)) + c + b; },// sinusoidal easing in - accelerating from zero velocity
+        easeOutSine = function (t, b, c, d) { return c * Math.sin(t / d * (Math.PI / 2)) + b; },// sinusoidal easing out - decelerating to zero velocity
+        easeInOutSine = function (t, b, c, d) { return -c / 2 * (Math.cos(Math.PI * t / d) - 1) + b; },// sinusoidal easing in/out - accelerating until halfway, then decelerating
+        easeInExpo = function (t, b, c, d) { return c * Math.pow(2, 10 * (t / d - 1)) + b; },// exponential easing in - accelerating from zero velocity
+        easeOutExpo = function (t, b, c, d) { return c * (-Math.pow(2, -10 * t / d) + 1) + b; },// exponential easing out - decelerating to zero velocity
+        easeInOutExpo = function (t, b, c, d) { t /= d / 2;; if (t < 1) return c / 2 * Math.pow(2, 10 * (t - 1)) + b;; t--;; return c / 2 * (-Math.pow(2, -10 * t) + 2) + b;; },// exponential easing in/out - accelerating until halfway, then decelerating
+        easeInCirc = function (t, b, c, d) { ; t /= d;; return -c * (Math.sqrt(1 - t * t) - 1) + b;; },// circular easing in - accelerating from zero velocity
+        easeOutCirc = function (t, b, c, d) { ; t /= d;; t--;; return c * Math.sqrt(1 - t * t) + b;; },// circular easing out - decelerating to zero velocity
+        easeInOutCirc = function (t, b, c, d) { t /= d / 2; if (t < 1) return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b; t -= 2; return c / 2 * (Math.sqrt(1 - t * t) + 1) + b; }// circular easing in/out - acceleration until halfway, then deceleration
+    };
+    const math = {
+        EPSILON: 0.0000001,
+        get_angle_in_radian_between_two_points(point1, point2) {
+            /*
+               점과 점사이의 각도를 radian 으로 리턴해줍니다.
+            */
+            return Math.atan2(point1.y - point2.y, point1.x - point2.x);
+        },
+        get_distance_between_two_point(point1, point2) {
+            /*
+               점과 점사이의 거리를 구합니다.
+            */
+            var a = point1.x - point2.x;
+            var b = point1.y - point2.y;
+            return Math.sqrt(a * a + b * b); // Math.hypot() 를 쓰면 a*a 이 아니라 a 라고 해주면 된다. https://msdn.microsoft.com/ko-kr/library/dn858234(v=vs.94).aspx
+        },
+        get_coordinate_distance_away_from_center_with_radian(distance, center_coordinate, angle) {
+            /*
+               지정한 좌표로부터 지정한 거리만큼 지정한 각도로 떨어져있는 지점의 좌표를 반환한다
+             */
+            angle += Math.PI;
+            return {
+                x: center_coordinate.x + Math.cos(angle) * distance,
+                y: center_coordinate.y + Math.sin(angle) * distance
+            };
+        }
+    }
     const typeChecker = {
         isNumber() {
-            // console.log(arguments)
             let cnt = 0;
             for (let i = 0; i < arguments.length; i++) {
                 let n = arguments[i];
@@ -68,10 +119,10 @@ const pixiInst = function () {
                 centroid.y = yy;
                 let pp = { ...gr.GetLocalCenter() };
                 pp.y = -pp.y;
-                let radian = ksttool.math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
-                let leng = -(ksttool.math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
+                let radian = math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
+                let leng = -(math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
                 let rr = radian - gr.GetAngle();
-                let pont = ksttool.math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
+                let pont = math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
                 gr.gr.pivot.x = pp.x;
                 gr.gr.pivot.y = pp.y;
                 gr.gr.x = center.x + pont.x + position.x
@@ -88,10 +139,10 @@ const pixiInst = function () {
                 let gr = point;
                 let pp = { ...gr.GetLocalCenter() };
                 pp.y = -pp.y;
-                let radian = ksttool.math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
-                let leng = -(ksttool.math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
+                let radian = math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
+                let leng = -(math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
                 let rr = radian - gr.GetAngle();
-                let pont = ksttool.math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
+                let pont = math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
                 let pos = { x: gr.gr.x, y: gr.gr.y };//gr.GetPosition();
                 pos.x -= center.x + pont.x;
                 pos.y -= center.y + pont.y;
@@ -105,10 +156,10 @@ const pixiInst = function () {
                 let gr = point;
                 let pp = { ...gr.GetLocalCenter() };
                 pp.y = -pp.y;
-                let radian = ksttool.math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
-                let leng = -(ksttool.math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
+                let radian = math.get_angle_in_radian_between_two_points(pp, { x: 0, y: 0 });
+                let leng = -(math.get_distance_between_two_point({ x: 0, y: 0 }, pp));
                 let rr = radian - gr.GetAngle();
-                let pont = ksttool.math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
+                let pont = math.get_coordinate_distance_away_from_center_with_radian(leng, { x: 0, y: 0 }, rr)
                 gr.gr.x = center.x + pont.x + xx;
                 gr.gr.y = center.y + pont.y + -yy;
             }
@@ -135,189 +186,6 @@ const pixiInst = function () {
             return point;
         }
 
-
-
-        let Ease = {};
-
-        Ease.easeOutElastic = function (t, b, c, d) {
-            var s = 1.70158;
-            var p = 0;
-            var a = c;
-            if (t == 0) return b;
-            if ((t /= d) == 1) return b + c;
-            if (!p) p = d * .3;
-            if (a < Math.abs(c)) {
-                a = c;
-                var s = p / 4;
-            }
-            else var s = p / (2 * Math.PI) * Math.asin(c / a);
-            return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) *
-                (2 * Math.PI) / p) + c + b;
-        };
-
-        // simple linear tweening - no easing, no acceleration
-        Ease.linearTween = function (t, b, c, d) {
-            return c * t / d + b;
-        };
-
-
-        // quadratic easing in - accelerating from zero velocity
-        Ease.easeInQuad = function (t, b, c, d) {
-            t /= d;
-            return c * t * t + b;
-        };
-
-
-        // quadratic easing out - decelerating to zero velocity
-        Ease.easeOutQuad = function (t, b, c, d) {
-            t /= d;
-            return -c * t * (t - 2) + b;
-        };
-
-
-        // quadratic easing in/out - acceleration until halfway, then deceleration
-        Ease.easeInOutQuad = function (t, b, c, d) {
-            t /= d / 2;
-            if (t < 1) return c / 2 * t * t + b;
-            t--;
-            return -c / 2 * (t * (t - 2) - 1) + b;
-        };
-
-
-        // cubic easing in - accelerating from zero velocity
-        Ease.easeInCubic = function (t, b, c, d) {
-            t /= d;
-            return c * t * t * t + b;
-        };
-
-
-        // cubic easing out - decelerating to zero velocity
-        Ease.easeOutCubic = function (t, b, c, d) {
-            t /= d;
-            t--;
-            return c * (t * t * t + 1) + b;
-        };
-
-
-        // cubic easing in/out - acceleration until halfway, then deceleration
-        Ease.easeInOutCubic = function (t, b, c, d) {
-            t /= d / 2;
-            if (t < 1) return c / 2 * t * t * t + b;
-            t -= 2;
-            return c / 2 * (t * t * t + 2) + b;
-        };
-
-
-        // quartic easing in - accelerating from zero velocity
-        Ease.easeInQuart = function (t, b, c, d) {
-            t /= d;
-            return c * t * t * t * t + b;
-        };
-
-
-        // quartic easing out - decelerating to zero velocity
-        Ease.easeOutQuart = function (t, b, c, d) {
-            t /= d;
-            t--;
-            return -c * (t * t * t * t - 1) + b;
-        };
-
-
-        // quartic easing in/out - acceleration until halfway, then deceleration
-        Ease.easeInOutQuart = function (t, b, c, d) {
-            t /= d / 2;
-            if (t < 1) return c / 2 * t * t * t * t + b;
-            t -= 2;
-            return -c / 2 * (t * t * t * t - 2) + b;
-        };
-
-
-        // quintic easing in - accelerating from zero velocity
-        Ease.easeInQuint = function (t, b, c, d) {
-            t /= d;
-            return c * t * t * t * t * t + b;
-        };
-
-
-        // quintic easing out - decelerating to zero velocity
-        Ease.easeOutQuint = function (t, b, c, d) {
-            t /= d;
-            t--;
-            return c * (t * t * t * t * t + 1) + b;
-        };
-
-
-        // quintic easing in/out - acceleration until halfway, then deceleration
-        Ease.easeInOutQuint = function (t, b, c, d) {
-            t /= d / 2;
-            if (t < 1) return c / 2 * t * t * t * t * t + b;
-            t -= 2;
-            return c / 2 * (t * t * t * t * t + 2) + b;
-        };
-
-
-        // sinusoidal easing in - accelerating from zero velocity
-        Ease.easeInSine = function (t, b, c, d) {
-            return -c * Ease.cos(t / d * (Ease.PI / 2)) + c + b;
-        };
-
-
-
-        // sinusoidal easing out - decelerating to zero velocity
-        Ease.easeOutSine = function (t, b, c, d) {
-            return c * Ease.sin(t / d * (Ease.PI / 2)) + b;
-        };
-
-
-        // sinusoidal easing in/out - accelerating until halfway, then decelerating
-        Ease.easeInOutSine = function (t, b, c, d) {
-            return -c / 2 * (Ease.cos(Ease.PI * t / d) - 1) + b;
-        };
-
-
-        // exponential easing in - accelerating from zero velocity
-        Ease.easeInExpo = function (t, b, c, d) {
-            return c * Ease.pow(2, 10 * (t / d - 1)) + b;
-        };
-
-
-        // exponential easing out - decelerating to zero velocity
-        Ease.easeOutExpo = function (t, b, c, d) {
-            return c * (-Ease.pow(2, -10 * t / d) + 1) + b;
-        };
-
-
-        // exponential easing in/out - accelerating until halfway, then decelerating
-        Ease.easeInOutExpo = function (t, b, c, d) {
-            t /= d / 2;
-            if (t < 1) return c / 2 * Ease.pow(2, 10 * (t - 1)) + b;
-            t--;
-            return c / 2 * (-Ease.pow(2, -10 * t) + 2) + b;
-        };
-
-
-        // circular easing in - accelerating from zero velocity
-        Ease.easeInCirc = function (t, b, c, d) {
-            t /= d;
-            return -c * (Ease.sqrt(1 - t * t) - 1) + b;
-        };
-
-
-        // circular easing out - decelerating to zero velocity
-        Ease.easeOutCirc = function (t, b, c, d) {
-            t /= d;
-            t--;
-            return c * Ease.sqrt(1 - t * t) + b;
-        };
-
-
-        // circular easing in/out - acceleration until halfway, then deceleration
-        Ease.easeInOutCirc = function (t, b, c, d) {
-            t /= d / 2;
-            if (t < 1) return -c / 2 * (Ease.sqrt(1 - t * t) - 1) + b;
-            t -= 2;
-            return c / 2 * (Ease.sqrt(1 - t * t) + 1) + b;
-        };
         let center = { x: 0, y: 0 };
         class Rectangle extends PIXI.Sprite {
             constructor() {
@@ -587,8 +455,8 @@ const pixiInst = function () {
                     startPoint = this.getPosition();
                     startPoint.y *= -1;
                     endPoint = { x, y };
-                    radian = ksttool.math.get_angle_in_radian_between_two_points(startPoint, endPoint); // 엘라스틱에서 신경쓰자.
-                    moveLength = ksttool.math.get_distance_between_two_point(startPoint, endPoint);
+                    radian = math.get_angle_in_radian_between_two_points(startPoint, endPoint); // 엘라스틱에서 신경쓰자.
+                    moveLength = math.get_distance_between_two_point(startPoint, endPoint);
                 } else {
                     startPoint = this.getAngle();
                     endPoint = x;
@@ -702,7 +570,7 @@ const pixiInst = function () {
                             let s = getVelocityPerFrame(distanceToMoveOnThisTick);//*0.0001;
                             let _startPoint = point.getPosition();
                             _startPoint.y *= -1;
-                            let rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
+                            let rtn = math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
                             if (PLANCKMODE) {
                                 point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
                             } else {
@@ -791,7 +659,7 @@ const pixiInst = function () {
                     else if (class_ === 'circle' && layer.dots[class_].length === 2) {
                         let center = layer.dots[class_][0];
                         let another = layer.dots[class_][1];
-                        let r = ksttool.math.get_distance_between_two_point(center, another);
+                        let r = math.get_distance_between_two_point(center, another);
                         fixture = butter.drawCircle(
                             ((center.x - data.pivotpoint.x) / data.scale) * scale * ratio,
                             -((center.y - data.pivotpoint.y) / data.scale) * scale * ratio,
@@ -1312,15 +1180,15 @@ const pixiInst = function () {
                 let resist = function () {
                     let cur = ball1.getBody().GetLinearVelocity();
                     let zero = { x: 0, y: 0 };
-                    let radian = ksttool.math.get_angle_in_radian_between_two_points(zero, cur);
+                    let radian = math.get_angle_in_radian_between_two_points(zero, cur);
                     let resistance = (1 - fric);
                     if (resistance < 0) resistance = 0;
-                    let vv = ksttool.math.get_distance_between_two_point(zero, cur);
+                    let vv = math.get_distance_between_two_point(zero, cur);
                     let dist = Math.abs(vv) * resistance;
-                    let rtn = ksttool.math.get_coordinate_distance_away_from_center_with_radian(dist, zero, radian);
+                    let rtn = math.get_coordinate_distance_away_from_center_with_radian(dist, zero, radian);
                     ball1.getBody().SetLinearVelocity(rtn);
                     if (prev) {
-                        let dist2 = (ksttool.math.get_distance_between_two_point(ball1.getGraphic().position, prev));
+                        let dist2 = (math.get_distance_between_two_point(ball1.getGraphic().position, prev));
                         if (dist2 < 0.01) {
                             ball1.getBody().SetLinearVelocity(new b2.Vec2(0, 0));
                             point.pixics.unupdate(resist);
@@ -1681,10 +1549,10 @@ const pixiInst = function () {
                                 let { body, origin, anchor } = jinfo;
                                 anchor = { ...anchor };
                                 anchor.x = -anchor.x;
-                                let radian = ksttool.math.get_angle_in_radian_between_two_points(anchor, origin);
-                                let leng = ksttool.math.get_distance_between_two_point(origin, anchor);
+                                let radian = math.get_angle_in_radian_between_two_points(anchor, origin);
+                                let leng = math.get_distance_between_two_point(origin, anchor);
                                 let center = pixics.getWorldCenter();
-                                let point = ksttool.math.get_coordinate_distance_away_from_center_with_radian(leng, body.getPosition(), (-radian) + body.getAngle())
+                                let point = math.get_coordinate_distance_away_from_center_with_radian(leng, body.getPosition(), (-radian) + body.getAngle())
                                 if (i === 0) {
                                     jointWire.ax = point.x + center.x;
                                     jointWire.ay = -point.y + center.y;
