@@ -1,3 +1,13 @@
 # PIXICS
-물리엔진인 Box2D를 사용하여 계산된 값을 그래픽렌더링 라이브러리인 PixiJS을 통해 시각적으로 표현하는데 있어서 좀더 사용하기 수월한 인터페이스를 지향하고자 PIXICS라는 이름으로 코드를 만들어가고 있습니다  
-코딩을 통해 가지고 놀 수 있는 재미있는 장난감의 역할을 할 수 있을것이라 기대하며 만들고 있습니다  
+
+I'm building this project under the name of PIXICS for an easier-to-use interface to visually express values calculated using Box2D, a physics engine, through PixiJS, a graphic rendering library.
+I am making it with the expectation that it will serve as a fun toy to play with through coding.
+
+# Dependencies
+
+PIXICS has dependencies on below projects
+Thanks to those awesome projects
+
+* Box2D: [https://github.com/erincatto/box2d](https://github.com/erincatto/box2d)
+* PixiJS: [https://github.com/pixijs/pixijs](https://github.com/pixijs/pixijs)
+* box2d.ts (A TypeScript port of Box2D): [https://github.com/flyover/box2d.ts](https://github.com/flyover/box2d.ts)
