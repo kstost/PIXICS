@@ -1,5 +1,7 @@
 'use strict';
-/* **************************************************************************
+/* ***********************************************************************
+PIXICS Copyright (c) 2022 Seungtae Kim
+--------------------------------------------------------------------------
 * PIXICS has dependencies on below projects Thanks to those awesome projects
 *   - Box2D: https://github.com/erincatto/box2d
 *   - PixiJS: https://github.com/pixijs/pixijs
