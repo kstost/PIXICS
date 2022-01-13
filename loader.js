@@ -1,3 +1,9 @@
+/* **************************************************************************
+* PIXICS has dependencies on below projects Thanks to those awesome projects
+*   - Box2D: https://github.com/erincatto/box2d
+*   - PixiJS: https://github.com/pixijs/pixijs
+*   - box2d.ts (A TypeScript port of Box2D): https://github.com/flyover/box2d.ts
+************************************************************************** */
 async function initPixics(initValue) {
     let scriptlist = initValue.scriptlist ? initValue.scriptlist : [
         "https://pixijs.download/v6.2.1/pixi.min.js",
