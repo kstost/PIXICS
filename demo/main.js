@@ -18,10 +18,41 @@ window.addEventListener('load', async () => {
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
    //------------------------------
-   L('0x0 좌표에 박스를 만든다');
-   L(`크기값의 관계: ${ratio * 1080} === ${width}`);
-   let boxsize = (1080 / 2) * ratio;
-   let rectangle = new PIXICS.PhysicsGraphics({ world });
-   rectangle.drawRect(0, 0, boxsize, boxsize, 0x00ff00);
-   app.stage.addChild(rectangle.getGraphic());
+
+   class Bar {
+      constructor({ width }) {
+         this.width = width;
+         let _static = new PIXICS.PhysicsGraphics({ world });
+         _static.drawRect(0, 0, this.width, 30 * ratio, 0xffffff);
+         _static.getGraphic().tint = 0x00ff00;
+         app.stage.addChild(_static.getGraphic());
+         this.pg = _static;
+      }
+      run() {
+         this.pg.setUpdate(e => {
+            console.log(e)
+         });
+      }
+      set pos(pos) {
+         this.pg.setPosition((this.width * pos) + (-width / 2) + this.width / 2, 0)
+      }
+   }
+   let bar = new Bar({ width: width / 4 });
+   bar.pos = 1;
+   // bar.run()
+
+   // let dd=
+   await pixics.update(function (deltatime, resolver, accumulator) {
+      // cnt += v;
+      // 0 && console.log(Math.floor(cnt / 60), new Date() - tm)
+      // console.log(p);
+      // p()
+      console.log(accumulator);
+      if (accumulator === 60) resolver()
+      // console.log((p - 1) % 2);
+   });
+   console.log(123)
+
+
+
 });

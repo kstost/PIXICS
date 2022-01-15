@@ -332,13 +332,18 @@ const pixiInst = function () {
             isUpdating(f) {
                 return this.updateQueue.has(f);
             }
-            setUpdate(f, rem) {
-                if (rem) {
-                    this.remUpdate(f);
-                    return;
-                }
+            async setUpdate(f, cnt) {
                 if (!this.updateQueue.has(f)) {
                     this.updateQueue.set(f);
+                    const cb = f;
+                    return await new Promise(resolve => {
+                        cb[Symbol.for('removeUpdate')] = () => {
+                            this.remUpdate(f);
+                            resolve();
+                        }
+                        if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
+                        updateList.set(cb);
+                    })
                 }
             }
             remUpdate(f) {
@@ -1215,6 +1220,11 @@ const pixiInst = function () {
         // 매 프레임마다 물리연산을 해서 나오는 수치를 픽시 그래픽요소의 상태에 반영
         let updateList = new Map();
         let timeoutList = new Map();
+        const runUpdateCb = value => {
+            const tc = Symbol.for('timecount');
+            if (value[tc] === undefined) value[tc] = 0
+            value(1, value[Symbol.for('removeUpdate')], ++value[tc]);
+        };
         let syncStateAll = world => {
             for (let body = world.GetBodyList(); body; body = body.GetNext()) {
                 let bdv = body.GetUserData();
@@ -1229,7 +1239,7 @@ const pixiInst = function () {
                 while (true) {
                     let val = keys.next();
                     if (val.done) break;
-                    val.value();
+                    runUpdateCb(val.value);
                 }
                 bdv?.syncState();
             }
@@ -1260,7 +1270,7 @@ const pixiInst = function () {
                     while (true) {
                         let { value, done } = it.next();
                         if (done) break;
-                        value(1);
+                        runUpdateCb(value);
                     }
                 }
                 {
@@ -1637,8 +1647,15 @@ const pixiInst = function () {
                         point.tickplay = false;
                         point.goOneStep = true;
                     },
-                    update: function (cb) {
-                        updateList.set(cb);
+                    update: async function (cb, cnt) {
+                        return await new Promise(resolve => {
+                            cb[Symbol.for('removeUpdate')] = () => {
+                                this.unupdate(cb);
+                                resolve();
+                            };
+                            if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
+                            updateList.set(cb);
+                        })
                     },
                     unupdate: function (cb) {
                         updateList.delete(cb);
