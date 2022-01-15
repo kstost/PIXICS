@@ -332,17 +332,15 @@ const pixiInst = function () {
             isUpdating(f) {
                 return this.updateQueue.has(f);
             }
-            async setUpdate(f, cnt) {
-                if (!this.updateQueue.has(f)) {
-                    this.updateQueue.set(f);
-                    const cb = f;
+            async setUpdate(cb, cnt) {
+                if (!this.updateQueue.has(cb)) {
                     return await new Promise(resolve => {
                         cb[Symbol.for('removeUpdate')] = () => {
                             this.remUpdate(f);
                             resolve();
                         }
                         if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
-                        updateList.set(cb);
+                        this.updateQueue.set(cb);
                     })
                 }
             }
