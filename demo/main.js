@@ -42,7 +42,7 @@ window.addEventListener('load', async () => {
    // bar.run()
 
    // let dd=
-   await pixics.update(function (deltatime, resolver, accumulator) {
+   await bar.pg.setUpdate(function (deltatime, resolver, accumulator) {
       // cnt += v;
       // 0 && console.log(Math.floor(cnt / 60), new Date() - tm)
       // console.log(p);
@@ -50,7 +50,7 @@ window.addEventListener('load', async () => {
       console.log(accumulator);
       if (accumulator === 60) resolver()
       // console.log((p - 1) % 2);
-   });
+   }, 50);
    console.log(123)
 
 

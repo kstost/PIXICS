@@ -336,7 +336,7 @@ const pixiInst = function () {
                 if (this.updateQueue.has(cb)) return;
                 return await new Promise(resolve => {
                     cb[Symbol.for('removeUpdate')] = () => {
-                        this.remUpdate(f);
+                        this.remUpdate(cb);
                         resolve();
                     }
                     if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
