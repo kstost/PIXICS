@@ -73,6 +73,17 @@ const pixiInst = function () {
         }
     };
     const PIXICS = (() => {
+        function updateManage(cb, resolve, removeUpdate, cnt, queue) {
+            cb[Symbol.for('resolver')] = resolve;
+            cb[Symbol.for('removeUpdate')] = removeUpdate;
+            if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
+            queue.set(cb);
+        }
+        function updateRemoveManage(cb, queue) {
+            if (!queue.has(cb)) return;
+            queue.delete(cb);
+            cb[Symbol.for('resolver')]();
+        }
         function makeid(length) {
             var result = '';
             var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -332,17 +343,11 @@ const pixiInst = function () {
             async setUpdate(cb, cnt) {
                 if (this.updateQueue.has(cb)) return;
                 return await new Promise(resolve => {
-                    cb[Symbol.for('resolver')] = resolve;
-                    cb[Symbol.for('removeUpdate')] = () => this.remUpdate(cb);
-                    if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
-                    this.updateQueue.set(cb);
+                    updateManage(cb, resolve, () => this.remUpdate(cb), cnt, this.updateQueue);
                 });
             }
-            remUpdate(f) {
-                if (this.updateQueue.has(f)) {
-                    this.updateQueue.delete(f);
-                    f[Symbol.for('resolver')]();
-                }
+            remUpdate(cb) {
+                updateRemoveManage(cb, this.updateQueue);
             }
             remAllUpdate() {
                 let keys = this.updateQueue.keys();
@@ -1653,16 +1658,11 @@ const pixiInst = function () {
                     update: async function (cb, cnt) {
                         if (updateList.has(cb)) return;
                         return await new Promise(resolve => {
-                            cb[Symbol.for('removeUpdate')] = () => {
-                                this.unupdate(cb);
-                                resolve();
-                            };
-                            if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
-                            updateList.set(cb);
-                        })
+                            updateManage(cb, resolve, () => this.unupdate(cb), cnt, updateList);
+                        });
                     },
-                    unupdate: function (cb) {
-                        updateList.delete(cb);
+                    unupdate(cb) {
+                        updateRemoveManage(cb, updateList);
                     },
                     setTimeout(cb, time) {
                         timeoutList.set(cb, { time: (time / 1000) * magicNumber });
