@@ -333,16 +333,15 @@ const pixiInst = function () {
                 return this.updateQueue.has(f);
             }
             async setUpdate(cb, cnt) {
-                if (!this.updateQueue.has(cb)) {
-                    return await new Promise(resolve => {
-                        cb[Symbol.for('removeUpdate')] = () => {
-                            this.remUpdate(f);
-                            resolve();
-                        }
-                        if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
-                        this.updateQueue.set(cb);
-                    })
-                }
+                if (this.updateQueue.has(cb)) return;
+                return await new Promise(resolve => {
+                    cb[Symbol.for('removeUpdate')] = () => {
+                        this.remUpdate(f);
+                        resolve();
+                    }
+                    if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
+                    this.updateQueue.set(cb);
+                });
             }
             remUpdate(f) {
                 if (this.updateQueue.has(f)) {
@@ -1646,6 +1645,7 @@ const pixiInst = function () {
                         point.goOneStep = true;
                     },
                     update: async function (cb, cnt) {
+                        if (updateList.has(cb)) return;
                         return await new Promise(resolve => {
                             cb[Symbol.for('removeUpdate')] = () => {
                                 this.unupdate(cb);
