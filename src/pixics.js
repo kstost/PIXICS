@@ -273,9 +273,6 @@ const pixiInst = function () {
             remPinGravity(pin) {
                 if (this.pinGravity) {
                     this.pinGravity.delete(pin);
-                    // if (!(this.getPinGravities().length)) {
-                    //     this.remUpdate(this.pinUpdateGravity);
-                    // }
                 }
             }
             setPinGravity(pin) {
@@ -335,10 +332,8 @@ const pixiInst = function () {
             async setUpdate(cb, cnt) {
                 if (this.updateQueue.has(cb)) return;
                 return await new Promise(resolve => {
-                    cb[Symbol.for('removeUpdate')] = () => {
-                        this.remUpdate(cb);
-                        resolve();
-                    }
+                    cb[Symbol.for('resolver')] = resolve;
+                    cb[Symbol.for('removeUpdate')] = () => this.remUpdate(cb);
                     if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
                     this.updateQueue.set(cb);
                 });
@@ -346,6 +341,15 @@ const pixiInst = function () {
             remUpdate(f) {
                 if (this.updateQueue.has(f)) {
                     this.updateQueue.delete(f);
+                    f[Symbol.for('resolver')]();
+                }
+            }
+            remAllUpdate() {
+                let keys = this.updateQueue.keys();
+                while (true) {
+                    let val = keys.next();
+                    if (val.done) break;
+                    this.remUpdate(val.value);
                 }
             }
             setTag(v) {
@@ -1170,6 +1174,7 @@ const pixiInst = function () {
             }
             destroy() {
                 // console.log()
+                this.remAllUpdate();
                 this.remAllpinGravities();
                 point.pixics.getJointList().forEach(jj => {
                     let jp = jj.GetUserData();
@@ -1318,6 +1323,7 @@ const pixiInst = function () {
 
         let lineList = new Map();
         let point = {
+            framerate: magicNumber,
             math: math,
             displaySystem: (scs, fps, container) => {
                 let [width, height] = scs;
