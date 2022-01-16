@@ -39,19 +39,35 @@ window.addEventListener('load', async () => {
    }
    let bar = new Bar({ width: width / 4 });
    bar.pos = 1;
+   
    // bar.run()
 
    // let dd=
-   await bar.pg.setUpdate(function (deltatime, resolver, accumulator) {
-      // cnt += v;
-      // 0 && console.log(Math.floor(cnt / 60), new Date() - tm)
-      // console.log(p);
-      // p()
-      console.log(accumulator);
-      if (accumulator === 60) resolver()
-      // console.log((p - 1) % 2);
-   }, 50);
-   console.log(123)
+   console.log(bar.pg.moveEaseBy(0, -1920 * 0.2 * ratio, 1000, 'easeOutElastic'))
+   await pixics.sleep(2001)
+   console.log(bar.pg.moveEaseBy(0, -1920 * 0.2 * ratio, 1000, 'easeOutElastic'))
+   // console.log(bar.pg.moveEaseBy(0, -1920 * 0.2 * ratio, 400, 'easeOutElastic'))
+   // bar.pg.rotateEaseBy(Math.PI, 40000, 'easeOutElastic');
+
+   // bar.pg.moveEaseBy(-1920 * 0.1 * ratio, 0, 2000, 'easeInQuad');
+   // await bar.pg.moveEaseBy(0, -1920 * 0.1 * ratio, 2000, 'easeInQuad');
+
+   // await pixics.update(async function (deltatime, resolver, accumulator) {
+   //    if (!(accumulator % 60)) {
+   //       await bar.pg.moveEaseBy(0, -1920 * 0.1 * ratio, 2000, 'easeInQuad');
+   //       // console.log(1);
+   //    }
+   // })
+   // await bar.pg.setUpdate(function (deltatime, resolver, accumulator) {
+   //    // cnt += v;
+   //    // 0 && console.log(Math.floor(cnt / 60), new Date() - tm)
+   //    // console.log(p);
+   //    // p()
+   //    console.log(accumulator);
+   //    if (accumulator === 60) resolver()
+   //    // console.log((p - 1) % 2);
+   // }, 50);
+   // console.log(123)
 
 
 

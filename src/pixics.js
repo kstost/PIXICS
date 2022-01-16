@@ -482,6 +482,13 @@ const pixiInst = function () {
                     endPoint = x;
                     moveLength = (endPoint - startPoint);// * magicNumber;
                 }
+
+                let rotateMode = y === null;
+                if (rotateMode && this.easingStateRotate) return;
+                if (!rotateMode && this.easingStateMove) return;
+                if (rotateMode) this.easingStateRotate = true;
+                if (!rotateMode) this.easingStateMove = true;
+
                 let acc = 0;
                 let dist = 0;
                 let whole = 0;
@@ -582,6 +589,8 @@ const pixiInst = function () {
                                 duration: new Date() - startT
                             });
                             prm.drop = true;
+                            if (rotateMode) _point.easingStateRotate = !true;
+                            if (!rotateMode) _point.easingStateMove = !true;
                             return;
                         }
                         let distanceToMoveOnThisTick = tasks[cnt];
@@ -621,15 +630,15 @@ const pixiInst = function () {
                 let startPoint = this.getAngle();
                 return this.rotateEaseTo(startPoint + x, duration, f);
             }
-            async moveEaseBy(x, y, duration, f) {
+            moveEaseBy(x, y, duration, f) {
                 let startPoint = this.getPosition();
                 startPoint.y *= -1;
-                await this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
+                return this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
             }
-            async moveBy(x, y, duration, f) {
+            moveBy(x, y, duration, f) {
                 let startPoint = this.getPosition();
                 startPoint.y *= -1;
-                await this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
+                return this.moveEaseTo(startPoint.x + x, startPoint.y + y, duration, f);
             }
             rotateEaseTo(x, duration, f) {
                 return this.easingTo(x, null, duration, f);
