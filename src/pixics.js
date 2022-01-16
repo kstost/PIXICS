@@ -557,7 +557,6 @@ const pixiInst = function () {
                     }
                 }
                 function stopMotion(setDestination, resolver, firstValue, startT) {
-                    console.log(resolver);
                     if (!rotateMode) {
                         _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
                         if (setDestination) _point.setPosition(x, -y);
