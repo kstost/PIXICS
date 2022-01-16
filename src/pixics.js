@@ -250,6 +250,8 @@ const pixiInst = function () {
             stickState = new Map();
             contacts = new Map();
             ignoreContact = new Map();
+            kinematicMotionMove = new Map();
+            kinematicMotionRotate = new Map();
             tag = null;
             preCallbackQueue = [];
             updateQueue = new Map();
@@ -484,10 +486,8 @@ const pixiInst = function () {
                 }
 
                 let rotateMode = y === null;
-                if (rotateMode && this.easingStateRotate) return;
-                if (!rotateMode && this.easingStateMove) return;
-                if (rotateMode) this.easingStateRotate = true;
-                if (!rotateMode) this.easingStateMove = true;
+                if (rotateMode && this.kinematicMotionRotate.size) return;
+                if (!rotateMode && this.kinematicMotionMove.size) return;
 
                 let acc = 0;
                 let dist = 0;
@@ -538,66 +538,73 @@ const pixiInst = function () {
                 class SeqPromise extends Promise {
                     running = true;
                     drop = false;
-                    constructor(cb) {
-                        super(cb);
+                    constructor(cb, dd) {
+                        super(cb.bind(dd));
                     }
-                    pause() {
-                        this.running = false;
-                    }
-                    play() {
-                        this.running = !false;
-                    }
+                    pause() { this.running = false; }
+                    play() { this.running = !false; }
                     abort() {
                         this.drop = true;
                         return this;
-                        // if (!this.drop) {
-                        //     return true;
-                        // }
-                        // return false;
                     }
-                }
-                function stopMotion(setDestination, resolver, firstValue, startT) {
-                    if (!rotateMode) {
-                        _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
-                    } else {
-                        _point.getBody().SetAngularVelocity(0)
-                    }
-                    if (!resolver) return;
-                    if (!rotateMode && setDestination) _point.setPosition(x, -y);
-                    if (rotateMode && setDestination) _point.setAngle(x);
-                    let currentValue = rotateMode ? _point.getAngle() : _point.getPosition();
-                    let difference = rotateMode ? currentValue - firstValue : math.get_distance_between_two_point(firstValue, currentValue);
-                    prm.abort();
-                    if (rotateMode) _point.easingStateRotate = !true;
-                    if (!rotateMode) _point.easingStateMove = !true;
-                    resolver({
-                        difference,
-                        values: [firstValue, currentValue],
-                        duration: new Date() - startT
-                    });
-                }
-                const prm = new SeqPromise(async function (resolver, stop) {
-                    let cnt = 0;
-                    let startT = new Date();
-                    let firstValue = rotateMode ? _point.getAngle() : _point.getPosition();
-                    resolver(await _point.setUpdate((deltatime, resolver, accumulator) => {
-                        if (!prm.running) return stopMotion();
-                        let naturalEnd = tasks[cnt] === undefined;
-                        let abortingEnd = prm.drop;
-                        if (abortingEnd || naturalEnd) return stopMotion(naturalEnd, resolver, firstValue, startT);
-                        let distanceToMoveOnThisTick = tasks[cnt];
+                    stopMotion(setDestination, resolver, firstValue, startT) {
                         if (!rotateMode) {
-                            let s = getVelocityPerFrame(distanceToMoveOnThisTick);
-                            let _startPoint = _point.getPosition();
-                            _startPoint.y *= -1;
-                            let rtn = math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
-                            _point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                            _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
                         } else {
-                            _point.getBody().SetAngularVelocity(distanceToMoveOnThisTick * magicNumber)
+                            _point.getBody().SetAngularVelocity(0)
                         }
-                        cnt++;
-                    }));
-                });
+                        if (!resolver) return;
+                        if (!rotateMode && setDestination) _point.setPosition(x, -y);
+                        if (rotateMode && setDestination) _point.setAngle(x);
+                        let currentValue = rotateMode ? _point.getAngle() : _point.getPosition();
+                        let difference = rotateMode ? currentValue - firstValue : math.get_distance_between_two_point(firstValue, currentValue);
+                        this.abort();
+                        // if (rotateMode) _point.easingStateRotate = !true;
+                        // if (!rotateMode) _point.easingStateMove = !true;
+                        getKinematicMotionMap().delete(motionInst);
+                        resolver({
+                            difference,
+                            values: [firstValue, currentValue],
+                            duration: new Date() - startT
+                        });
+                    }
+                }
+                function clearPrm() {
+                    prm.abort();
+                    let naturalEnd = tasks[cnt] === undefined;
+                    let abortingEnd = prm.drop;
+                    if (abortingEnd || naturalEnd) {
+                        return prm.stopMotion(naturalEnd, callback[Symbol.for('resolver')], firstValue, startT);
+                    }
+                }
+                function getKinematicMotionMap() {
+                    return rotateMode ? _point.kinematicMotionRotate : _point.kinematicMotionMove;
+                }
+                function callback(deltatime, resolver, accumulator) {
+                    if (!prm.running) return prm.stopMotion();
+                    let naturalEnd = tasks[cnt] === undefined;
+                    let abortingEnd = prm.drop;
+                    if (abortingEnd || naturalEnd) return prm.stopMotion(naturalEnd, resolver, firstValue, startT);
+                    let distanceToMoveOnThisTick = tasks[cnt];
+                    if (!rotateMode) {
+                        let s = getVelocityPerFrame(distanceToMoveOnThisTick);
+                        let _startPoint = _point.getPosition();
+                        _startPoint.y *= -1;
+                        let rtn = math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
+                        _point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                    } else {
+                        _point.getBody().SetAngularVelocity(distanceToMoveOnThisTick * magicNumber)
+                    }
+                    cnt++;
+                };
+                let cnt = 0;
+                let startT = new Date();
+                let firstValue = rotateMode ? _point.getAngle() : _point.getPosition();
+                const prm = new SeqPromise(async function (resolver, stop) {
+                    resolver(await this);
+                }, _point.setUpdate(callback));
+                let motionInst = { clearPrm };
+                getKinematicMotionMap().set(motionInst);
                 return prm;
             }
             rotateEaseBy(x, duration, f) {
@@ -1160,8 +1167,14 @@ const pixiInst = function () {
             remAllpinGravities() {
                 this.getPinGravities().forEach(pin => this.remPinGravity(pin));
             }
+            getKinematicMotions() {
+                return [
+                    ...this.kinematicMotionMove.keys(),
+                    ...this.kinematicMotionRotate.keys(),
+                ];
+            }
             destroy() {
-                // console.log()
+                this.getKinematicMotions().forEach(motion => motion.clearPrm());
                 this.remAllUpdate();
                 this.remAllpinGravities();
                 point.pixics.getJointList().forEach(jj => {

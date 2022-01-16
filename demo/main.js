@@ -18,7 +18,17 @@ window.addEventListener('load', async () => {
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
    //------------------------------
-
+   // let ddd;
+   // ddd = new Promise(rrr => {
+   //    // rrr()
+   // });
+   // (async()=>{
+   //    await ddd;
+   //    console.log(123);
+   // })();
+   // Promise.resolve(ddd)
+   // console.log(ddd);
+   // console.log(aaa);
    //------------------------------
    L('메인 코드의 시작');
 
