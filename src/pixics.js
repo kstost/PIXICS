@@ -559,11 +559,12 @@ const pixiInst = function () {
                 function stopMotion(setDestination, resolver, firstValue, startT) {
                     if (!rotateMode) {
                         _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
-                        if (setDestination) _point.setPosition(x, -y);
                     } else {
                         _point.getBody().SetAngularVelocity(0)
-                        if (setDestination) _point.setAngle(x);
                     }
+                    if (!resolver) return;
+                    if (!rotateMode && setDestination) _point.setPosition(x, -y);
+                    if (rotateMode && setDestination) _point.setAngle(x);
                     let currentValue = rotateMode ? _point.getAngle() : _point.getPosition();
                     let difference = rotateMode ? currentValue - firstValue : math.get_distance_between_two_point(firstValue, currentValue);
                     prm.abort();

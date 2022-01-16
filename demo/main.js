@@ -36,17 +36,24 @@ window.addEventListener('load', async () => {
    ball.setPosition(0, 1920 * 0.25 * ratio)
    ball.setDynamic()
 
-   L('붉은 막대를 계속 움직여주는 작동을 한다. 이 작동은 무한히 반복된다');
-   // 이동할 거리값에 ratio 를 붙이는것을 잊지말자
-   while (true) {
-      // L('위로');
-      // L(await redbar.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad'));
-      // L('아래로');
-      const prm = redbar.moveEaseBy(0, 1920 * 0.1 * ratio, 1000, 'easeInOutQuad');
-      // L(await );
-      setTimeout(() => prm.abort(), 200)
-      L(JSON.stringify(await prm));
-   }
+   let prm = redbar.moveEaseBy(0, 1920 * 0.4 * ratio, 3000, 'easeInOutQuad');
+   (async () => {
+      console.log(await prm)
+   })();
+   // setTimeout(() => prm.abort(), 1000)
+   setTimeout(() => redbar.destroy(), 1000)
+   // console.log(prm);
+   // L('붉은 막대를 계속 움직여주는 작동을 한다. 이 작동은 무한히 반복된다');
+   // // 이동할 거리값에 ratio 를 붙이는것을 잊지말자
+   // while (true) {
+   //    // L('위로');
+   //    // L(await redbar.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad'));
+   //    // L('아래로');
+   //    const prm = redbar.moveEaseBy(0, 1920 * 0.1 * ratio, 1000, 'easeInOutQuad');
+   //    // L(await );
+   //    setTimeout(() => prm.abort(), 200)
+   //    L(JSON.stringify(await prm));
+   // }
 
 
    return
