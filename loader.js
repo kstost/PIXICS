@@ -11,7 +11,7 @@ async function initPixics(initValue) {
     function scriptList() {
         return [...(initValue.scriptlist ? initValue.scriptlist : [
             "https://pixijs.download/v6.2.1/pixi.min.js",
-            initValue.libPath ? initValue.libPath : "https://cdn.jsdelivr.net/gh/kstost/PIXICS@0b9ef94/src/pixics.js",
+            initValue.libPath ? initValue.libPath : "https://cdn.jsdelivr.net/gh/kstost/PIXICS@c0ec972/src/pixics.js",
             "https://cdn.jsdelivr.net/gh/flyover/box2d.ts@52eb0773a59592dc573c4bc4d0f1451676a43ef9/dist/box2d.umd.js",
         ])];
     }
