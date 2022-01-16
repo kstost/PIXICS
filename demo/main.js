@@ -18,14 +18,47 @@ window.addEventListener('load', async () => {
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
 
+   L('바운더리 생성');
+   let tickness = 10 * ratio;
+   let boundary = new PIXICS.PhysicsGraphics({ world });
+   boundary.getBody().SetBullet(true);
+   boundary.drawRect(width / 2, 0, tickness, height);
+   boundary.drawRect(-width / 2, 0, tickness, height);
+   boundary.drawRect(0, height / 2, width, tickness);
+   boundary.drawRect(0, -height / 2, width, tickness);
+   app.stage.addChild(boundary.getGraphic());
 
+
+   let _static = new PIXICS.PhysicsGraphics({ world });
+   _static.drawCircle(0, 0, width / 2 * 0.1 * ratio, 0xffffff);
+   _static.setPosition((-width * 0.25) + (Math.random() * width * 0.5), 800 * ratio)
+   _static.setDynamic();
+   _static.setRestitution(1)
+   app.stage.addChild(_static.getGraphic());
+
+
+   _static.addEvent('untact', boundary, function (boundary) {
+      console.log('볼1')
+   });
+   boundary.addEvent('contact', _static, function (_static) {
+      console.log('바운더리')
+   });
+   _static.addEvent('contact', boundary, function (boundary) {
+      console.log('볼2')
+   });
+
+   return;
+
+
+   let heightss = 50;
    class Bar {
       constructor({ width, color }) {
          this.width = width;
          this.color = color;
          let _static = new PIXICS.PhysicsGraphics({ world });
-         _static.drawRect(0, 0, this.width, 30 * ratio, 0xffffff);
+         _static.drawRect(0, 0, this.width, heightss * ratio, 0xffffff);
          _static.getGraphic().tint = color;
+         // _static.setPosition(height / 2, 0);
          app.stage.addChild(_static.getGraphic());
          this.pg = _static;
       }
@@ -35,7 +68,7 @@ window.addEventListener('load', async () => {
          });
       }
       set pos(pos) {
-         this.pg.setPosition((this.width * pos) + (-width / 2) + this.width / 2, 0)
+         this.pg.setPosition((0) + (this.width * pos) + (-width / 2) + this.width / 2, -height / 2)
       }
    }
    let colors = [
@@ -52,7 +85,7 @@ window.addEventListener('load', async () => {
    }
    // console.log();
    let bars = [];
-   let div = 5;
+   let div = 1;
    // bars.push()
    // bar.pos = 3;
    function generateLine() {
@@ -63,20 +96,46 @@ window.addEventListener('load', async () => {
          // bar.pg.setKinematic();
          bars.push(bar);
       }
-
+      setContact();
    }
-   for (let i = 0; i < 15; i++) {
-      generateLine();
-   }
+   // for (let i = 0; i < 100; i++) {
+   //    generateLine();
+   // }
+   // setI
    pixics.update((deltatime, resolver, accumulator) => {
-      if (!(accumulator % (PIXICS.framerate * 2))) {
-         // generateLine();
+      if (!(accumulator % (PIXICS.framerate * 200))) {
+         generateLine();
          bars.forEach(async bar => {
             await pixics.sleep(Math.random() * 200)
-            bar.pg.moveEaseBy(0, -30 * ratio, 1000, 'easeOutElastic')
+            bar.pg.moveEaseBy(0, -heightss * ratio, 1000, 'easeOutElastic')
          });
       }
    }, -1);
+   let balls = [];
+   pixics.update((deltatime, resolver, accumulator) => {
+      if (!(accumulator % (PIXICS.framerate * 200))) {
+         let _static = new PIXICS.PhysicsGraphics({ world });
+         _static.drawCircle(0, 0, width / 2 * 0.1 * ratio, 0xffffff);
+         // _static.getGraphic().tint = color;
+         _static.setPosition((-width * 0.25) + (Math.random() * width * 0.5), 800 * ratio)
+         _static.setDynamic();
+         _static.setRestitution(1)
+         app.stage.addChild(_static.getGraphic());
+         balls.push(_static);
+         setContact();
+      }
+   }, -1);
+
+   function setContact() {
+      balls.forEach(async ball => {
+         bars.forEach(async bar => {
+            bar.pg.addEvent('contact', ball, function (ball) {
+               bar.pg.destroy();
+            });
+         });
+      });
+
+   }
 
    // bar.run()
 
