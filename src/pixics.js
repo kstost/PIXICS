@@ -597,8 +597,8 @@ const pixiInst = function () {
                             _point.setPosition(_startPoint.x + chx, _startPoint.y_ + chy)
                         }
                     } else {
-                        let angle = !staticMode ? distanceToMoveOnThisTick * magicNumber : _point.getAngle() + tasks[cnt];
-                        _point.setAngle(angle)
+                        staticMode && _point.setAngle(_point.getAngle() + tasks[cnt])
+                        !staticMode && _point.getBody().SetAngularVelocity(distanceToMoveOnThisTick * magicNumber)
                     }
                     cnt++;
                 };
