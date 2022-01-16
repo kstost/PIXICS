@@ -556,75 +556,48 @@ const pixiInst = function () {
                         // return false;
                     }
                 }
-                let prm = new SeqPromise(function (r, stop) {
+                function stopMotion(setDestination, resolver, firstValue, startT) {
+                    if (!rotateMode) {
+                        _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
+                        if (setDestination) _point.setPosition(x, -y);
+                    } else {
+                        _point.getBody().SetAngularVelocity(0)
+                        if (setDestination) _point.setAngle(x);
+                    }
+                    let currentValue = rotateMode ? _point.getAngle() : _point.getPosition();
+                    let difference = rotateMode ? currentValue - firstValue : math.get_distance_between_two_point(firstValue, currentValue);
+                    prm.abort();
+                    if (rotateMode) _point.easingStateRotate = !true;
+                    if (!rotateMode) _point.easingStateMove = !true;
+                    resolver({
+                        difference,
+                        values: [firstValue, currentValue],
+                        duration: new Date() - startT
+                    });
+                }
+                const prm = new SeqPromise(async function (resolver, stop) {
                     let cnt = 0;
-                    let fangle = _point.getAngle();
                     let startT = new Date();
-                    pixics.update(function upf(tk) {
-                        // console.log(prm.running);
-                        if (!prm.running) {
-                            _point.getBody().SetAngularVelocity(0)
-                            return;
-                        }
-                        if (prm.drop || tasks[cnt] === undefined) {
-                            if (y !== null) {
-                                if (PLANCKMODE) {
-                                    _point.getBody().setLinearVelocity(planck.Vec2(0, 0))
-                                } else {
-                                    _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
-                                }
-                                !prm.drop && _point.setPosition(x, -y);
-                            } else {
-                                if (PLANCKMODE) {
-                                    _point.getBody().setAngularVelocity(0)
-                                } else {
-                                    _point.getBody().SetAngularVelocity(0)
-                                }
-                                !prm.drop && _point.setAngle(x);
-                            }
-                            pixics.unupdate(upf);
-                            !prm.drop && r();
-                            prm.drop && r({
-                                difference: _point.getAngle() - fangle,
-                                duration: new Date() - startT
-                            });
-                            prm.drop = true;
-                            if (rotateMode) _point.easingStateRotate = !true;
-                            if (!rotateMode) _point.easingStateMove = !true;
-                            return;
-                        }
+                    let firstValue = rotateMode ? _point.getAngle() : _point.getPosition();
+                    resolver(await pixics.update((deltatime, resolver, accumulator) => {
+                        if (!prm.running) return stopMotion();
+                        let naturalEnd = tasks[cnt] === undefined;
+                        let abortingEnd = prm.drop;
+                        if (abortingEnd || naturalEnd) return stopMotion(naturalEnd, resolver, firstValue, startT);
                         let distanceToMoveOnThisTick = tasks[cnt];
-                        let point = _point;
-                        if (y !== null) {
-                            let s = getVelocityPerFrame(distanceToMoveOnThisTick);//*0.0001;
-                            let _startPoint = point.getPosition();
+                        if (!rotateMode) {
+                            let s = getVelocityPerFrame(distanceToMoveOnThisTick);
+                            let _startPoint = _point.getPosition();
                             _startPoint.y *= -1;
                             let rtn = math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
-                            if (PLANCKMODE) {
-                                point.getBody().setLinearVelocity(planck.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
-                            } else {
-                                point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
-                            }
+                            _point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
                         } else {
-                            if (PLANCKMODE) {
-                                point.getBody().setAngularVelocity(distanceToMoveOnThisTick * magicNumber)
-                            } else {
-                                point.getBody().SetAngularVelocity(distanceToMoveOnThisTick * magicNumber)
-                            }
+                            _point.getBody().SetAngularVelocity(distanceToMoveOnThisTick * magicNumber)
                         }
                         cnt++;
-                    });
+                    }));
                 });
-                // prm[Symbol.for("val")] = 4;
-
                 return prm;
-                // console.log('w', whole);
-                // console.log(acc-d)
-                // let lastAmount = d%ticktime;
-
-                // console.log(d,ticktime, d%ticktime)
-                // console.log(f)
-
             }
             rotateEaseBy(x, duration, f) {
                 let startPoint = this.getAngle();
