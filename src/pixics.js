@@ -530,11 +530,7 @@ const pixiInst = function () {
                         dist = acc
                     }
                 }
-                if (PLANCKMODE) {
-                    this.getBody().setKinematic();
-                } else {
-                    this.getBody().SetType(b2.BodyType.b2_kinematicBody);
-                }
+                let staticMode = this.isStatic();
                 class SeqPromise extends Promise {
                     running = true;
                     drop = false;
@@ -586,14 +582,23 @@ const pixiInst = function () {
                     let abortingEnd = prm.drop;
                     if (abortingEnd || naturalEnd) return prm.stopMotion(naturalEnd, resolver, firstValue, startT);
                     let distanceToMoveOnThisTick = tasks[cnt];
+                    let currentRatio = tasks[cnt] / moveLength;
                     if (!rotateMode) {
-                        let s = getVelocityPerFrame(distanceToMoveOnThisTick);
                         let _startPoint = _point.getPosition();
+                        _startPoint.y_ = _startPoint.y;
                         _startPoint.y *= -1;
-                        let rtn = math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
-                        _point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                        if (!staticMode) {
+                            let s = getVelocityPerFrame(distanceToMoveOnThisTick);
+                            let rtn = math.get_coordinate_distance_away_from_center_with_radian(s, _startPoint, radian);
+                            _point.getBody().SetLinearVelocity(new b2.Vec2(rtn.x - _startPoint.x, _startPoint.y - rtn.y))
+                        } else {
+                            let chx = -(firstValue.x - endPoint.x) * currentRatio;
+                            let chy = (firstValue.y * -1 - endPoint.y) * currentRatio;
+                            _point.setPosition(_startPoint.x + chx, _startPoint.y_ + chy)
+                        }
                     } else {
-                        _point.getBody().SetAngularVelocity(distanceToMoveOnThisTick * magicNumber)
+                        let angle = !staticMode ? distanceToMoveOnThisTick * magicNumber : _point.getAngle() + tasks[cnt];
+                        _point.setAngle(angle)
                     }
                     cnt++;
                 };

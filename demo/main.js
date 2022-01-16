@@ -17,63 +17,15 @@ window.addEventListener('load', async () => {
    const L = pixics.log;
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
-   //------------------------------
-   // let ddd;
-   // ddd = new Promise(rrr => {
-   //    // rrr()
-   // });
-   // (async()=>{
-   //    await ddd;
-   //    console.log(123);
-   // })();
-   // Promise.resolve(ddd)
-   // console.log(ddd);
-   // console.log(aaa);
-   //------------------------------
-   L('메인 코드의 시작');
 
-   L('붉은막대 생성');
-   let redbar = new PIXICS.PhysicsGraphics({ world });
-   redbar.drawRect(0, 0, 1000 * ratio, 230 * ratio);
-   redbar.getGraphic().tint = 0xaa0000;
-   app.stage.addChild(redbar.getGraphic());
-
-   L('중력 영향 받는 요소생성');
-   let ball = new PIXICS.PhysicsGraphics({ world });
-   ball.drawCircle(0, 0, 100 * ratio);
-   ball.getGraphic().tint = 0xddaa00;
-   app.stage.addChild(ball.getGraphic());
-   ball.setPosition(0, 1920 * 0.25 * ratio)
-   ball.setDynamic()
-
-   let prm = redbar.moveEaseBy(0, 1920 * 0.4 * ratio, 3000, 'easeInOutQuad');
-   (async () => {
-      console.log(await prm)
-   })();
-   // setTimeout(() => prm.abort(), 1000)
-   setTimeout(() => redbar.destroy(), 1000)
-   // console.log(prm);
-   // L('붉은 막대를 계속 움직여주는 작동을 한다. 이 작동은 무한히 반복된다');
-   // // 이동할 거리값에 ratio 를 붙이는것을 잊지말자
-   // while (true) {
-   //    // L('위로');
-   //    // L(await redbar.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad'));
-   //    // L('아래로');
-   //    const prm = redbar.moveEaseBy(0, 1920 * 0.1 * ratio, 1000, 'easeInOutQuad');
-   //    // L(await );
-   //    setTimeout(() => prm.abort(), 200)
-   //    L(JSON.stringify(await prm));
-   // }
-
-
-   return
 
    class Bar {
-      constructor({ width }) {
+      constructor({ width, color }) {
          this.width = width;
+         this.color = color;
          let _static = new PIXICS.PhysicsGraphics({ world });
          _static.drawRect(0, 0, this.width, 30 * ratio, 0xffffff);
-         _static.getGraphic().tint = 0x00ff00;
+         _static.getGraphic().tint = color;
          app.stage.addChild(_static.getGraphic());
          this.pg = _static;
       }
@@ -86,15 +38,52 @@ window.addEventListener('load', async () => {
          this.pg.setPosition((this.width * pos) + (-width / 2) + this.width / 2, 0)
       }
    }
-   let bar = new Bar({ width: width / 4 });
-   bar.pos = 1;
+   let colors = [
+      0x00ffff,
+      0x00ff00,
+      0xff0000,
+      0xaa0000,
+      0xfaa000,
+      0xff0aa0,
+   ];
+   function pickRandomColor() {
+      let rn = Math.floor(Math.random() * colors.length);
+      return colors[rn];
+   }
+   // console.log();
+   let bars = [];
+   let div = 5;
+   // bars.push()
+   // bar.pos = 3;
+   function generateLine() {
+      for (let i = 0; i < div; i++) {
+         let color = pickRandomColor();
+         let bar = new Bar({ width: width / div, color: color })
+         bar.pos = i;
+         // bar.pg.setKinematic();
+         bars.push(bar);
+      }
+
+   }
+   for (let i = 0; i < 15; i++) {
+      generateLine();
+   }
+   pixics.update((deltatime, resolver, accumulator) => {
+      if (!(accumulator % (PIXICS.framerate * 2))) {
+         // generateLine();
+         bars.forEach(async bar => {
+            await pixics.sleep(Math.random() * 200)
+            bar.pg.moveEaseBy(0, -30 * ratio, 1000, 'easeOutElastic')
+         });
+      }
+   }, -1);
 
    // bar.run()
 
    // let dd=
-   console.log(bar.pg.moveEaseBy(0, -1920 * 0.2 * ratio, 1000, 'easeOutElastic'))
-   await pixics.sleep(2001)
-   console.log(bar.pg.moveEaseBy(0, -1920 * 0.2 * ratio, 1000, 'easeOutElastic'))
+   // console.log(bar.pg.moveEaseBy(0, -1920 * 0.2 * ratio, 1000, 'easeOutElastic'))
+   // await pixics.sleep(2001)
+   // console.log(bar.pg.moveEaseBy(0, -1920 * 0.2 * ratio, 1000, 'easeOutElastic'))
    // console.log(bar.pg.moveEaseBy(0, -1920 * 0.2 * ratio, 400, 'easeOutElastic'))
    // bar.pg.rotateEaseBy(Math.PI, 40000, 'easeOutElastic');
 
