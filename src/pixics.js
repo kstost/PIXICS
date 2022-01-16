@@ -79,10 +79,10 @@ const pixiInst = function () {
             if (cnt !== undefined) cb[Symbol.for('timecount')] = cnt;
             queue.set(cb);
         }
-        function updateRemoveManage(cb, queue) {
+        function updateRemoveManage(cb, queue, response) {
             if (!queue.has(cb)) return;
             queue.delete(cb);
-            cb[Symbol.for('resolver')]();
+            cb[Symbol.for('resolver')](response);
         }
         function makeid(length) {
             var result = '';
@@ -343,11 +343,11 @@ const pixiInst = function () {
             async setUpdate(cb, cnt) {
                 if (this.updateQueue.has(cb)) return;
                 return await new Promise(resolve => {
-                    updateManage(cb, resolve, () => this.remUpdate(cb), cnt, this.updateQueue);
+                    updateManage(cb, resolve, r => this.remUpdate(cb, r), cnt, this.updateQueue);
                 });
             }
-            remUpdate(cb) {
-                updateRemoveManage(cb, this.updateQueue);
+            remUpdate(cb, response) {
+                updateRemoveManage(cb, this.updateQueue, response);
             }
             remAllUpdate() {
                 let keys = this.updateQueue.keys();
@@ -557,6 +557,7 @@ const pixiInst = function () {
                     }
                 }
                 function stopMotion(setDestination, resolver, firstValue, startT) {
+                    console.log(resolver);
                     if (!rotateMode) {
                         _point.getBody().SetLinearVelocity(new b2.Vec2(0, 0))
                         if (setDestination) _point.setPosition(x, -y);
@@ -579,7 +580,7 @@ const pixiInst = function () {
                     let cnt = 0;
                     let startT = new Date();
                     let firstValue = rotateMode ? _point.getAngle() : _point.getPosition();
-                    resolver(await pixics.update((deltatime, resolver, accumulator) => {
+                    resolver(await _point.setUpdate((deltatime, resolver, accumulator) => {
                         if (!prm.running) return stopMotion();
                         let naturalEnd = tasks[cnt] === undefined;
                         let abortingEnd = prm.drop;
@@ -1640,11 +1641,11 @@ const pixiInst = function () {
                     update: async function (cb, cnt) {
                         if (updateList.has(cb)) return;
                         return await new Promise(resolve => {
-                            updateManage(cb, resolve, () => this.unupdate(cb), cnt, updateList);
+                            updateManage(cb, resolve, r => this.unupdate(cb, r), cnt, updateList);
                         });
                     },
-                    unupdate(cb) {
-                        updateRemoveManage(cb, updateList);
+                    unupdate(cb, response) {
+                        updateRemoveManage(cb, updateList, response);
                     },
                     setTimeout(cb, time) {
                         timeoutList.set(cb, { time: (time / 1000) * magicNumber });

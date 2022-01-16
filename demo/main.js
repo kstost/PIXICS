@@ -19,6 +19,38 @@ window.addEventListener('load', async () => {
 
    //------------------------------
 
+   //------------------------------
+   L('메인 코드의 시작');
+
+   L('붉은막대 생성');
+   let redbar = new PIXICS.PhysicsGraphics({ world });
+   redbar.drawRect(0, 0, 1000 * ratio, 230 * ratio);
+   redbar.getGraphic().tint = 0xaa0000;
+   app.stage.addChild(redbar.getGraphic());
+
+   L('중력 영향 받는 요소생성');
+   let ball = new PIXICS.PhysicsGraphics({ world });
+   ball.drawCircle(0, 0, 100 * ratio);
+   ball.getGraphic().tint = 0xddaa00;
+   app.stage.addChild(ball.getGraphic());
+   ball.setPosition(0, 1920 * 0.25 * ratio)
+   ball.setDynamic()
+
+   L('붉은 막대를 계속 움직여주는 작동을 한다. 이 작동은 무한히 반복된다');
+   // 이동할 거리값에 ratio 를 붙이는것을 잊지말자
+   while (true) {
+      // L('위로');
+      // L(await redbar.moveEaseBy(0, -1920 * 0.1 * ratio, 300, 'easeInOutQuad'));
+      // L('아래로');
+      const prm = redbar.moveEaseBy(0, 1920 * 0.1 * ratio, 1000, 'easeInOutQuad');
+      // L(await );
+      setTimeout(() => prm.abort(), 200)
+      L(JSON.stringify(await prm));
+   }
+
+
+   return
+
    class Bar {
       constructor({ width }) {
          this.width = width;
@@ -39,7 +71,7 @@ window.addEventListener('load', async () => {
    }
    let bar = new Bar({ width: width / 4 });
    bar.pos = 1;
-   
+
    // bar.run()
 
    // let dd=
