@@ -18,6 +18,18 @@ window.addEventListener('load', async () => {
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
 
+
+   // _static.addEvent('untact', boundary, function (boundary) {
+   //    console.log('볼1')
+   // });
+   // boundary.addEvent('contact', _static, function (_static) {
+   //    console.log('바운더리')
+   // });
+   // _static.addEvent('contact', boundary, function (boundary) {
+   //    console.log('볼2')
+   // });
+
+   
    L('바운더리 생성');
    let tickness = 10 * ratio;
    let boundary = new PIXICS.PhysicsGraphics({ world });
@@ -29,23 +41,26 @@ window.addEventListener('load', async () => {
    app.stage.addChild(boundary.getGraphic());
 
 
-   let _static = new PIXICS.PhysicsGraphics({ world });
-   _static.drawCircle(0, 0, width / 2 * 0.1 * ratio, 0xffffff);
-   _static.setPosition((-width * 0.25) + (Math.random() * width * 0.5), 800 * ratio)
-   _static.setDynamic();
-   _static.setRestitution(1)
-   app.stage.addChild(_static.getGraphic());
+   let ball = new PIXICS.PhysicsGraphics({ world });
+   ball.drawCircle(0, 0, width / 2 * 0.1 * ratio, 0xffffff);
+   ball.setPosition((-width * 0.25) + (Math.random() * width * 0.5), 800 * ratio)
+   ball.setDynamic();
+   ball.setRestitution(1)
+   app.stage.addChild(ball.getGraphic());
 
 
-   _static.addEvent('untact', boundary, function (boundary) {
-      console.log('볼1')
-   });
-   boundary.addEvent('contact', _static, function (_static) {
-      console.log('바운더리')
-   });
-   _static.addEvent('contact', boundary, function (boundary) {
-      console.log('볼2')
-   });
+   // boundary.addEvent('contact', ball, function (ball) {
+   //    L('바운더리')
+   // });
+   ball.addEvent('contact', boundary, boundary => { L('볼1'); });
+   ball.addEvent('contact', boundary, boundary => { L('볼2'); });
+   // ball.addEvent('contact', boundary, boundary => { L('볼3'); });
+   // ball.addEvent('contact', boundary, boundary => { L('볼3'); });
+   // ball.addEvent('contact', boundary, boundary => { L('볼1'); });
+
+
+
+
 
    return;
 
