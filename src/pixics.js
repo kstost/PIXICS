@@ -250,6 +250,7 @@ const pixiInst = function () {
             stickState = new Map();
             contacts = new Map();
             ignoreContact = new Map();
+            interactiveEvents = {};//new Map();
             kinematicMotionMove = new Map();
             kinematicMotionRotate = new Map();
             tag = null;
@@ -433,22 +434,63 @@ const pixiInst = function () {
                 return dt?.cbs[mode]?.cbf
             }
             removeEvent(mode, boundary, otherside) {
-                !otherside && boundary.removeEvent(mode, this, true);
-                let dt = this.stickState.get(boundary);
-                if (!dt) return;
-                delete dt.cbs[mode];
-                if (Object.keys(dt.cbs).length === 0) {
-                    this.stickState.delete(boundary)
+                if (!boundary) {
+                    if (mode.constructor === String) mode = [mode];
+                    mode.forEach(mode => {
+                        let cb = this.interactiveEvents[mode];
+                        if (!cb) return;
+                        this.getGraphic().off(mode, cb)
+                        delete this.interactiveEvents[mode];
+                    });
+                    if (Object.keys(this.interactiveEvents).length === 0) {
+                        this.getGraphic().interactive = false;
+                    }
+                }
+                else if (boundary instanceof PhysicsGraphics) {
+                    !otherside && boundary.removeEvent(mode, this, true);
+                    let dt = this.stickState.get(boundary);
+                    if (!dt) return;
+                    delete dt.cbs[mode];
+                    if (Object.keys(dt.cbs).length === 0) {
+                        this.stickState.delete(boundary)
+                    }
                 }
             }
+            emitEvent(mode) {
+                if (mode.constructor === String) mode = [mode];
+                const historyMap = new Map();
+                mode.forEach(mode => {
+                    let cb = this.interactiveEvents[mode];
+                    if (!cb || historyMap.has(cb)) return;
+                    historyMap.set(cb);
+                    this.getGraphic().emit(mode);
+                });
+            }
+            touch() {
+
+            }
             addEvent(mode, boundary, cbf) {
-                boundary.removeEvent(mode, this);
-                let dt = this.stickState.get(boundary);
-                if (dt) { } else {
-                    dt = { body: boundary, prevstate: false, cbs: {} };
-                    this.stickState.set(boundary, dt);
-                };
-                dt.cbs[mode] = { cbf }
+                if (boundary instanceof Function) {
+                    if (mode.constructor === String) mode = [mode];
+                    mode.forEach(mode => {
+                        this.removeEvent(mode);
+                        this.getGraphic().interactive = true;
+                        this.interactiveEvents[mode] = boundary;
+                        this.getGraphic().on(mode, boundary)
+                    });
+                    // console.log(point.constants.DOWN);
+                    // ['touchstart'].forEach(name => this.getGraphic().emit(name));
+                    // ['mousedown', 'touchstart'].forEach(name => this.getGraphic().off(name, boundary));
+                }
+                else if (boundary instanceof PhysicsGraphics) {
+                    boundary.removeEvent(mode, this);
+                    let dt = this.stickState.get(boundary);
+                    if (dt) { } else {
+                        dt = { body: boundary, prevstate: false, cbs: {} };
+                        this.stickState.set(boundary, dt);
+                    };
+                    dt.cbs[mode] = { cbf }
+                }
             }
             getContactList(mode) {
                 /*
@@ -1332,6 +1374,10 @@ const pixiInst = function () {
 
         let lineList = new Map();
         let point = {
+            constants: {
+                DOWN: ['mousedown', 'touchstart'],
+                UP: ['touchend', 'mouseup'],
+            },
             framerate: magicNumber,
             math: math,
             displaySystem: (scs, fps, container) => {
