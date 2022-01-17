@@ -478,9 +478,6 @@ const pixiInst = function () {
                         this.interactiveEvents[mode] = boundary;
                         this.getGraphic().on(mode, boundary)
                     });
-                    // console.log(point.constants.DOWN);
-                    // ['touchstart'].forEach(name => this.getGraphic().emit(name));
-                    // ['mousedown', 'touchstart'].forEach(name => this.getGraphic().off(name, boundary));
                 }
                 else if (boundary instanceof PhysicsGraphics) {
                     boundary.removeEvent(mode, this);
@@ -1371,13 +1368,14 @@ const pixiInst = function () {
         //     let dist = getMoveDistanceFor(전체거리, 시간초);
         //     return dist * (1 / getMoveDistancePerFrame(1));
         // }
+        class KeyEvent {
+            static DOWN = ['mousedown', 'touchstart']
+            static UP = ['touchend', 'mouseup']
+        }
 
         let lineList = new Map();
         let point = {
-            constants: {
-                DOWN: ['mousedown', 'touchstart'],
-                UP: ['touchend', 'mouseup'],
-            },
+            KeyEvent,
             framerate: magicNumber,
             math: math,
             displaySystem: (scs, fps, container) => {

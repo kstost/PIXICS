@@ -35,9 +35,9 @@ window.addEventListener('load', async () => {
 
    ball.addEvent('contact', boundary, boundary => { L('볼1'); });
    ball.addEvent('contact', boundary, boundary => { L('볼2'); });
-   ball.addEvent(PIXICS.constants.DOWN, e => { L('T1T'); });
-   ball.addEvent(PIXICS.constants.UP, e => { L('T2T'); });
-   ball.emitEvent(PIXICS.constants.DOWN);
+   ball.addEvent(PIXICS.KeyEvent.DOWN, e => { L('T1T'); });
+   ball.addEvent(PIXICS.KeyEvent.UP, e => { L('T2T'); });
+   ball.emitEvent(PIXICS.KeyEvent.DOWN);
 
    return;
 
