@@ -432,7 +432,8 @@ const pixiInst = function () {
                 let dt = this.stickState.get(boundary);
                 return dt?.cbs[mode]?.cbf
             }
-            removeEvent(mode, boundary) {
+            removeEvent(mode, boundary, otherside) {
+                !otherside && boundary.removeEvent(mode, this, true);
                 let dt = this.stickState.get(boundary);
                 if (!dt) return;
                 delete dt.cbs[mode];
