@@ -31,13 +31,34 @@ window.addEventListener('load', async () => {
    ball.drawCircle(0, 0, width / 2 * 0.5 * ratio, 0xffffff);
    ball.setPosition((-width * 0.25) + (Math.random() * width * 0.5), 800 * ratio)
    ball.setRestitution(1)
+   ball.setDynamic();
    app.stage.addChild(ball.getGraphic());
 
    ball.addEvent('contact', boundary, boundary => { L('볼1'); });
    ball.addEvent('contact', boundary, boundary => { L('볼2'); });
-   ball.addEvent(PIXICS.KeyEvent.DOWN, e => { L('T1T'); });
-   ball.addEvent(PIXICS.KeyEvent.UP, e => { L('T2T'); });
-   ball.emitEvent(PIXICS.KeyEvent.DOWN);
+   
+   ball.addEvent(PIXICS.KeyEvent.DOWN, function (e) {
+      ball.setStatic();
+      delete this.previousPosition;
+      this.dragging = true;
+   });
+   ball.addEvent(PIXICS.KeyEvent.UP, function (e) {
+      ball.setDynamic();
+      delete this.previousPosition;
+      this.dragging = false;
+   });
+   ball.addEvent(PIXICS.KeyEvent.MOVE, function (e) {
+      if (!this.dragging) return;
+      if (this.previousPosition) {
+         const diff = {
+            x: e.data.global.x - this.previousPosition.x,
+            y: e.data.global.y - this.previousPosition.y,
+         };
+         const pos = ball.getPosition();
+         ball.setPosition(pos.x + diff.x, pos.y + -diff.y)
+      }
+      this.previousPosition = { ...e.data.global };
+   });
 
    return;
 

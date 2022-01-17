@@ -1370,7 +1370,8 @@ const pixiInst = function () {
         // }
         class KeyEvent {
             static DOWN = ['mousedown', 'touchstart']
-            static UP = ['touchend', 'mouseup']
+            static MOVE = ['mousemove', 'touchmove']
+            static UP = [...['touchend', 'mouseup'], ...['touchendoutside', 'mouseupoutside']]
         }
 
         let lineList = new Map();
