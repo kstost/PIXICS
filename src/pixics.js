@@ -269,6 +269,19 @@ const pixiInst = function () {
                     }
                 }
             }
+            static memoryMonitor(width) {
+                const { ratio } = point;
+                let speedMeter = new PIXI.Text('', { fontFamily: 'Arial', fontSize: 40 * ratio, fill: 0xffffff, align: 'center' });
+                let list = [];
+                setInterval(() => {
+                    list.push(performance.memory.usedJSHeapSize);
+                    list.length > 100 && list.splice(0, 1)
+                    speedMeter.text = `${Math.round(Math.min(...list) / 1024 / 1024)}`
+                    speedMeter.x = (width - speedMeter.width) / 2;
+                    speedMeter.y = speedMeter.height;
+                }, 10);
+                return speedMeter;
+            }
         }
         class PhysicsGraphics {
             activeState = {};
