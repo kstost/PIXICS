@@ -1281,7 +1281,7 @@ const pixiInst = function () {
                     this.getBody()[INACTIVE] = true;
                     parent && parent.removeChild(graphic);
                 } else {
-                    if (false) {
+                    if (true) {
                         if (this.activeState.position) {
                             this.setPosition(this.activeState.position.x, this.activeState.position.y);
                         }
