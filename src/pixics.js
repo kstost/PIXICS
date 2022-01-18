@@ -246,6 +246,30 @@ const pixiInst = function () {
                 this.rotation = Math.atan2(this.by - this.ay, this.bx - this.ax);
             }
         }
+        class ObjectPool {
+            pool = [];
+            constructor() { }
+            get(construct, init) {
+                let ob;
+                if (this.pool.length) ob = this.pool.splice(0, 1)[0];
+                if (!ob) ob = construct();
+                ob instanceof PIXICS.PhysicsGraphics && ob.setActive(true);
+                init(ob);
+                return ob;
+            }
+            put(ob) {
+                ob instanceof PIXICS.PhysicsGraphics && ob.setActive(false);
+                this.pool.push(ob);
+            }
+            trucate() {
+                while (this.pool.length) {
+                    let ob = this.pool.splice(0, 1)[0];
+                    if (ob instanceof PIXICS.PhysicsGraphics) {
+                        ob.destroy();
+                    }
+                }
+            }
+        }
         class PhysicsGraphics {
             activeState = {};
             resistanceFn = null;
@@ -1228,6 +1252,7 @@ const pixiInst = function () {
                     if (this.activeState.type !== undefined) {
                         this.getBody().SetType(this.activeState.type);
                     }
+                    this.getBody()[INACTIVE] = !true;
                     Object.keys(this.activeState).forEach(key => delete this.activeState[key]);
                 }
             } //oo
@@ -1486,6 +1511,7 @@ const pixiInst = function () {
                 return pointer;
             },
             worldscale: 0, PhysicsGraphics,
+            ObjectPool,
             Line,
             editorUrl(json, redirect) {
                 let data = encodeURIComponent(JSON.stringify(json));
