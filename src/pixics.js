@@ -250,18 +250,23 @@ const pixiInst = function () {
             pool = [];
             constructor() { }
             get(construct, init) {
-                let ob;
-                if (this.pool.length) ob = this.pool.splice(0, 1)[0];
-                if (!ob) ob = construct();
-                ob instanceof PIXICS.PhysicsGraphics && ob.setActive(true);
-                init(ob);
+                let ob = this.pool.length ? this.pool.splice(0, 1)[0] : construct();
+                if (ob instanceof PIXICS.PhysicsGraphics) {
+                    ob.removeAllContactEvent();
+                    ob.setActive(true);
+                }
+                init && init(ob);
                 return ob;
             }
-            put(ob) {
-                ob instanceof PIXICS.PhysicsGraphics && ob.setActive(false);
+            put(ob, init) {
+                if (ob instanceof PIXICS.PhysicsGraphics) {
+                    ob.removeAllContactEvent();
+                    ob.setActive(false);
+                }
+                init && init(ob);
                 this.pool.push(ob);
             }
-            trucate() {
+            truncate() {
                 while (this.pool.length) {
                     let ob = this.pool.splice(0, 1)[0];
                     if (ob instanceof PIXICS.PhysicsGraphics) {
@@ -509,6 +514,23 @@ const pixiInst = function () {
             }
             touch() {
 
+            }
+            removeAllContactEvent() {
+                let task = [];
+                [...this.stickState.keys()].forEach(boundary => {
+                    Object.keys(this.stickState.get(boundary).cbs).forEach(mode => {
+                        task.push([mode, boundary]);
+                    });
+                });
+                while (task.length) {
+                    let [mode, boundary] = task.splice(0, 1)[0];
+                    this.removeEvent(mode, boundary);
+                }
+            }
+            isContactEventTo(mode, boundary) {
+                try { if (this.stickState.get(boundary).cbs[mode]) return true; } catch (e) { }
+                try { if (boundary.stickState.get(this).cbs[mode]) return true; } catch (e) { }
+                return false;
             }
             addEvent(mode, boundary, cbf) {
                 if (boundary instanceof Function) {
@@ -1244,6 +1266,10 @@ const pixiInst = function () {
                 }
             }
             setActive(v) {
+                this.removeAllContactEvent();
+                this.setPosition(9999999999, 9999999999);
+                this.planckBody.SetAngularVelocity(0);
+                this.planckBody.SetLinearVelocity({ x: 0, y: 0 });
                 if (!v) {
                     this.activeState.inactive = true;
                     const graphic = this.getGraphic();
@@ -1251,19 +1277,20 @@ const pixiInst = function () {
                     this.activeState.parent = parent;
                     this.activeState.type = this.getBody().GetType();
                     this.activeState.position = this.getPosition();
-                    this.setPosition(Infinity, Infinity);
                     this.setStatic();
                     this.getBody()[INACTIVE] = true;
                     parent && parent.removeChild(graphic);
                 } else {
-                    if (this.activeState.position) {
-                        this.setPosition(this.activeState.position.x, this.activeState.position.y);
-                    }
-                    if (this.activeState.parent && !this.getGraphic().parent) {
-                        this.activeState.parent.addChild(this.getGraphic());
-                    }
-                    if (this.activeState.type !== undefined) {
-                        this.getBody().SetType(this.activeState.type);
+                    if (false) {
+                        if (this.activeState.position) {
+                            this.setPosition(this.activeState.position.x, this.activeState.position.y);
+                        }
+                        if (this.activeState.parent && !this.getGraphic().parent) {
+                            this.activeState.parent.addChild(this.getGraphic());
+                        }
+                        if (this.activeState.type !== undefined) {
+                            this.getBody().SetType(this.activeState.type);
+                        }
                     }
                     this.getBody()[INACTIVE] = !true;
                     Object.keys(this.activeState).forEach(key => delete this.activeState[key]);
