@@ -8,6 +8,7 @@ PIXICS Copyright (c) 2022 Seungtae Kim
 *   - box2d.ts (A TypeScript port of Box2D): https://github.com/flyover/box2d.ts
 ************************************************************************** */
 const pixiInst = function () {
+    const INACTIVE = Symbol.for('Inactive');
     const Ease = {
         easeOutElastic: (t, b, c, d) => { var s = 1.70158; var p = 0; var a = c; if (t == 0) return b; if ((t /= d) == 1) return b + c; if (!p) p = d * .3; if (a < Math.abs(c)) { a = c; var s = p / 4; } else var s = p / (2 * Math.PI) * Math.asin(c / a); return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b; },
         linearTween: (t, b, c, d) => { return c * t / d + b; },// simple linear tweening - no easing, no acceleration
@@ -246,6 +247,7 @@ const pixiInst = function () {
             }
         }
         class PhysicsGraphics {
+            activeState = {};
             resistanceFn = null;
             stickState = new Map();
             contacts = new Map();
@@ -268,6 +270,8 @@ const pixiInst = function () {
                     this.planckBody.setUserData(this);
                     this.planckBody.setMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
                 } else {
+                    //파괴
+
                     const bodyDef = new b2.BodyDef();
                     this.planckBody = world.CreateBody(bodyDef);
                     this.planckBody.SetGravityScale(1);
@@ -1057,7 +1061,7 @@ const pixiInst = function () {
                 let gravityScale = PLANCKMODE ? this.planckBody.getGravityScale() : this.planckBody.GetGravityScale();
                 let dynamic = PLANCKMODE ? this.planckBody.isDynamic() : (this.planckBody.GetType() === b2.BodyType.b2_dynamicBody); // b2.BodyType.b2_dynamicBody
                 let static_ = PLANCKMODE ? this.planckBody.isStatic() : (this.planckBody.GetType() === b2.BodyType.b2_staticBody); // b2.BodyType.b2_staticBody
-                let active = PLANCKMODE ? this.planckBody.isActive() : true; // 이거 대응하는거 알아내야한다
+                let active = this.isActive();
                 let awake = PLANCKMODE ? this.planckBody.isAwake() : this.planckBody.IsAwake(); // IsAwake
                 let angularVelocity = PLANCKMODE ? this.planckBody.getAngularVelocity() : this.planckBody.GetAngularVelocity();
                 let linearDamping = PLANCKMODE ? this.planckBody.getLinearDamping() : this.planckBody.GetLinearDamping();
@@ -1189,7 +1193,8 @@ const pixiInst = function () {
                     static_ && this.planckBody.SetType(b2.BodyType.b2_staticBody);
                     this.planckBody.SetBullet(bullet);
                     this.planckBody.SetAwake(awake);
-                    0 && this.planckBody.SetActive(active); // ????????????????
+                    // 0 && this.planckBody.SetActive(active); // ????????????????
+                    this.setActive(active);
                     this.planckBody.SetFixedRotation(fixedRotation);
                     this.planckBody.SetAngularVelocity(angularVelocity);
                     this.planckBody.SetLinearDamping(linearDamping);
@@ -1201,8 +1206,32 @@ const pixiInst = function () {
                     contactList.forEach(contact => contact.getBody().SetAwake(true));
                 }
             }
-            setActive(v) { PLANCKMODE ? this.getBody().setActive(v) : null; } //oo
-            isActive() { return PLANCKMODE ? this.getBody().isActive() : true; } //oo
+            setActive(v) {
+                if (!v) {
+                    this.activeState.inactive = true;
+                    const graphic = this.getGraphic();
+                    const parent = graphic.parent;
+                    this.activeState.parent = parent;
+                    this.activeState.type = this.getBody().GetType();
+                    this.activeState.position = this.getPosition();
+                    this.setPosition(Infinity, Infinity);
+                    this.setStatic();
+                    this.getBody()[INACTIVE] = true;
+                    parent && parent.removeChild(graphic);
+                } else {
+                    if (this.activeState.position) {
+                        this.setPosition(this.activeState.position.x, this.activeState.position.y);
+                    }
+                    if (this.activeState.parent && !this.getGraphic().parent) {
+                        this.activeState.parent.addChild(this.getGraphic());
+                    }
+                    if (this.activeState.type !== undefined) {
+                        this.getBody().SetType(this.activeState.type);
+                    }
+                    Object.keys(this.activeState).forEach(key => delete this.activeState[key]);
+                }
+            } //oo
+            isActive() { return !this.activeState.inactive; } //oo
             setAwake(v) { PLANCKMODE ? this.getBody().setAwake(v) : this.getBody().SetAwake(v); }
             isAwake() { return PLANCKMODE ? this.getBody().isAwake() : this.getBody().IsAwake(); }
             setStatic() { PLANCKMODE ? this.getBody().setStatic() : this.getBody().SetType(b2.BodyType.b2_staticBody); } // dynamic의 반대
@@ -1221,6 +1250,7 @@ const pixiInst = function () {
                 ];
             }
             destroy() {
+                //파괴
                 this.getKinematicMotions().forEach(motion => motion.clearPrm());
                 this.remAllUpdate();
                 this.remAllpinGravities();
@@ -1277,6 +1307,7 @@ const pixiInst = function () {
         };
         let syncStateAll = world => {
             for (let body = world.GetBodyList(); body; body = body.GetNext()) {
+                if (body[INACTIVE]) continue;
                 let bdv = body.GetUserData();
                 let len = bdv.preCallbackQueue.length;
                 for (let i = 0; i < len; i++) {
