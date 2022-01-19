@@ -24,7 +24,6 @@ window.addEventListener('load', async () => {
 
 
 
-
    let tickness = 10 * ratio;
    let boundary = new PIXICS.PhysicsGraphics({ world });
    boundary.getBody().SetBullet(true);
@@ -34,11 +33,13 @@ window.addEventListener('load', async () => {
    boundary.drawRect(0, -height / 2, width, tickness);
    app.stage.addChild(boundary.getGraphic());
 
+   let uniq = 0;
    let barLs = new Map();
    let balLs = new Map();
    let barOp = new PIXICS.ObjectPool();
    let balOp = new PIXICS.ObjectPool();
    balOp.log = true;
+
 
    pixics.update((a, b, c) => {
       if ((c % 6) === 0) {
@@ -79,6 +80,7 @@ window.addEventListener('load', async () => {
       balOp.get(() => {
          let bal = new PIXICS.PhysicsGraphics({ world });
          bal[Symbol.for('kind')] = 'bal';
+         bal[Symbol.for('id')] = uniq++;
          let size = 100 * ratio * 0.5;
          bal.drawRect(0, 0, size, size, 0xffffff);
          bal.getGraphic().tint = 0xdddddd;
@@ -100,10 +102,8 @@ window.addEventListener('load', async () => {
       })
    }
    function remBal(bal) {
-      if (!balLs.has(bal)) return;
-      bomb(bal.getPosition());
-      bal.removeAllContactEvent();
-      balOp.put(bal, bal => balLs.delete(bal));
+      // if (!balLs.has(bal)) return;
+      // bal.removeAllContactEvent();
    }
    pixics.update((a, b, c) => {
       if ((c % (60 * 0.5)) === 0) {
@@ -118,14 +118,30 @@ window.addEventListener('load', async () => {
       } else {
          bal = op; bar = ob;
       }
+      if (!bar.isActive()) return;
+      if (bal.getPosition().y > 200) {
+         if (!balLs.has(bal)) return;
+         console.log({ ...bal.getPosition() }, bal[Symbol.for('id')])
+         console.log({ ...bar.getPosition() }, bar[Symbol.for('id')])
+         console.log(bal.isContactEventTo('contact', bar));
+         // window.FROZEN = true
+         // window.DATA = [bal, bar];
+         debugger;
+      }
+      barLs.delete(bar);
+      barOp.put(bar, bar => bar.removeAllContactEvent());
       if (!balLs.has(bal)) return;
+      balLs.delete(bal);
       let radius = bal.radius;
-      let pos = bal.getPosition();
+      let pos = { ...bal.getPosition() };
       let vel = { ...bal.getBody().GetLinearVelocity() };
-      remBal(bal)
-      if (!barOp.put(bar, bar => barLs.delete(bar))) return;
+      bomb(pos);
+      balOp.put(bal, bal => {
+         balLs.delete(bal);
+         bal.removeAllContactEvent();
+      });
       if (radius < 3) {
-         for (let i = 0; i < 8; i++) {
+         for (let i = 0; i < 7; i++) {
             genBal({ pos, vel, radius: radius + 1 });
          }
       }

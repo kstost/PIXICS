@@ -1345,6 +1345,7 @@ const pixiInst = function () {
             }
             destroy(justclean) {
                 //파괴
+                this.preCallbackQueue.splice(0, this.preCallbackQueue.length);// = [];//
                 this.getKinematicMotions().forEach(motion => motion.clearPrm());
                 this.remAllUpdate();
                 this.removeAllEvent();
@@ -1407,6 +1408,7 @@ const pixiInst = function () {
                 let bdv = body.GetUserData();
                 let len = bdv.preCallbackQueue.length;
                 for (let i = 0; i < len; i++) {
+                    if (!bdv.preCallbackQueue[i]) continue;
                     let [cb, _body] = bdv.preCallbackQueue[i];
                     cb(_body);
                 }
@@ -1609,6 +1611,7 @@ const pixiInst = function () {
                     askFire(contact, contactmode) {
                         let wba = contact.GetFixtureA().GetBody().GetUserData();
                         let wbb = contact.GetFixtureB().GetBody().GetUserData();
+                        // if (!wba.isActive() || !wbb.isActive()) return;
                         wbb.setContactState(wba, contactmode);
                         wba.setContactState(wbb, contactmode);
                     }
