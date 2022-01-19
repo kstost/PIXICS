@@ -250,18 +250,32 @@ const pixiInst = function () {
         class ObjectPool {
             pool = new Map();
             static resting = Symbol.for('resting');
-            constructor() { }
-            addOne(ob){
-                this.pool.set(ob);
+            constructor(arr) {
+                if (arr) this.pool = [];
+            }
+            addOne(ob) {
+                if (this.isDataMap()) {
+                    this.pool.set(ob);
+                } else {
+                    this.pool.push(ob);
+                }
             }
             pickOne() {
                 if (!this.getSize()) return;
-                let val = this.pool.keys().next().value;
-                if (val) this.pool.delete(val);
+                let val;
+                if (this.isDataMap()) {
+                    val = this.pool.keys().next().value;
+                    if (val) this.pool.delete(val);
+                } else {
+                    val = this.pool.splice(0, 1)[0];
+                }
                 return val;
             }
             getSize() {
-                return this.pool.size;
+                return this.isDataMap() ? this.pool.size : this.pool.length;
+            }
+            isDataMap() {
+                return (this.pool).constructor === Map;
             }
             get(construct, init) {
                 let ob;
@@ -289,7 +303,7 @@ const pixiInst = function () {
                     ob.setActive(false);
                 }
                 init && init(ob);
-                this.pool.set(ob);
+                this.addOne(ob);
                 return true;
             }
             truncate() {
