@@ -1,5 +1,3 @@
-let barLs = new Map();
-let balLs = new Map();
 window.addEventListener('load', async () => {
    // return
    function pickRandomColor() {
@@ -24,6 +22,9 @@ window.addEventListener('load', async () => {
    const L = pixics.log;
    pixics.update(function (dt) { /*매프레임(1/60sec)마다 수행시킬코드*/ });
 
+
+
+
    let tickness = 10 * ratio;
    let boundary = new PIXICS.PhysicsGraphics({ world });
    boundary.getBody().SetBullet(true);
@@ -33,16 +34,16 @@ window.addEventListener('load', async () => {
    boundary.drawRect(0, -height / 2, width, tickness);
    app.stage.addChild(boundary.getGraphic());
 
-
-   
-
+   let barLs = new Map();
+   let balLs = new Map();
    let barOp = new PIXICS.ObjectPool();
    let balOp = new PIXICS.ObjectPool();
    balOp.log = true;
 
    pixics.update((a, b, c) => {
       if ((c % 6) === 0) {
-         for (let i = 0; i < 16; i++) {
+         let odv = ((200 - barLs.size) / 80) * 2;
+         for (let i = 0; i < 16 + odv; i++) {
             barOp.get(() => {
                let bar = new PIXICS.PhysicsGraphics({ world });
                bar[Symbol.for('kind')] = 'bar';
@@ -122,9 +123,9 @@ window.addEventListener('load', async () => {
       let pos = bal.getPosition();
       let vel = { ...bal.getBody().GetLinearVelocity() };
       remBal(bal)
-      barOp.put(bar, bar => barLs.delete(bar));
+      if (!barOp.put(bar, bar => barLs.delete(bar))) return;
       if (radius < 3) {
-         for (let i = 0; i < 4; i++) {
+         for (let i = 0; i < 8; i++) {
             genBal({ pos, vel, radius: radius + 1 });
          }
       }
@@ -151,5 +152,13 @@ window.addEventListener('load', async () => {
       }
       pixics.update(ani);
    }
+   let speedMeter = new PIXI.Text(Math.random().toFixed(3), { fontFamily: 'Arial', fontSize: 40 * ratio, fill: 0xdddddd, align: 'center' });
+   app.stage.addChild(speedMeter);
+   speedMeter.x = (width - speedMeter.width) / 2;
+   speedMeter.y = speedMeter.height;
+   setInterval(() => {
+      L(`${(performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(0)}MB`)
+   }, 1000)
+
 
 });

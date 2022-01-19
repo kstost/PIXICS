@@ -35,6 +35,7 @@ const pixiInst = function () {
         easeInOutCirc: (t, b, c, d) => { t /= d / 2; if (t < 1) return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b; t -= 2; return c / 2 * (Math.sqrt(1 - t * t) + 1) + b; }// circular easing in/out - acceleration until halfway, then deceleration
     };
     const math = {
+        BIGNUMBER: 999999999999999,
         EPSILON: 0.0000001,
         get_angle_in_radian_between_two_points(point1, point2) {
             /*
@@ -247,28 +248,53 @@ const pixiInst = function () {
             }
         }
         class ObjectPool {
-            pool = [];
+            pool = new Map();
+            static resting = Symbol.for('resting');
             constructor() { }
+            addOne(ob){
+                this.pool.set(ob);
+            }
+            pickOne() {
+                if (!this.getSize()) return;
+                let val = this.pool.keys().next().value;
+                if (val) this.pool.delete(val);
+                return val;
+            }
+            getSize() {
+                return this.pool.size;
+            }
             get(construct, init) {
-                let ob = this.pool.length ? this.pool.splice(0, 1)[0] : construct();
+                let ob;
+                if (this.getSize()) {
+                    ob = this.pickOne();//pool.splice(0, 1)[0];
+                    if (!ob[ObjectPool.resting]) throw new Error('에러..');
+                }
+                if (!ob) {
+                    ob = construct();
+                    ob[ObjectPool.resting] = true;
+                }
+                if (!ob[ObjectPool.resting]) throw new Error('에러..');
+                ob[ObjectPool.resting] = false;
                 if (ob instanceof PIXICS.PhysicsGraphics) {
-                    ob.removeAllContactEvent();
                     ob.setActive(true);
                 }
                 init && init(ob);
                 return ob;
             }
             put(ob, init) {
+                if (ob[ObjectPool.resting]) return false;
+                ob[ObjectPool.resting] = true;
                 if (ob instanceof PIXICS.PhysicsGraphics) {
-                    ob.removeAllContactEvent();
+                    if (!ob.isActive()) throw new Error('에러..');
                     ob.setActive(false);
                 }
                 init && init(ob);
-                this.pool.push(ob);
+                this.pool.set(ob);
+                return true;
             }
             truncate() {
-                while (this.pool.length) {
-                    let ob = this.pool.splice(0, 1)[0];
+                while (this.getSize()) {
+                    let ob = this.pickOne();//.pool.splice(0, 1)[0];
                     if (ob instanceof PIXICS.PhysicsGraphics) {
                         ob.destroy();
                     }
@@ -514,6 +540,15 @@ const pixiInst = function () {
             }
             touch() {
 
+            }
+            removeAllEvent() {
+                this.removeAllContactEvent();
+                this.removeAllInteractionEvent();
+            }
+            removeAllInteractionEvent() {
+                Object.keys(this.interactiveEvents).forEach(mode => {
+                    this.removeEvent(mode);
+                });
             }
             removeAllContactEvent() {
                 let task = [];
@@ -1120,7 +1155,6 @@ const pixiInst = function () {
                 let gravityScale = PLANCKMODE ? this.planckBody.getGravityScale() : this.planckBody.GetGravityScale();
                 let dynamic = PLANCKMODE ? this.planckBody.isDynamic() : (this.planckBody.GetType() === b2.BodyType.b2_dynamicBody); // b2.BodyType.b2_dynamicBody
                 let static_ = PLANCKMODE ? this.planckBody.isStatic() : (this.planckBody.GetType() === b2.BodyType.b2_staticBody); // b2.BodyType.b2_staticBody
-                let active = this.isActive();
                 let awake = PLANCKMODE ? this.planckBody.isAwake() : this.planckBody.IsAwake(); // IsAwake
                 let angularVelocity = PLANCKMODE ? this.planckBody.getAngularVelocity() : this.planckBody.GetAngularVelocity();
                 let linearDamping = PLANCKMODE ? this.planckBody.getLinearDamping() : this.planckBody.GetLinearDamping();
@@ -1237,23 +1271,12 @@ const pixiInst = function () {
                 }
 
                 // 그외 바디의 상태값 복원
-                if (PLANCKMODE) {
-                    kinematic && this.planckBody.setKinematic(); // https://piqnt.com/planck.js/BodyTypes
-                    static_ && this.planckBody.setStatic();
-                    this.planckBody.setBullet(bullet);
-                    this.planckBody.setAwake(awake);
-                    this.planckBody.setActive(active);
-                    this.planckBody.setFixedRotation(fixedRotation);
-                    this.planckBody.setAngularVelocity(angularVelocity);
-                    this.planckBody.setLinearDamping(linearDamping);
-                    this.planckBody.setLinearVelocity(linearVelocity);
-                } else {
+                if (PLANCKMODE) { } else {
                     kinematic && this.planckBody.SetType(b2.BodyType.b2_kinematicBody); // https://piqnt.com/planck.js/BodyTypes
                     static_ && this.planckBody.SetType(b2.BodyType.b2_staticBody);
                     this.planckBody.SetBullet(bullet);
                     this.planckBody.SetAwake(awake);
                     // 0 && this.planckBody.SetActive(active); // ????????????????
-                    this.setActive(active);
                     this.planckBody.SetFixedRotation(fixedRotation);
                     this.planckBody.SetAngularVelocity(angularVelocity);
                     this.planckBody.SetLinearDamping(linearDamping);
@@ -1266,37 +1289,29 @@ const pixiInst = function () {
                 }
             }
             setActive(v) {
-                this.removeAllContactEvent();
-                this.setPosition(9999999999, 9999999999);
-                this.planckBody.SetAngularVelocity(0);
-                this.planckBody.SetLinearVelocity({ x: 0, y: 0 });
-                if (!v) {
-                    this.activeState.inactive = true;
-                    const graphic = this.getGraphic();
-                    const parent = graphic.parent;
-                    this.activeState.parent = parent;
-                    this.activeState.type = this.getBody().GetType();
-                    this.activeState.position = this.getPosition();
+                /*
+                    false 로 설정하면 해당 요소를 쉬도록 한다
+                    화면으로부터도 제거하고 걸어줬던 모든 이벤트와 업데이트를 해제한다
+                    키네마틱움직임도 모두 중단된다
+                */
+                const graphic = this.getGraphic();
+                const parent = graphic.parent;
+                if (!v && parent && !this.activeState.parent) {
                     this.setStatic();
-                    this.getBody()[INACTIVE] = true;
-                    parent && parent.removeChild(graphic);
-                } else {
-                    if (true) {
-                        if (this.activeState.position) {
-                            this.setPosition(this.activeState.position.x, this.activeState.position.y);
-                        }
-                        if (this.activeState.parent && !this.getGraphic().parent) {
-                            this.activeState.parent.addChild(this.getGraphic());
-                        }
-                        if (this.activeState.type !== undefined) {
-                            this.getBody().SetType(this.activeState.type);
-                        }
-                    }
-                    this.getBody()[INACTIVE] = !true;
+                    this.setPosition(math.BIGNUMBER, math.BIGNUMBER);
+                    this.planckBody.SetAngularVelocity(0);
+                    this.planckBody.SetLinearVelocity({ x: 0, y: 0 });
+                    this.destroy(true);
+                    this.activeState.parent = parent;
+                    parent.removeChild(graphic);
+                    this.getBody()[INACTIVE] = !v;
+                } else if (v && !parent && this.activeState.parent) {
+                    this.activeState.parent.addChild(graphic);
                     Object.keys(this.activeState).forEach(key => delete this.activeState[key]);
+                    this.getBody()[INACTIVE] = !v;
                 }
             } //oo
-            isActive() { return !this.activeState.inactive; } //oo
+            isActive() { return !this.getBody()[INACTIVE]; } //oo
             setAwake(v) { PLANCKMODE ? this.getBody().setAwake(v) : this.getBody().SetAwake(v); }
             isAwake() { return PLANCKMODE ? this.getBody().isAwake() : this.getBody().IsAwake(); }
             setStatic() { PLANCKMODE ? this.getBody().setStatic() : this.getBody().SetType(b2.BodyType.b2_staticBody); } // dynamic의 반대
@@ -1314,10 +1329,11 @@ const pixiInst = function () {
                     ...this.kinematicMotionRotate.keys(),
                 ];
             }
-            destroy() {
+            destroy(justclean) {
                 //파괴
                 this.getKinematicMotions().forEach(motion => motion.clearPrm());
                 this.remAllUpdate();
+                this.removeAllEvent();
                 this.remAllpinGravities();
                 point.pixics.getJointList().forEach(jj => {
                     let jp = jj.GetUserData();
@@ -1327,6 +1343,7 @@ const pixiInst = function () {
                 })
                 const body = this.getBody();
                 const graphic = this.getGraphic();
+                if (justclean) return;
                 body.GetWorld().DestroyBody(body);
                 graphic.parent?.removeChild(graphic);
                 // return this.planckBody;
