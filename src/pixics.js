@@ -1273,7 +1273,7 @@ const pixiInst = function () {
 
                         fixtures.set(fixture, {
                             shape,
-                            ...getFixtureValues(fixture)
+                            ...this.getFixtureValues(fixture)
                         });
                     }
                 }
