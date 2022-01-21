@@ -867,8 +867,8 @@ const pixiInst = function () {
                 types.set(this._drawPolygon, DrawType.POLYGON);
                 return types.get(fixtures[fx].drawingProfile.type);
             }
-            setDrawAppearance() {
-                let changeTask = [{ idx: 0, cidx: 4, value: 0.5 }];
+            setDrawAppearance(idx, cidx, value) {
+                let changeTask = [{ idx, cidx, value }];
                 let task = [];
                 this.getFixtures().reverse().forEach(fix => {
                     task.push({
