@@ -37,9 +37,27 @@ window.addEventListener('load', async () => {
    let bl = new PIXICS.PhysicsGraphics({ world });
    bl.drawCircle(0, 0, 100 * ratio, 0x00ff00);
    bl.drawRect(100 * ratio, -100 * ratio, 100 * ratio, 100 * ratio, 0xff0000);
-   bl.setDynamic()
+   bl.drawCircle(0, 300 * ratio, 100 * ratio);
+   // bl.setDynamic()
    app.stage.addChild(bl.getGraphic());
-   // bl.setDrawColor(0, 0xff0000, 1);
+   bl.setFixtureProp(true, 'sensor', 1);
+
+
+   bl.getDraw(0).alpha = 0.5;
+   bl.getDraw(0).color = 0xff00ff;
+   bl.getDraw(0).radius = 100 * ratio;
+   bl.getDraw(1).alpha = 0.9;
+   bl.getDraw(1).y = 100 * ratio;
+   bl.getDraw(1).width = 100 * ratio;
+   bl.getDraw(1).x = 1;
+   console.log(bl.getDraw(1).x);
+   // console.log(bl.getFixtureValues(0))
+   // console.log(100 * ratio);
+   // console.log(bl.getFixture(0).drawingProfile.rawArg[2])
+   // console.log(bl.getFixture(1).drawingProfile.rawArg[1])
+   // console.log(bl.getFixture(1).drawingProfile.rawArg[2])
+
+   // bl.setDrawColor(0, 0xff0000, 0.5);
 
    //
 

@@ -861,29 +861,23 @@ const pixiInst = function () {
             getDrawType(idx) {
                 const fixtures = this.getFixtures();
                 let fx = (fixtures.length - 1) - idx;
-                const types = new Map();
-                types.set(this._drawRect, DrawType.RECTANGLE);
-                types.set(this._drawCircle, DrawType.CIRCLE);
-                types.set(this._drawPolygon, DrawType.POLYGON);
-                return types.get(fixtures[fx].drawingProfile.type);
+                return fixtures[fx].drawingProfile.tcode;
             }
             setDrawAppearance(idx, cidx, value) {
-                let changeTask = [{ idx, cidx, value }];
-                let task = [];
-                this.getFixtures().reverse().forEach(fix => {
-                    task.push({
-                        rawArg: fix.drawingProfile.rawArg,
-                        tcode: fix.drawingProfile.tcode
-                    });
-                });
-                changeTask.forEach(ta => {
-                    task[ta.idx].rawArg[ta.cidx] = ta.value;
-                });
+                let task = this.getFixtures().reverse().map(fix => ({
+                    values: this.getFixtureValues(fix),
+                    rawArg: fix.drawingProfile.rawArg,
+                    tcode: fix.drawingProfile.tcode
+                }));
+                task[idx].rawArg[cidx] = value;
                 this.removeDraw();
-                task.forEach(task => {
+                task.forEach((task, i) => {
                     if (task.tcode === DrawType.RECTANGLE) this.drawRect(...task.rawArg);
                     else if (task.tcode === DrawType.CIRCLE) this.drawCircle(...task.rawArg);
                     else if (task.tcode === DrawType.POLYGON) this.drawPolygon(...task.rawArg);
+                    Object.keys(task.values).forEach(propName => {
+                        this.setFixtureProp(task.values[propName], propName, i);
+                    });
                 });
             }
             setDrawColor(idx, color, alpha) {
@@ -897,7 +891,7 @@ const pixiInst = function () {
                 let value = [color, alpha];
                 idxs.forEach((val, i) => {
                     if (value[i] === undefined || value[i] === null) return;
-                    fixtures[fx].drawingProfile.arg[val] = value[i];
+                    // fixtures[fx].drawingProfile.arg[val] = value[i]; //ANINI
                     fixtures[fx].drawingProfile.rawArg[val] = value[i];
                 })
                 this.fixtureShapeDrawer();
@@ -922,41 +916,36 @@ const pixiInst = function () {
             }
             redrawFixture() {
                 return this.fixtureShapeDrawer();
-                this.graphic.body.clear();
-                let drawArgs = this.getFixtures().reverse().map(fixture => fixture.drawingProfile);
-                drawArgs.forEach(arg => arg.type.bind(this)(...arg.arg));
             }
             fixtureShapeDrawer() {
                 // console.log(1);
                 this.graphic.body.clear();
                 this.getFixtures().reverse().forEach(f => {
-                    if (f.drawingProfile.type === this._drawRect) {
-                        let [x, y, width, height, color, alpha] = f.drawingProfile.arg;
+                    if (f.drawingProfile.tcode === DrawType.RECTANGLE) {
+                        let [x, y, width, height, color, alpha] = f.drawingProfile.rawArg; //ANINI
+                        width *= 0.5;
+                        height *= 0.5;
                         if (color === undefined) color = 0xffffff;
+                        if (alpha === undefined) alpha = 1;
                         this.graphic.drawingRectangle(x, y, width, height, color, alpha)
                     }
-                    if (f.drawingProfile.type === this._drawPolygon) {
-                        let [path, color, alpha] = f.drawingProfile.arg;
+                    if (f.drawingProfile.tcode === DrawType.POLYGON) {
+                        let [path, color, alpha] = f.drawingProfile.rawArg; //ANINI
                         if (color === undefined) color = 0xffffff;
+                        if (alpha === undefined) alpha = 1;
                         this.graphic.drawPolygon(path, color, alpha)
                     }
-                    if (f.drawingProfile.type === this._drawCircle) {
-                        let [x, y, radius, color, alpha] = f.drawingProfile.arg;
+                    if (f.drawingProfile.tcode === DrawType.CIRCLE) {
+                        let [x, y, radius, color, alpha] = f.drawingProfile.rawArg; //ANINI
                         if (color === undefined) color = 0xffffff;
+                        if (alpha === undefined) alpha = 1;
                         this.graphic.drawCircle(x, y, radius, color, alpha);
                     }
                 });
             }
-            _drawRect() {
-                this.fixtureShapeDrawer();
-            }
             drawRect(x, y, width, height, color, alpha) {
+                let drawInstance = new DrawRect({ pg: this });
                 const rawArg = [...arguments];
-                width *= 0.5;
-                height *= 0.5;
-                if (alpha === undefined) alpha = 1;
-                let argument = [x, y, width, height, color, alpha];
-                if (color === undefined) color = 0xffffff;
                 if (PLANCKMODE) {
                 } else {
                     let position = new b2.Vec2(
@@ -964,7 +953,7 @@ const pixiInst = function () {
                         y / PIXICS.worldscale
                     );
                     const shape = new b2.PolygonShape();
-                    shape.SetAsBox(width / PIXICS.worldscale, height / PIXICS.worldscale, position);
+                    shape.SetAsBox(width * 0.5 / PIXICS.worldscale, height * 0.5 / PIXICS.worldscale, position);
 
                     const fd = new b2.FixtureDef();
                     fd.shape = shape;
@@ -973,21 +962,18 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawRect, arg: argument, rawArg, tcode: DrawType.RECTANGLE };
-                    fixture.drawingProfile.type.bind(this)(...argument);
+                    fixture.drawingProfile = { drawInstance, rawArg, tcode: DrawType.RECTANGLE };
+                    this.fixtureShapeDrawer();
+                    // fixture.drawingProfile.type.bind(this)();
                     return fixture;
                 }
             }
-            _drawPolygon() {
-                this.fixtureShapeDrawer();
-            }
+
             drawPolygon(path, color, alpha) {
                 // 볼록한(convex) 도형만 지원한다
                 // 오목한(concave) 형태의 도형은 지원하지 않으니 오목하게 하고자 하면 두개의 폴리곤을 덧대어 구현하라
+                let drawInstance = new DrawPolygon({ pg: this });
                 const rawArg = [...arguments];
-                if (alpha === undefined) alpha = 1;
-                let argument = [path, color, alpha];
-                if (color === undefined) color = 0xffffff;
                 if (PLANCKMODE) {
                 } else {
                     let vertices = ((JSON.parse(JSON.stringify(path))).map(point => {
@@ -1014,20 +1000,15 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawPolygon, arg: argument, rawArg, tcode: DrawType.POLYGON };
-                    fixture.drawingProfile.type.bind(this)(...argument);
-                    // this._drawPolygon(...arguments);
+                    fixture.drawingProfile = { drawInstance, rawArg, tcode: DrawType.POLYGON };
+                    this.fixtureShapeDrawer();
+                    // fixture.drawingProfile.type.bind(this)();
                     return fixture;
                 }
             }
-            _drawCircle() {
-                this.fixtureShapeDrawer();
-            }
             drawCircle(x, y, radius, color, alpha) {
+                let drawInstance = new DrawCircle({ pg: this });
                 const rawArg = [...arguments];
-                if (alpha === undefined) alpha = 1;
-                let argument = [x, y, radius, color, alpha];
-                if (color === undefined) color = 0xffffff;
                 if (PLANCKMODE) {
                 } else {
                     const shape = new b2.CircleShape();
@@ -1041,9 +1022,9 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawCircle, arg: argument, rawArg, tcode: DrawType.CIRCLE };
-                    fixture.drawingProfile.type.bind(this)(...argument);
-                    // this._drawCircle(...arguments);
+                    fixture.drawingProfile = { drawInstance, rawArg, tcode: DrawType.CIRCLE };
+                    this.fixtureShapeDrawer();
+                    // fixture.drawingProfile.type.bind(this)();
                     // this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                     return fixture;
                 }
@@ -1113,6 +1094,42 @@ const pixiInst = function () {
             }
             getBody() {
                 return this.planckBody;
+            }
+            getDraw(idx) {
+                return this.getFixture(idx).drawingProfile.drawInstance;
+            }
+            getFixtureValues(idx) {
+                if (idx === undefined) {
+                    return {
+                        restitution: undefined,
+                        friction: undefined,
+                        density: 1,
+                        sensor: undefined,
+                    }
+                }
+                let fixture;
+                if (idx.constructor === Number) {
+                    const fixtures = this.getFixtures();
+                    fixture = fixtures[(fixtures.length - 1) - idx];
+                } else {
+                    fixture = idx;
+                }
+                let restitution = fixture?.GetRestitution();
+                let friction = fixture?.GetFriction();
+                let density = fixture?.GetDensity();
+                let sensor = fixture?.IsSensor();
+                density = density ? density : 1;
+                return {
+                    restitution,
+                    friction,
+                    density,
+                    sensor
+                };
+            }
+            getFixture(idx) {
+                const fixtures = this.getFixtures();
+                const fx = fixtures[(fixtures.length - 1) - idx];
+                return fx;
             }
             getFixtures() {
                 let list = [];
@@ -1246,17 +1263,17 @@ const pixiInst = function () {
                     for (let fixture = this.planckBody.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
                         fixtureList.push(fixture);
                         let shape = _shape ? _shape : fixture.GetShape();
+                        /*
                         let restitution = fixture?.GetRestitution();
                         let friction = fixture?.GetFriction();
                         let density = fixture?.GetDensity();
                         let sensor = fixture?.IsSensor();
                         density = density ? density : 1;
+                        */
+
                         fixtures.set(fixture, {
                             shape,
-                            restitution,
-                            friction,
-                            density,
-                            sensor
+                            ...getFixtureValues(fixture)
                         });
                     }
                 }
@@ -1555,6 +1572,102 @@ const pixiInst = function () {
             static RECTANGLE = 1
             static POLYGON = 2
         }
+        class Draw {
+            constructor(arg) {
+                this.pg = arg.pg;
+            }
+            set color(v) {
+                this.pg.setDrawColor(this.fixtureOrder, v, null);
+            }
+            get color() {
+                if (this.tcode === DrawType.CIRCLE) { return this.rawArg[3]; }
+                else if (this.tcode === DrawType.POLYGON) { return this.rawArg[1]; }
+                else if (this.tcode === DrawType.RECTANGLE) { return this.rawArg[4]; }
+            }
+            set alpha(v) {
+                this.pg.setDrawColor(this.fixtureOrder, null, v);
+            }
+            get alpha() {
+                if (this.tcode === DrawType.CIRCLE) { return this.rawArg[3 + 1]; }
+                else if (this.tcode === DrawType.POLYGON) { return this.rawArg[1 + 1]; }
+                else if (this.tcode === DrawType.RECTANGLE) { return this.rawArg[4 + 1]; }
+            }
+            set x(v) {
+                let idx = this.fixtureOrder;
+                this.pg.setDrawAppearance(idx, 0, v);
+            }
+            get x() {
+                return this.rawArg[0];
+            }
+            set y(v) {
+                this._y = v;
+                let idx = this.fixtureOrder;
+                this.pg.setDrawAppearance(idx, 1, v);
+            }
+            get y() {
+                return this.rawArg[1];
+            }
+            get tcode() { return this.fixture.drawingProfile.tcode; }
+            get rawArg() { return this.fixture.drawingProfile.rawArg; }
+            get fixture() {
+                return this.pg.getFixture(this.fixtureOrder);//.drawingProfile.rawArg[0];
+            }
+            get fixtureOrder() {
+                let idx;
+                let fixtures = this.pg.getFixtures();
+                for (let i = 0; i < fixtures.length; i++) {
+                    if (fixtures[i].drawingProfile.drawInstance === this) {
+                        idx = i;
+                    }
+                }
+                let fx = (fixtures.length - 1) - idx;
+                return fx;
+            }
+        }
+        class DrawCircle extends Draw {
+            constructor(arg) {
+                super(arg)
+            }
+            set radius(v) {
+                let idx = this.fixtureOrder;
+                this.pg.setDrawAppearance(idx, 2, v);
+            }
+            get radius() {
+                return this.rawArg[2];
+            }
+        }
+        class DrawRect extends Draw {
+            constructor(arg) {
+                super(arg)
+            }
+            set width(v) {
+                let idx = this.fixtureOrder;
+                this.pg.setDrawAppearance(idx, 2, v);
+            }
+            get width() {
+                return this.rawArg[2];
+            }
+            set height(v) {
+                let idx = this.fixtureOrder;
+                this.pg.setDrawAppearance(idx, 3, v);
+            }
+            get height() {
+                return this.rawArg[3];
+            }
+        }
+        class DrawPolygon extends Draw {
+            constructor(arg) {
+                super(arg)
+            }
+            set path(v) {
+                let idx = this.fixtureOrder;
+                this.pg.setDrawAppearance(idx, 0, v);
+            }
+            get path() {
+                return this.rawArg[0];
+            }
+        }
+
 
         let lineList = new Map();
         let point = {
