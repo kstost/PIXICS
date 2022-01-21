@@ -846,6 +846,24 @@ const pixiInst = function () {
                     }
                 });
             }
+            destroyFixture(idx) {
+                if (idx !== undefined) {
+                    this.removeFixture(idx);
+                } else {
+                    let list = boundary.getFixtures();
+                    list.forEach(fixture => this.planckBody.DestroyFixture(fixture));
+                    this.redrawFixture();
+                }
+            }
+            getDrawType(idx) {
+                const fixtures = this.getFixtures();
+                let fx = (fixtures.length - 1) - idx;
+                const types = new Map();
+                types.set(this._drawRect, DrawType.RECTANGLE);
+                types.set(this._drawCircle, DrawType.CIRCLE);
+                types.set(this._drawPolygon, DrawType.POLYGON);
+                return types.get(fixtures[fx].drawingProfile.type);
+            }
             removeFixture(idx) {
                 let fixtures = this.getFixtures();
                 let fx = (fixtures.length - 1) - idx;
@@ -1502,9 +1520,15 @@ const pixiInst = function () {
             static MOVE = ['mousemove', 'touchmove']
             static UP = [...['touchend', 'mouseup'], ...['touchendoutside', 'mouseupoutside']]
         }
+        class DrawType {
+            static CIRCLE = 0
+            static RECTANGLE = 1
+            static POLYGON = 2
+        }
 
         let lineList = new Map();
         let point = {
+            DrawType,
             KeyEvent,
             framerate: magicNumber,
             math: math,
