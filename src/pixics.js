@@ -846,11 +846,14 @@ const pixiInst = function () {
                     }
                 });
             }
+            removeDraw(idx) {
+                this.destroyFixture(idx);
+            }
             destroyFixture(idx) {
                 if (idx !== undefined) {
                     this.removeFixture(idx);
                 } else {
-                    let list = boundary.getFixtures();
+                    let list = this.getFixtures();
                     list.forEach(fixture => this.planckBody.DestroyFixture(fixture));
                     this.redrawFixture();
                 }
