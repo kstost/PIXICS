@@ -867,6 +867,25 @@ const pixiInst = function () {
                 types.set(this._drawPolygon, DrawType.POLYGON);
                 return types.get(fixtures[fx].drawingProfile.type);
             }
+            setDrawAppearance() {
+                let changeTask = [{ idx: 0, cidx: 4, value: 0.5 }];
+                let task = [];
+                this.getFixtures().reverse().forEach(fix => {
+                    task.push({
+                        rawArg: fix.drawingProfile.rawArg,
+                        tcode: fix.drawingProfile.tcode
+                    });
+                });
+                changeTask.forEach(ta => {
+                    task[ta.idx].rawArg[ta.cidx] = ta.value;
+                });
+                this.removeDraw();
+                task.forEach(task => {
+                    if (task.tcode === DrawType.RECTANGLE) this.drawRect(...task.rawArg);
+                    else if (task.tcode === DrawType.CIRCLE) this.drawCircle(...task.rawArg);
+                    else if (task.tcode === DrawType.POLYGON) this.drawPolygon(...task.rawArg);
+                });
+            }
             setDrawColor(idx, color, alpha) {
                 let fixtures = this.getFixtures();
                 let fx = (fixtures.length - 1) - idx;
@@ -954,7 +973,7 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawRect, arg: argument, rawArg };
+                    fixture.drawingProfile = { type: this._drawRect, arg: argument, rawArg, tcode: DrawType.RECTANGLE };
                     fixture.drawingProfile.type.bind(this)(...argument);
                     return fixture;
                 }
@@ -995,7 +1014,7 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawPolygon, arg: argument, rawArg };
+                    fixture.drawingProfile = { type: this._drawPolygon, arg: argument, rawArg, tcode: DrawType.POLYGON };
                     fixture.drawingProfile.type.bind(this)(...argument);
                     // this._drawPolygon(...arguments);
                     return fixture;
@@ -1022,7 +1041,7 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawCircle, arg: argument, rawArg };
+                    fixture.drawingProfile = { type: this._drawCircle, arg: argument, rawArg, tcode: DrawType.CIRCLE };
                     fixture.drawingProfile.type.bind(this)(...argument);
                     // this._drawCircle(...arguments);
                     // this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));

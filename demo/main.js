@@ -35,11 +35,14 @@ window.addEventListener('load', async () => {
    // window.boundary = boundary;
 
    let bl = new PIXICS.PhysicsGraphics({ world });
-   bl.drawCircle(0, 0, 100 * ratio);
-   bl.drawRect(100 * ratio, -100 * ratio, 100 * ratio, 100 * ratio, 0xff0000, 0.5);
+   bl.drawCircle(0, 0, 100 * ratio, 0x00ff00);
+   bl.drawRect(100 * ratio, -100 * ratio, 100 * ratio, 100 * ratio, 0xff0000);
    bl.setDynamic()
    app.stage.addChild(bl.getGraphic());
-   bl.setDrawColor(0, 0xff0000, 1);
+   // bl.setDrawColor(0, 0xff0000, 1);
+
+   //
+
 
    // let type = bl.getDrawType(idx);
    // if (PIXICS.DrawType.RECTANGLE === type) {
