@@ -32,7 +32,42 @@ window.addEventListener('load', async () => {
    boundary.drawRect(0, height / 2, width, tickness);
    boundary.drawRect(0, -height / 2, width, tickness);
    app.stage.addChild(boundary.getGraphic());
-   window.boundary = boundary;
+   // window.boundary = boundary;
+
+   let bl = new PIXICS.PhysicsGraphics({ world });
+   bl.drawCircle(0, 0, 100 * ratio);
+   bl.drawRect(100 * ratio, -100 * ratio, 100 * ratio, 100 * ratio, 0xff0000, 0.5);
+   bl.setDynamic()
+   app.stage.addChild(bl.getGraphic());
+   bl.setDrawColor(0, 0xff0000, 1);
+
+   // let type = bl.getDrawType(idx);
+   // if (PIXICS.DrawType.RECTANGLE === type) {
+   // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   // console.clear()
+   // bl.redrawFixture()
+   // console.log()
+   // console.log(bl.getFixtures()[1].drawingProfile.arg)
+
+   // bl.setFixtureProp(true, 'sensor', 1)
+   // window.ddd = bl;
 
 
 

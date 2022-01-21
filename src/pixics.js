@@ -101,8 +101,8 @@ const pixiInst = function () {
         let actual_display;
         const magicNumber = 60;
         function makeGraphic(center) {
-            function drawPolygon(gr, path, color) {
-                gr.beginFill(color);
+            function drawPolygon(gr, path, color, alpha) {
+                gr.beginFill(color, alpha);
                 path.forEach((dot, i) => {
                     if (i === 0) {
                         gr.moveTo((dot.x), -(dot.y));
@@ -113,17 +113,17 @@ const pixiInst = function () {
                 gr.closePath();
                 gr.endFill();
             }
-            function drawCircle(gr, x, y, radius, color) {
+            function drawCircle(gr, x, y, radius, color, alpha) {
                 // width = width * 2;
                 // height = height * 2;
-                gr.beginFill(color);
+                gr.beginFill(color, alpha);
                 gr.drawCircle(x - (0 * 0.5), -y - (0 * 0.5), radius);
                 gr.endFill();
             }
-            function internalRectDrawer(gr, x, y, width, height, color) {
+            function internalRectDrawer(gr, x, y, width, height, color, alpha) {
                 width = width * 2;
                 height = height * 2;
-                gr.beginFill(color);
+                gr.beginFill(color, alpha);
                 gr.drawRect(x - (width * 0.5), -y - (height * 0.5), width, height); // 픽시꺼.
                 gr.endFill();
             }
@@ -193,14 +193,14 @@ const pixiInst = function () {
                 GetLocalCenter,
                 SetAngle,
                 GetAngle,
-                drawingRectangle(x, y, width, height, color) {
-                    internalRectDrawer(gr, x, y, width, height, color);
+                drawingRectangle(x, y, width, height, color, alpha) {
+                    internalRectDrawer(gr, x, y, width, height, color, alpha);
                 },
-                drawCircle(x, y, radius, color) {
-                    drawCircle(gr, x, y, radius, color);
+                drawCircle(x, y, radius, color, alpha) {
+                    drawCircle(gr, x, y, radius, color, alpha);
                 },
-                drawPolygon(path, color) {
-                    drawPolygon(gr, path, color);
+                drawPolygon(path, color, alpha) {
+                    drawPolygon(gr, path, color, alpha);
                 }
             };
             SetPosition(0, 0);
@@ -867,6 +867,22 @@ const pixiInst = function () {
                 types.set(this._drawPolygon, DrawType.POLYGON);
                 return types.get(fixtures[fx].drawingProfile.type);
             }
+            setDrawColor(idx, color, alpha) {
+                let fixtures = this.getFixtures();
+                let fx = (fixtures.length - 1) - idx;
+                let type = this.getDrawType(idx);
+                let idxs;
+                if (type === DrawType.RECTANGLE) idxs = [4, 5];
+                if (type === DrawType.POLYGON) idxs = [1, 2];
+                if (type === DrawType.CIRCLE) idxs = [3, 4];
+                let value = [color, alpha];
+                idxs.forEach((val, i) => {
+                    if (value[i] === undefined || value[i] === null) return;
+                    fixtures[fx].drawingProfile.arg[val] = value[i];
+                    fixtures[fx].drawingProfile.rawArg[val] = value[i];
+                })
+                this.fixtureShapeDrawer();
+            }
             removeFixture(idx) {
                 let fixtures = this.getFixtures();
                 let fx = (fixtures.length - 1) - idx;
@@ -886,37 +902,41 @@ const pixiInst = function () {
                 }
             }
             redrawFixture() {
+                return this.fixtureShapeDrawer();
                 this.graphic.body.clear();
                 let drawArgs = this.getFixtures().reverse().map(fixture => fixture.drawingProfile);
                 drawArgs.forEach(arg => arg.type.bind(this)(...arg.arg));
             }
             fixtureShapeDrawer() {
+                // console.log(1);
                 this.graphic.body.clear();
                 this.getFixtures().reverse().forEach(f => {
                     if (f.drawingProfile.type === this._drawRect) {
-                        let [x, y, width, height, color] = f.drawingProfile.arg;
+                        let [x, y, width, height, color, alpha] = f.drawingProfile.arg;
                         if (color === undefined) color = 0xffffff;
-                        this.graphic.drawingRectangle(x, y, width, height, color)
+                        this.graphic.drawingRectangle(x, y, width, height, color, alpha)
                     }
                     if (f.drawingProfile.type === this._drawPolygon) {
-                        let [path, color] = f.drawingProfile.arg;
+                        let [path, color, alpha] = f.drawingProfile.arg;
                         if (color === undefined) color = 0xffffff;
-                        this.graphic.drawPolygon(path, color)
+                        this.graphic.drawPolygon(path, color, alpha)
                     }
                     if (f.drawingProfile.type === this._drawCircle) {
-                        let [x, y, radius, color] = f.drawingProfile.arg;
+                        let [x, y, radius, color, alpha] = f.drawingProfile.arg;
                         if (color === undefined) color = 0xffffff;
-                        this.graphic.drawCircle(x, y, radius, color);
+                        this.graphic.drawCircle(x, y, radius, color, alpha);
                     }
                 });
             }
             _drawRect() {
                 this.fixtureShapeDrawer();
             }
-            drawRect(x, y, width, height, color) {
+            drawRect(x, y, width, height, color, alpha) {
+                const rawArg = [...arguments];
                 width *= 0.5;
                 height *= 0.5;
-                let argument = [x, y, width, height, color];
+                if (alpha === undefined) alpha = 1;
+                let argument = [x, y, width, height, color, alpha];
                 if (color === undefined) color = 0xffffff;
                 if (PLANCKMODE) {
                 } else {
@@ -934,7 +954,7 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawRect, arg: argument };
+                    fixture.drawingProfile = { type: this._drawRect, arg: argument, rawArg };
                     fixture.drawingProfile.type.bind(this)(...argument);
                     return fixture;
                 }
@@ -942,22 +962,14 @@ const pixiInst = function () {
             _drawPolygon() {
                 this.fixtureShapeDrawer();
             }
-            drawPolygon(path, color) {
+            drawPolygon(path, color, alpha) {
                 // 볼록한(convex) 도형만 지원한다
                 // 오목한(concave) 형태의 도형은 지원하지 않으니 오목하게 하고자 하면 두개의 폴리곤을 덧대어 구현하라
+                const rawArg = [...arguments];
+                if (alpha === undefined) alpha = 1;
+                let argument = [path, color, alpha];
                 if (color === undefined) color = 0xffffff;
                 if (PLANCKMODE) {
-                    let shape = planck.Polygon((JSON.parse(JSON.stringify(path))).map(point => {
-                        point.x /= PIXICS.worldscale;
-                        point.y /= PIXICS.worldscale;
-                        point.y *= -1
-                        return point;
-                    }));
-                    let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-                    fixture.drawingProfile = { type: this._drawPolygon, arg: arguments };
-                    fixture.drawingProfile.type.bind(this)(...arguments);
-                    // this._drawPolygon(...arguments);
-                    return fixture;
                 } else {
                     let vertices = ((JSON.parse(JSON.stringify(path))).map(point => {
                         point.x /= PIXICS.worldscale;
@@ -983,8 +995,8 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawPolygon, arg: arguments };
-                    fixture.drawingProfile.type.bind(this)(...arguments);
+                    fixture.drawingProfile = { type: this._drawPolygon, arg: argument, rawArg };
+                    fixture.drawingProfile.type.bind(this)(...argument);
                     // this._drawPolygon(...arguments);
                     return fixture;
                 }
@@ -992,16 +1004,12 @@ const pixiInst = function () {
             _drawCircle() {
                 this.fixtureShapeDrawer();
             }
-            drawCircle(x, y, radius, color) {
+            drawCircle(x, y, radius, color, alpha) {
+                const rawArg = [...arguments];
+                if (alpha === undefined) alpha = 1;
+                let argument = [x, y, radius, color, alpha];
                 if (color === undefined) color = 0xffffff;
                 if (PLANCKMODE) {
-                    let position = planck.Vec2(x / PIXICS.worldscale, -y / PIXICS.worldscale);
-                    let shape = planck.Circle(position, radius / PIXICS.worldscale);
-                    let fixture = this.createFixture(shape, { density: 1, friction: 1, restitution: 0 });
-                    fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
-                    fixture.drawingProfile.type.bind(this)(...arguments);
-                    // this._drawCircle(...arguments);
-                    return fixture;
                 } else {
                     const shape = new b2.CircleShape();
                     shape.m_radius = radius / PIXICS.worldscale;
@@ -1014,8 +1022,8 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { type: this._drawCircle, arg: arguments };
-                    fixture.drawingProfile.type.bind(this)(...arguments);
+                    fixture.drawingProfile = { type: this._drawCircle, arg: argument, rawArg };
+                    fixture.drawingProfile.type.bind(this)(...argument);
                     // this._drawCircle(...arguments);
                     // this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                     return fixture;
