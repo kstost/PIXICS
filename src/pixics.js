@@ -865,9 +865,9 @@ const pixiInst = function () {
             }
             getDrawType(idx) {
                 Assert.use && Assert.validate('getDrawType::숫자가 아니네', () => idx.constructor === Number);
-                Assert.use && Assert.validate('getDrawType::drawingProfile에 짝이 안맞음', () => Object.keys(this.fixtureCache[idx].drawingProfile).length === 3);
+                Assert.use && Assert.validate('getDrawType::drawingProfile에 짝이 안맞음', () => Object.keys(this.fixtureCache[idx][DRAWINGPROFILE]).length === 3);
                 Assert.use && Assert.validate('getDrawType::픽스쳐가 아니네', () => this.fixtureCache[idx].constructor === b2.Fixture);
-                return this.fixtureCache[idx].drawingProfile.tcode;
+                return this.fixtureCache[idx][DRAWINGPROFILE].tcode;
             }
             setDrawAppearance(idx, cidx, value) {
                 Assert.use && Assert.validate('setDrawAppearance::idx 숫자가 아니네', () => idx.constructor === Number);
@@ -875,8 +875,8 @@ const pixiInst = function () {
                 Assert.use && Assert.validate('setDrawAppearance::value undefined네..', () => value !== undefined);
                 let task = this.fixtureCache.map(fix => ({
                     values: this.getFixtureValues(fix),
-                    rawArg: fix.drawingProfile.rawArg,
-                    tcode: fix.drawingProfile.tcode
+                    rawArg: fix[DRAWINGPROFILE].rawArg,
+                    tcode: fix[DRAWINGPROFILE].tcode
                 }));
                 task[idx].rawArg[cidx] = value;
                 this.removeDraw();
@@ -900,7 +900,7 @@ const pixiInst = function () {
                 let value = [color, alpha];
                 idxs.forEach((val, i) => {
                     if (value[i] === undefined || value[i] === null) return;
-                    this.fixtureCache[idx].drawingProfile.rawArg[val] = value[i];
+                    this.fixtureCache[idx][DRAWINGPROFILE].rawArg[val] = value[i];
                 })
                 this.fixtureShapeDrawer();
             }
@@ -919,22 +919,22 @@ const pixiInst = function () {
                 // console.log(1);
                 this.graphic.body.clear();
                 this.fixtureCache.forEach(f => {
-                    if (f.drawingProfile.tcode === DrawType.RECTANGLE) {
-                        let [x, y, width, height, color, alpha] = f.drawingProfile.rawArg; //ANINI
+                    if (f[DRAWINGPROFILE].tcode === DrawType.RECTANGLE) {
+                        let [x, y, width, height, color, alpha] = f[DRAWINGPROFILE].rawArg; //ANINI
                         width *= 0.5;
                         height *= 0.5;
                         if (color === undefined) color = 0xffffff;
                         if (alpha === undefined) alpha = 1;
                         this.graphic.drawingRectangle(x, y, width, height, color, alpha)
                     }
-                    if (f.drawingProfile.tcode === DrawType.POLYGON) {
-                        let [path, color, alpha] = f.drawingProfile.rawArg; //ANINI
+                    if (f[DRAWINGPROFILE].tcode === DrawType.POLYGON) {
+                        let [path, color, alpha] = f[DRAWINGPROFILE].rawArg; //ANINI
                         if (color === undefined) color = 0xffffff;
                         if (alpha === undefined) alpha = 1;
                         this.graphic.drawPolygon(path, color, alpha)
                     }
-                    if (f.drawingProfile.tcode === DrawType.CIRCLE) {
-                        let [x, y, radius, color, alpha] = f.drawingProfile.rawArg; //ANINI
+                    if (f[DRAWINGPROFILE].tcode === DrawType.CIRCLE) {
+                        let [x, y, radius, color, alpha] = f[DRAWINGPROFILE].rawArg; //ANINI
                         if (color === undefined) color = 0xffffff;
                         if (alpha === undefined) alpha = 1;
                         this.graphic.drawCircle(x, y, radius, color, alpha);
@@ -960,9 +960,9 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { drawInstance, rawArg, tcode: DrawType.RECTANGLE };
+                    fixture[DRAWINGPROFILE] = { drawInstance, rawArg, tcode: DrawType.RECTANGLE };
                     this.fixtureShapeDrawer();
-                    // fixture.drawingProfile.type.bind(this)();
+                    // fixture[DRAWINGPROFILE].type.bind(this)();
                     return fixture;
                 }
             }
@@ -998,9 +998,9 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { drawInstance, rawArg, tcode: DrawType.POLYGON };
+                    fixture[DRAWINGPROFILE] = { drawInstance, rawArg, tcode: DrawType.POLYGON };
                     this.fixtureShapeDrawer();
-                    // fixture.drawingProfile.type.bind(this)();
+                    // fixture[DRAWINGPROFILE].type.bind(this)();
                     return fixture;
                 }
             }
@@ -1020,9 +1020,9 @@ const pixiInst = function () {
                     fd.restitution = 0;
 
                     let fixture = this.createFixture(fd);
-                    fixture.drawingProfile = { drawInstance, rawArg, tcode: DrawType.CIRCLE };
+                    fixture[DRAWINGPROFILE] = { drawInstance, rawArg, tcode: DrawType.CIRCLE };
                     this.fixtureShapeDrawer();
-                    // fixture.drawingProfile.type.bind(this)();
+                    // fixture[DRAWINGPROFILE].type.bind(this)();
                     // this.planckBody.SetPosition(new b2.Vec2(x / PIXICS.worldscale, y / PIXICS.worldscale));
                     return fixture;
                 }
@@ -1094,7 +1094,7 @@ const pixiInst = function () {
                 return this.planckBody;
             }
             getDraw(idx) {
-                return this.numberToFixture(idx).drawingProfile.drawInstance;
+                return this.numberToFixture(idx)[DRAWINGPROFILE].drawInstance;
             }
             getFixtureValues(idx) {
                 Assert.use && Assert.validate('getFixtureValues::idx 상태가 이상하네', () => idx !== undefined);
@@ -1279,7 +1279,7 @@ const pixiInst = function () {
                         density,
                         sensor
                     } = fixtures.get(fixture);
-                    const drawingProfile = fixture.drawingProfile;
+                    const drawingProfile = fixture[DRAWINGPROFILE];
                     if (PLANCKMODE) {
                     } else {
                         fixture = this.createFixture(shape);
@@ -1287,7 +1287,7 @@ const pixiInst = function () {
                         fixture.SetFriction(friction || 0);
                         fixture.SetDensity(density || 0);
                         fixture.SetSensor(sensor);
-                        fixture.drawingProfile = drawingProfile;
+                        fixture[DRAWINGPROFILE] = drawingProfile;
                     }
                 });
 
@@ -1561,15 +1561,15 @@ const pixiInst = function () {
             get y() {
                 return this.rawArg[1];
             }
-            get tcode() { return this.fixture.drawingProfile.tcode; }
-            get rawArg() { return this.fixture.drawingProfile.rawArg; }
+            get tcode() { return this.fixture[DRAWINGPROFILE].tcode; }
+            get rawArg() { return this.fixture[DRAWINGPROFILE].rawArg; }
             get fixture() {
-                return this.pg.numberToFixture(this.fixtureOrder);//.drawingProfile.rawArg[0];
+                return this.pg.numberToFixture(this.fixtureOrder);//[DRAWINGPROFILE].rawArg[0];
             }
             get fixtureOrder() {
                 let fixtures = this.pg.fixtureCache;
                 for (let i = 0; i < fixtures.length; i++) {
-                    if (fixtures[i].drawingProfile.drawInstance === this) {
+                    if (fixtures[i][DRAWINGPROFILE].drawInstance === this) {
                         return i;
                     }
                 }
