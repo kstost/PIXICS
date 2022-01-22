@@ -8,8 +8,18 @@ PIXICS Copyright (c) 2022 Seungtae Kim
 *   - box2d.ts (A TypeScript port of Box2D): https://github.com/flyover/box2d.ts
 ************************************************************************** */
 const pixiInst = function () {
-    const INACTIVE = Symbol.for('Inactive');
-    const DRAWINGPROFILE = Symbol.for('DrawingProfile');
+    function makeid(length) {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
+    }
+    const INACTIVE = Symbol.for('INACTIVE' + makeid(64));
+    const DRAWINGPROFILE = Symbol.for('DRAWINGPROFILE' + makeid(64));
     class Assert {
         static use = true;
         static validate(v, cb) {
