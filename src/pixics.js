@@ -346,6 +346,7 @@ const pixiInst = function () {
             }
         }
         class PhysicsGraphics {
+            fixtureMapCache = new Map();
             fixtureCache = Object.freeze([]);
             activeState = {};
             resistanceFn = null;
@@ -919,12 +920,19 @@ const pixiInst = function () {
                 let fixture = this.planckBody.CreateFixture(shape);
                 this.fixtureCache = this.getFixtures().reverse();
                 Object.freeze(this.fixtureCache);
+                this.fixtureMapCache = new Map();
+                this.fixtureCache.forEach(fix => this.fixtureMapCache.set(fix));
                 return fixture;
             }
             destroyFixture(fixture) {
                 this.planckBody.DestroyFixture(fixture);
                 this.fixtureCache = this.getFixtures().reverse();
                 Object.freeze(this.fixtureCache);
+                this.fixtureMapCache = new Map();
+                this.fixtureCache.forEach(fix => this.fixtureMapCache.set(fix));
+            }
+            isFixtureBelongsToMe(fixture) {
+                return this.fixtureMapCache.has(fixture);
             }
             fixtureShapeDrawer() {
                 // console.log(1);
@@ -1156,6 +1164,8 @@ const pixiInst = function () {
             numberToFixture(idx) {
                 Assert.use && Assert.validate('numberToFixture::idx 상태가 이상하네', () => !(idx === undefined || idx === null));
                 Assert.use && Assert.validate('numberToFixture::idx 허용되지 못하는 값', () => idx.constructor === b2.Fixture || idx.constructor === Number);
+                // Assert.use && Assert.validate('numberToFixture::idx 허용되지 못하는 값', () => idx.constructor === b2.Fixture || idx.constructor === Number);
+                // isFixtureBelongsToMe(fixture)
                 if (idx.constructor === Number) return this.fixtureCache[idx];
                 return idx;
             }
