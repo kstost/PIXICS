@@ -866,20 +866,19 @@ const pixiInst = function () {
                 });
             }
             removeDraw(idx) {
-                let fixtures = this.fixtureCache;
                 if (idx !== undefined) {
                     Assert.use && Assert.validate('removeDraw::숫자가 아니네', () => idx.constructor === Number);
-                    this.destroyFixture(fixtures[idx]);
+                    this.destroyFixture(this.numberToFixture(idx));
                 } else {
-                    fixtures.forEach(fixture => this.destroyFixture(fixture));
+                    this.fixtureCache.forEach(fixture => this.destroyFixture(fixture));
                 }
                 this.fixtureShapeDrawer();
             }
             getDrawType(idx) {
                 Assert.use && Assert.validate('getDrawType::숫자가 아니네', () => idx.constructor === Number);
-                Assert.use && Assert.validate('getDrawType::drawingProfile에 짝이 안맞음', () => Object.keys(this.fixtureCache[idx][DRAWINGPROFILE]).length === 3);
-                Assert.use && Assert.validate('getDrawType::픽스쳐가 아니네', () => this.fixtureCache[idx].constructor === b2.Fixture);
-                return this.fixtureCache[idx][DRAWINGPROFILE].tcode;
+                Assert.use && Assert.validate('getDrawType::drawingProfile에 짝이 안맞음', () => Object.keys(this.numberToFixture(idx)[DRAWINGPROFILE]).length === 3);
+                Assert.use && Assert.validate('getDrawType::픽스쳐가 아니네', () => this.numberToFixture(idx).constructor === b2.Fixture);
+                return this.numberToFixture(idx)[DRAWINGPROFILE].tcode;
             }
             setDrawAppearance(idx, cidx, value) {
                 Assert.use && Assert.validate('setDrawAppearance::idx 숫자가 아니네', () => idx.constructor === Number);
@@ -908,11 +907,11 @@ const pixiInst = function () {
                 if (type === DrawType.POLYGON) idxs = [1, 2];
                 if (type === DrawType.CIRCLE) idxs = [3, 4];
                 Assert.use && Assert.validate('setDrawColor::idxs undefined네..', () => idxs !== undefined);
-                Assert.use && Assert.validate('setDrawColor::없는픽스쳐..', () => this.fixtureCache[idx] !== undefined);
+                Assert.use && Assert.validate('setDrawColor::없는픽스쳐..', () => this.numberToFixture(idx) !== undefined);
                 let value = [color, alpha];
                 idxs.forEach((val, i) => {
                     if (value[i] === undefined || value[i] === null) return;
-                    this.fixtureCache[idx][DRAWINGPROFILE].rawArg[val] = value[i];
+                    this.numberToFixture(idx)[DRAWINGPROFILE].rawArg[val] = value[i];
                 })
                 this.fixtureShapeDrawer();
             }
@@ -925,6 +924,8 @@ const pixiInst = function () {
                 return fixture;
             }
             destroyFixture(fixture) {
+                Assert.use && Assert.validate('destroyFixture::idx 소유하지 않은2 픽스쳐', () => fixture[DRAWINGPROFILE].drawInstance.pg === this);
+                Assert.use && Assert.validate('destroyFixture::idx 소유하지 않은1 픽스쳐', () => this.isFixtureBelongsToMe(fixture));
                 this.planckBody.DestroyFixture(fixture);
                 this.fixtureCache = this.getFixtures().reverse();
                 Object.freeze(this.fixtureCache);
@@ -932,6 +933,7 @@ const pixiInst = function () {
                 this.fixtureCache.forEach(fix => this.fixtureMapCache.set(fix));
             }
             isFixtureBelongsToMe(fixture) {
+                Assert.use && Assert.validate('isFixtureBelongsToMe::픽스쳐가 아니네', () => fixture.constructor === b2.Fixture);
                 return this.fixtureMapCache.has(fixture);
             }
             fixtureShapeDrawer() {
@@ -1164,9 +1166,9 @@ const pixiInst = function () {
             numberToFixture(idx) {
                 Assert.use && Assert.validate('numberToFixture::idx 상태가 이상하네', () => !(idx === undefined || idx === null));
                 Assert.use && Assert.validate('numberToFixture::idx 허용되지 못하는 값', () => idx.constructor === b2.Fixture || idx.constructor === Number);
-                // Assert.use && Assert.validate('numberToFixture::idx 허용되지 못하는 값', () => idx.constructor === b2.Fixture || idx.constructor === Number);
-                // isFixtureBelongsToMe(fixture)
-                if (idx.constructor === Number) return this.fixtureCache[idx];
+                if (idx.constructor === Number) idx = this.fixtureCache[idx];
+                Assert.use && Assert.validate('numberToFixture::idx 소유하지 않은2 픽스쳐', () => idx[DRAWINGPROFILE].drawInstance.pg === this);
+                Assert.use && Assert.validate('numberToFixture::idx 소유하지 않은1 픽스쳐', () => this.isFixtureBelongsToMe(idx));
                 return idx;
             }
             setSensor(value, idx) {
