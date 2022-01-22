@@ -1778,7 +1778,7 @@ const pixiInst = function () {
                 world.SetContactListener(new ContactListener());
                 point.pixics = {
                     setJoint(anchor1, anchor2, jinfo, design) {
-                        point.pixics.setDistanceJoint(...arguments);
+                        return point.pixics.setDistanceJoint(...arguments);
                     },
                     setDistanceJoint(anchor1, anchor2, jinfo, design) {
                         if (anchor1.constructor === Array) {
@@ -1790,9 +1790,6 @@ const pixiInst = function () {
                         if (!jinfo) {
                             jinfo = { collideConnected: true };
                         }
-                        if (!design) {
-                            design = { app, color: 0x00ffff, thickness: 1.5 * ratio };
-                        }
                         let coord1 = !(anchor1.x === undefined || anchor1.y === undefined);
                         let coord2 = !(anchor2.x === undefined || anchor2.y === undefined);
                         if (!coord2) {
@@ -1801,6 +1798,8 @@ const pixiInst = function () {
                         }
                         let ball1 = anchor1.body;
                         let ball2 = anchor2.body;
+                        Assert.use && Assert.validate('setDistanceJoint::문제있음1', () => (ball1 instanceof PhysicsGraphics));
+                        Assert.use && Assert.validate('setDistanceJoint::문제있음2', () => (ball2 instanceof PhysicsGraphics));
                         if (!ball1 || !ball2) return;
                         let b1p = ball1.getPosition();
                         let b2p = ball2.getPosition();
@@ -1810,7 +1809,15 @@ const pixiInst = function () {
                         anchor2.y += b2p.y;
                         const pixics = point.pixics;
                         design = !design ? { color: 0x00ffff, thickness: 0.5 * ratio } : design;
-                        const app = design.app;
+                        // console.log()
+                        const parent = ball1.getGraphic().parent;
+                        Assert.use && Assert.validate('setDistanceJoint::문제있음3', () => (ball1.getGraphic().parent === ball2.getGraphic().parent));
+                        // const app = design.app;
+                        function parentContainer() {
+                            if (!design.app) return;
+                            return parent;
+                        }
+                        // console.log('a',parent.constructor === PIXI.Application)
                         let body1 = ball1;
                         let ball1Origin = { ...b1p };
                         let ball1Anchor = anchor1;
@@ -1867,7 +1874,7 @@ const pixiInst = function () {
                                 return jointWire;
                             },
                             setWireThickness(v) {
-                                if (!app || !design.thickness) return;
+                                if (!parentContainer() || !design.thickness) return;
                                 jointWire.thickness = v;
                                 roundCap.clear();
                                 roundCap.beginFill(0xffffff);
@@ -1879,7 +1886,7 @@ const pixiInst = function () {
                                 roundECap.endFill();
                             },
                             setColor(c) {
-                                if (!app || !design.thickness) return;
+                                if (!parentContainer() || !design.thickness) return;
                                 roundCap.tint = c;
                                 roundECap.tint = c;
                                 jointWire.tint = c;
@@ -1895,13 +1902,13 @@ const pixiInst = function () {
                         let roundCap;
                         let roundECap;
                         let jointWire;
-                        if (app && design.thickness) {
+                        if (parentContainer() && design.thickness) {
                             roundCap = new PIXI.Graphics();
                             roundECap = new PIXI.Graphics();
                             jointWire = new PIXICS.Line();
-                            app.stage.addChild(roundCap);
-                            app.stage.addChild(roundECap);
-                            app.stage.addChild(jointWire);
+                            parentContainer().addChild(roundCap);
+                            parentContainer().addChild(roundECap);
+                            parentContainer().addChild(jointWire);
                         }
                         joint.GetUserData().setWireThickness(design.thickness);
                         joint.GetUserData().setColor(design.color);
@@ -1927,8 +1934,9 @@ const pixiInst = function () {
                                 }
                             });
                         }
-                        app && design.thickness && pixics.update(update);
+                        parentContainer() && design.thickness && pixics.update(update);
                         return joint;
+                        //==================================================================================================================================================================
                     },
                     world,
                     get worldscale() {
