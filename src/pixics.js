@@ -634,12 +634,15 @@ const pixiInst = function () {
                 return lss;
             }
             easingTo(x, y, d, f) {
-                if (!typeChecker.isNumber(x, d)) throw 'adsfuih';
-                if (y !== null && !typeChecker.isNumber(y)) throw 'weirouh';
+                Assert.use && Assert.validate('easingTo::다이나믹 멈춰!', () => this.isDynamic() === false);
+                Assert.use && Assert.validate('easingTo::숫자..', () => typeChecker.isNumber(x, d));
+                Assert.use && Assert.validate('easingTo::타입...', () => !(y !== null && !typeChecker.isNumber(y)));
+                // if (!typeChecker.isNumber(x, d)) throw 'adsfuih';
+                // if (y !== null && !typeChecker.isNumber(y)) throw 'weirouh';
                 if (!f) f = 'linearTween';
                 f = Ease[f];
                 const _point = this;
-                const pixics = point.pixics;
+                // const pixics = point.pixics;
                 let max = y !== null ? getMovableMaxDistancePerFrame() : Math.PI / 2;
                 let ticktime = (1 / magicNumber) * 1000;
                 let startPoint;// = this.getPosition();
