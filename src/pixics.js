@@ -346,6 +346,7 @@ const pixiInst = function () {
             }
         }
         class PhysicsGraphics {
+            fixtureCache = Object.freeze([]);
             activeState = {};
             resistanceFn = null;
             stickState = new Map();
