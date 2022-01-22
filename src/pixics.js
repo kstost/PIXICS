@@ -1781,54 +1781,22 @@ const pixiInst = function () {
                         return point.pixics.setDistanceJoint(...arguments);
                     },
                     setDistanceJoint(anchor1, anchor2, jinfo, design) {
-                        if (anchor1.constructor === Array) {
-                            anchor1 = { body: anchor1[0], x: anchor1[1], y: anchor1[2] };
+                        function makeWires() {
+                            let parent = parentContainer();
+                            if (parent && design.thickness) {
+                                let roundCap = new PIXI.Graphics();
+                                let roundECap = new PIXI.Graphics();
+                                let jointWire = new PIXICS.Line();
+                                parent.addChild(roundCap);
+                                parent.addChild(roundECap);
+                                parent.addChild(jointWire);
+                                return { roundCap, roundECap, jointWire }
+                            }
+                            return {};
                         }
-                        if (anchor2.constructor === Array) {
-                            anchor2 = { body: anchor2[0], x: anchor2[1], y: anchor2[2] };
-                        }
-                        if (!jinfo) {
-                            jinfo = { collideConnected: true };
-                        }
-                        let coord1 = !(anchor1.x === undefined || anchor1.y === undefined);
-                        let coord2 = !(anchor2.x === undefined || anchor2.y === undefined);
-                        if (!coord2) {
-                            anchor2.x = 0;
-                            anchor2.y = 0;
-                        }
-                        let ball1 = anchor1.body;
-                        let ball2 = anchor2.body;
-                        Assert.use && Assert.validate('setDistanceJoint::문제있음1', () => (ball1 instanceof PhysicsGraphics));
-                        Assert.use && Assert.validate('setDistanceJoint::문제있음2', () => (ball2 instanceof PhysicsGraphics));
-                        if (!ball1 || !ball2) return;
-                        let b1p = ball1.getPosition();
-                        let b2p = ball2.getPosition();
-                        anchor1.x -= b1p.x;
-                        anchor1.y += b1p.y;
-                        anchor2.x -= b2p.x;
-                        anchor2.y += b2p.y;
-                        const pixics = point.pixics;
-                        design = !design ? { color: 0x00ffff, thickness: 0.5 * ratio } : design;
-                        // console.log()
-                        const parent = ball1.getGraphic().parent;
-                        Assert.use && Assert.validate('setDistanceJoint::문제있음3', () => (ball1.getGraphic().parent === ball2.getGraphic().parent));
-                        // const app = design.app;
                         function parentContainer() {
                             if (!design.app) return;
                             return parent;
-                        }
-                        // console.log('a',parent.constructor === PIXI.Application)
-                        let body1 = ball1;
-                        let ball1Origin = { ...b1p };
-                        let ball1Anchor = anchor1;
-                        let body2 = ball2;
-                        let ball2Origin = { ...b2p };
-                        let ball2Anchor = anchor2;
-                        let jd;
-                        if (coord2) {
-                            jd = new b2.DistanceJointDef();
-                        } else {
-                            jd = new b2.RevoluteJointDef();
                         }
                         function angle(v) {
                             var radians = (Math.PI * 2) - v.angle;
@@ -1842,34 +1810,39 @@ const pixiInst = function () {
                             }
                             return vv;
                         }
-                        let afa1 = angle({ pos: b1p, x: ball1Anchor.x + b1p.x * 2, y: ball1Anchor.y, angle: ball1.getAngle() });
-                        let afa2 = angle({ pos: b2p, x: ball2Anchor.x + b2p.x * 2, y: ball2Anchor.y, angle: ball2.getAngle() });
+                        let destoryed;
+                        const pixics = point.pixics;
+                        if (anchor1.constructor === Array) anchor1 = { body: anchor1[0], x: anchor1[1], y: anchor1[2] };
+                        if (anchor2.constructor === Array) anchor2 = { body: anchor2[0], x: anchor2[1], y: anchor2[2] };
+                        if (!jinfo) jinfo = { collideConnected: true };
+                        let coord1 = !(anchor1.x === undefined || anchor1.y === undefined);
+                        let coord2 = !(anchor2.x === undefined || anchor2.y === undefined);
+                        if (!coord2) { anchor2.x = 0; anchor2.y = 0; }
+                        let ball1 = anchor1.body;
+                        let ball2 = anchor2.body;
+                        Assert.use && Assert.validate('setDistanceJoint::문제있음1', () => (ball1 instanceof PhysicsGraphics));
+                        Assert.use && Assert.validate('setDistanceJoint::문제있음2', () => (ball2 instanceof PhysicsGraphics));
+                        Assert.use && Assert.validate('setDistanceJoint::문제있음3', () => (ball1.getGraphic().parent === ball2.getGraphic().parent));
+                        if (!ball1 || !ball2) return;
+                        let b1p = ball1.getPosition();
+                        let b2p = ball2.getPosition();
+                        anchor1.x -= b1p.x;
+                        anchor1.y += b1p.y;
+                        anchor2.x -= b2p.x;
+                        anchor2.y += b2p.y;
+                        design = !design ? { color: 0x00ffff, thickness: 0.5 * ratio } : design;
+                        const parent = ball1.getGraphic().parent;
+                        let joints = [{ body: ball2, origin: { ...b2p }, anchor: anchor2 }, { body: ball1, origin: { ...b1p }, anchor: anchor1 }];
+                        let jd = coord2 ? new b2.DistanceJointDef() : new b2.RevoluteJointDef();
+                        let afa1 = angle({ pos: b1p, x: anchor1.x + b1p.x * 2, y: anchor1.y, angle: ball1.getAngle() });
+                        let afa2 = angle({ pos: b2p, x: anchor2.x + b2p.x * 2, y: anchor2.y, angle: ball2.getAngle() });
                         let p1 = new b2.Vec2(afa1.x / pixics.worldscale, afa1.y / pixics.worldscale);
                         let p2 = new b2.Vec2(afa2.x / pixics.worldscale, afa2.y / pixics.worldscale);
-                        let argus;
-                        if (coord2) {
-                            argus = [body2.getBody(), body1.getBody(), p2, p1];
-                        } else {
-                            argus = [body2.getBody(), body1.getBody(), p1];
-                        }
-                        jd.Initialize(...argus);
-                        Object.keys(jinfo).forEach(propName => {
-                            jd[propName] = jinfo[propName];
-                        })
+                        jd.Initialize(...[ball2.getBody(), ball1.getBody(), ...(coord2 ? [p2, p1] : [p1])]);
+                        Object.keys(jinfo).forEach(propName => jd[propName] = jinfo[propName])
                         let joint = world.CreateJoint(jd);
-                        joint.SetUserData({
-                            joints: [
-                                {
-                                    body: body2,
-                                    origin: ball2Origin,
-                                    anchor: ball2Anchor
-                                },
-                                {
-                                    body: body1,
-                                    origin: ball1Origin,
-                                    anchor: ball1Anchor
-                                }
-                            ],
+                        let controlInst = {
+                            joints,
                             getJointWire() {
                                 return jointWire;
                             },
@@ -1892,27 +1865,20 @@ const pixiInst = function () {
                                 jointWire.tint = c;
                             },
                             destroy() {
+                                Assert.use && Assert.validate('setDistanceJoint::문제있음4', () => (destoryed === undefined));
                                 roundCap && roundCap.parent?.removeChild(roundCap);
                                 roundECap && roundECap.parent?.removeChild(roundECap);
                                 jointWire && jointWire.parent?.removeChild(jointWire);
-                                design.thickness && pixics.unupdate(update);
                                 world.DestroyJoint(joint);
-                            }
-                        });
-                        let roundCap;
-                        let roundECap;
-                        let jointWire;
-                        if (parentContainer() && design.thickness) {
-                            roundCap = new PIXI.Graphics();
-                            roundECap = new PIXI.Graphics();
-                            jointWire = new PIXICS.Line();
-                            parentContainer().addChild(roundCap);
-                            parentContainer().addChild(roundECap);
-                            parentContainer().addChild(jointWire);
-                        }
+                                destoryed = true;
+                            },
+                        };
+                        joint.SetUserData(controlInst);
+                        let { roundCap, roundECap, jointWire } = makeWires();
                         joint.GetUserData().setWireThickness(design.thickness);
                         joint.GetUserData().setColor(design.color);
-                        function update(dt) {
+                        parentContainer() && design.thickness && pixics.update((a, b, c) => {
+                            if (destoryed) return b();
                             joint.GetUserData().joints.forEach((jinfo, i) => {
                                 let { body, origin, anchor } = jinfo;
                                 anchor = { ...anchor };
@@ -1933,8 +1899,7 @@ const pixiInst = function () {
                                     roundECap.y = jointWire.by;
                                 }
                             });
-                        }
-                        parentContainer() && design.thickness && pixics.update(update);
+                        });
                         return joint;
                         //==================================================================================================================================================================
                     },
