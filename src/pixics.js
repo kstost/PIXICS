@@ -1781,6 +1781,18 @@ const pixiInst = function () {
                         point.pixics.setDistanceJoint(...arguments);
                     },
                     setDistanceJoint(anchor1, anchor2, jinfo, design) {
+                        if (anchor1.constructor === Array) {
+                            anchor1 = { body: anchor1[0], x: anchor1[1], y: anchor1[2] };
+                        }
+                        if (anchor2.constructor === Array) {
+                            anchor2 = { body: anchor2[0], x: anchor2[1], y: anchor2[2] };
+                        }
+                        if (!jinfo) {
+                            jinfo = { collideConnected: true };
+                        }
+                        if (!design) {
+                            design = { app, color: 0x00ffff, thickness: 1.5 * ratio };
+                        }
                         let coord1 = !(anchor1.x === undefined || anchor1.y === undefined);
                         let coord2 = !(anchor2.x === undefined || anchor2.y === undefined);
                         if (!coord2) {
