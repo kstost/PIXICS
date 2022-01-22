@@ -34,61 +34,76 @@ window.addEventListener('load', async () => {
    app.stage.addChild(boundary.getGraphic());
    // window.boundary = boundary;
 
-   let bl = new PIXICS.PhysicsGraphics({ world });
-   bl.drawCircle(0, 0, 100 * ratio, 0x00ff00);
-   bl.drawRect(100 * ratio, -100 * ratio, 100 * ratio, 100 * ratio, 0xff0000);
-   bl.drawCircle(0, 300 * ratio, 100 * ratio);
-   // bl.setDynamic()
-   app.stage.addChild(bl.getGraphic());
-   bl.setFixtureProp(true, 'sensor', 1);
+   //------------------------------
+   L('긴 네모를 만든다 (바닥으로 쓸거다)');
+   let floor = new PIXICS.PhysicsGraphics({ world });
+   floor.drawRect(0, 0, 1080 * 0.5 * size.ratio, 1920 * 0.5 * size.ratio * 0.05, 0xffaaff);
+   app.stage.addChild(floor.getGraphic());
 
+   L('긴 네모 위치를 이동시킨다');
+   floor.setPosition(0, -1920 * 0.5 * size.ratio);
+   await pixics.sleep(0);
 
-   bl.getDraw(0).alpha = 0.5;
-   bl.getDraw(0).color = 0xff00ff;
-   bl.getDraw(0).radius = 100 * ratio;
-   bl.getDraw(1).alpha = 0.9;
-   bl.getDraw(1).y = 100 * ratio;
-   bl.getDraw(1).width = 100 * ratio;
-   bl.getDraw(1).x = 1;
-   console.log(bl.getDraw(1).x);
-   // console.log(bl.getFixtureValues(0))
-   // console.log(100 * ratio);
-   // console.log(bl.getFixture(0).drawingProfile.rawArg[2])
-   // console.log(bl.getFixture(1).drawingProfile.rawArg[1])
-   // console.log(bl.getFixture(1).drawingProfile.rawArg[2])
+   L('바디를 생성한다');
+   let boxsize = (1080 * 0.25 * 0.25) * size.ratio;
+   let ball = new PIXICS.PhysicsGraphics({ world });
+   app.stage.addChild(ball.getGraphic());
+   await pixics.sleep(500);
 
-   // bl.setDrawColor(0, 0xff0000, 0.5);
+   L('자주색 박스 그리기');
+   ball.drawRect(0, 0, boxsize, boxsize, 0xaa55aa);
+   await pixics.sleep(500);
 
-   //
+   L('하늘색 박스 그리기');
+   ball.drawRect(0, boxsize * 2, boxsize, boxsize, 0x00ddf0);
+   L(`${ball.getDraw(1).width === boxsize}`);
+   L(`${ball.getDraw(1).y === boxsize * 2}`);
+   ball.getDraw(1).width = boxsize;
+   await pixics.sleep(500);
 
+   L('주황색 박스 그리기');
+   ball.drawRect(boxsize * 2, 0, boxsize, boxsize, 0xffaa00);
+   await pixics.sleep(500);
 
-   // let type = bl.getDrawType(idx);
-   // if (PIXICS.DrawType.RECTANGLE === type) {
-   // }
+   L('자주색 박스안에 원 그리기');
+   ball.drawCircle(0, 0, boxsize * 0.2, 0x000000);
+   await pixics.sleep(500);
 
+   L('노란색 원 그리기 (반투명값 0.5)');
+   ball.drawCircle(-boxsize, -boxsize, boxsize, 0xffdd00, 0.5);
+   await pixics.sleep(500);
 
+   L('각도바꾸기');
+   ball.setAngle(Math.PI * 0.1)
+   await pixics.sleep(500);
 
+   L('중력 영향받게 하기');
+   ball.setDynamic()
 
+   L('탄성을 부여하기');
+   ball.setRestitution(0.2)
 
+   await pixics.sleep(1500);
+   L('네번째 요소(반투명동그라미)를 센서화 하기');
+   ball.setSensor(true, 4)
 
+   L('네번째 요소(반투명동그라미) 색, 투명도를 바꿈.');
+   await pixics.sleep(1500);
+   ball.getDraw(4).color = 0xff0000;
+   ball.getDraw(4).alpha = 1;
 
+   await pixics.sleep(1500);
+   L('세번째 요소(작은동그라미)를 지움');
+   ball.removeDraw(3);
 
+   await pixics.sleep(1500);
+   L('다 지움 (지우기만한것임 바디는 살아있음)');
+   ball.removeDraw();
 
-
-
-
-
-
-
-
-
-   // console.clear()
-   // bl.redrawFixture()
-   // console.log()
-   // console.log(bl.getFixtures()[1].drawingProfile.arg)
-
-   // bl.setFixtureProp(true, 'sensor', 1)
-   // window.ddd = bl;
+   await pixics.sleep(1500);
+   L('바디에 다시 그림');
+   ball.setPosition(0, 0);
+   ball.drawCircle(0, 0, boxsize, 0xffdd00, 0.5);
 
 
 

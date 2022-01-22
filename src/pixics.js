@@ -9,6 +9,13 @@ PIXICS Copyright (c) 2022 Seungtae Kim
 ************************************************************************** */
 const pixiInst = function () {
     const INACTIVE = Symbol.for('Inactive');
+    const DRAWINGPROFILE = Symbol.for('DrawingProfile');
+    class Assert {
+        static use = true;
+        static validate(v, cb) {
+            if (cb() !== true) throw new Error(v);
+        }
+    }
     const Ease = {
         easeOutElastic: (t, b, c, d) => { var s = 1.70158; var p = 0; var a = c; if (t == 0) return b; if ((t /= d) == 1) return b + c; if (!p) p = d * .3; if (a < Math.abs(c)) { a = c; var s = p / 4; } else var s = p / (2 * Math.PI) * Math.asin(c / a); return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b; },
         linearTween: (t, b, c, d) => { return c * t / d + b; },// simple linear tweening - no easing, no acceleration
@@ -849,6 +856,7 @@ const pixiInst = function () {
             removeDraw(idx) {
                 let fixtures = this.fixtureCache;
                 if (idx !== undefined) {
+                    Assert.use && Assert.validate('removeDraw::숫자가 아니네', () => idx.constructor === Number);
                     this.destroyFixture(fixtures[idx]);
                 } else {
                     fixtures.forEach(fixture => this.destroyFixture(fixture));
@@ -856,9 +864,15 @@ const pixiInst = function () {
                 this.fixtureShapeDrawer();
             }
             getDrawType(idx) {
+                Assert.use && Assert.validate('getDrawType::숫자가 아니네', () => idx.constructor === Number);
+                Assert.use && Assert.validate('getDrawType::drawingProfile에 짝이 안맞음', () => Object.keys(this.fixtureCache[idx].drawingProfile).length === 3);
+                Assert.use && Assert.validate('getDrawType::픽스쳐가 아니네', () => this.fixtureCache[idx].constructor === b2.Fixture);
                 return this.fixtureCache[idx].drawingProfile.tcode;
             }
             setDrawAppearance(idx, cidx, value) {
+                Assert.use && Assert.validate('setDrawAppearance::idx 숫자가 아니네', () => idx.constructor === Number);
+                Assert.use && Assert.validate('setDrawAppearance::cidx 숫자가 아니네', () => cidx.constructor === Number);
+                Assert.use && Assert.validate('setDrawAppearance::value undefined네..', () => value !== undefined);
                 let task = this.fixtureCache.map(fix => ({
                     values: this.getFixtureValues(fix),
                     rawArg: fix.drawingProfile.rawArg,
@@ -881,6 +895,8 @@ const pixiInst = function () {
                 if (type === DrawType.RECTANGLE) idxs = [4, 5];
                 if (type === DrawType.POLYGON) idxs = [1, 2];
                 if (type === DrawType.CIRCLE) idxs = [3, 4];
+                Assert.use && Assert.validate('setDrawColor::idxs undefined네..', () => idxs !== undefined);
+                Assert.use && Assert.validate('setDrawColor::없는픽스쳐..', () => this.fixtureCache[idx] !== undefined);
                 let value = [color, alpha];
                 idxs.forEach((val, i) => {
                     if (value[i] === undefined || value[i] === null) return;
@@ -1081,31 +1097,21 @@ const pixiInst = function () {
                 return this.numberToFixture(idx).drawingProfile.drawInstance;
             }
             getFixtureValues(idx) {
-                if (idx === undefined) {
-                    return {
-                        restitution: undefined,
-                        friction: undefined,
-                        density: 1,
-                        sensor: undefined,
-                    }
-                }
-                let fixture;
-                if (idx.constructor === Number) {
-                    fixture = this.fixtureCache[idx];
-                } else {
-                    fixture = idx;
-                }
+                Assert.use && Assert.validate('getFixtureValues::idx 상태가 이상하네', () => idx !== undefined);
+                Assert.use && Assert.validate('getFixtureValues::idx 허용되지 못하는 값', () => idx.constructor === b2.Fixture || idx.constructor === Number);
+                let fixture = this.numberToFixture(idx);
                 let restitution = fixture?.GetRestitution();
                 let friction = fixture?.GetFriction();
                 let density = fixture?.GetDensity();
                 let sensor = fixture?.IsSensor();
                 density = density ? density : 1;
-                return {
+                let data = {
                     restitution,
                     friction,
                     density,
                     sensor
                 };
+                return data;
             }
             getFixtures() {
                 let list = [];
@@ -1137,6 +1143,8 @@ const pixiInst = function () {
                 return this.numberToFixture(idx)[fnname]();
             }
             numberToFixture(idx) {
+                Assert.use && Assert.validate('numberToFixture::idx 상태가 이상하네', () => !(idx === undefined || idx === null));
+                Assert.use && Assert.validate('numberToFixture::idx 허용되지 못하는 값', () => idx.constructor === b2.Fixture || idx.constructor === Number);
                 if (idx.constructor === Number) return this.fixtureCache[idx];
                 return idx;
             }
@@ -1219,16 +1227,10 @@ const pixiInst = function () {
                     }
                 } else {
                     for (let fixture = this.planckBody.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
+                        Assert.use && Assert.validate('resetBodyAndFixtures::fixture 상태가 이상하네', () => !!fixture);
+                        Assert.use && Assert.validate('resetBodyAndFixtures::픽스쳐가 아니네', () => fixture.constructor === b2.Fixture);
                         fixtureList.push(fixture);
                         let shape = _shape ? _shape : fixture.GetShape();
-                        /*
-                        let restitution = fixture?.GetRestitution();
-                        let friction = fixture?.GetFriction();
-                        let density = fixture?.GetDensity();
-                        let sensor = fixture?.IsSensor();
-                        density = density ? density : 1;
-                        */
-
                         fixtures.set(fixture, {
                             shape,
                             ...this.getFixtureValues(fixture)
