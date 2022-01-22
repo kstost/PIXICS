@@ -847,16 +847,14 @@ const pixiInst = function () {
                 });
             }
             removeDraw(idx) {
-                this.destroyFixture(idx);
-            }
-            destroyFixture(idx) {
+                let fixtures = this.getFixtures();
                 if (idx !== undefined) {
-                    this.removeFixture(idx);
+                    let fx = (fixtures.length - 1) - idx;
+                    this.planckBody.DestroyFixture(fixtures[fx]);
                 } else {
-                    let list = this.getFixtures();
-                    list.forEach(fixture => this.planckBody.DestroyFixture(fixture));
-                    this.redrawFixture();
+                    fixtures.forEach(fixture => this.planckBody.DestroyFixture(fixture));
                 }
+                this.fixtureShapeDrawer();
             }
             getDrawType(idx) {
                 const fixtures = this.getFixtures();
@@ -896,16 +894,6 @@ const pixiInst = function () {
                 })
                 this.fixtureShapeDrawer();
             }
-            removeFixture(idx) {
-                let fixtures = this.getFixtures();
-                let fx = (fixtures.length - 1) - idx;
-                if (PLANCKMODE) {
-                    this.planckBody.destroyFixture(fixtures[fx]);
-                } else {
-                    this.planckBody.DestroyFixture(fixtures[fx]);
-                }
-                this.redrawFixture();
-            }
             createFixture(shape, attr) {
                 if (PLANCKMODE) {
                     return this.planckBody.createFixture(shape, attr);
@@ -913,9 +901,6 @@ const pixiInst = function () {
                     // console.log(shape)
                     return this.planckBody.CreateFixture(shape);
                 }
-            }
-            redrawFixture() {
-                return this.fixtureShapeDrawer();
             }
             fixtureShapeDrawer() {
                 // console.log(1);
@@ -1283,8 +1268,6 @@ const pixiInst = function () {
 
                 // 픽스쳐와 바디를 제거한다
                 if (PLANCKMODE) {
-                    fixtureList.forEach(fixture => this.planckBody.destroyFixture(fixture));
-                    this.planckBody.getWorld().destroyBody(this.planckBody);
                 } else {
                     fixtureList.forEach(fixture => this.planckBody.DestroyFixture(fixture));
                     this.planckBody.GetWorld().DestroyBody(this.planckBody);
@@ -1424,6 +1407,7 @@ const pixiInst = function () {
                 const body = this.getBody();
                 const graphic = this.getGraphic();
                 if (justclean) return;
+                this.removeDraw();
                 body.GetWorld().DestroyBody(body);
                 graphic.parent?.removeChild(graphic);
                 // return this.planckBody;
