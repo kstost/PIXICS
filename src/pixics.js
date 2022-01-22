@@ -117,14 +117,14 @@ const pixiInst = function () {
                 // width = width * 2;
                 // height = height * 2;
                 gr.beginFill(color, alpha);
-                gr.drawCircle(x - (0 * 0.5), -y - (0 * 0.5), radius);
+                gr.drawCircle(x, -y, radius);
                 gr.endFill();
             }
             function internalRectDrawer(gr, x, y, width, height, color, alpha) {
-                width = width * 2;
-                height = height * 2;
+                // width = width * 2;
+                // height = height * 2;
                 gr.beginFill(color, alpha);
-                gr.drawRect(x - (width * 0.5), -y - (height * 0.5), width, height); // 픽시꺼.
+                gr.drawRect(x - width, -y - height, width * 2, height * 2); // 픽시꺼.
                 gr.endFill();
             }
             let gr = new PIXI.Graphics();
@@ -837,7 +837,7 @@ const pixiInst = function () {
                         );
                     }
                     if (fixture) {
-                        let idx = this.getFixtures().length - 1;
+                        let idx = this.fixtureCache.length - 1;
                         if (idx > -1) {
                             this.setFriction(friction, idx);
                             this.setRestitution(restitution, idx);
@@ -847,22 +847,19 @@ const pixiInst = function () {
                 });
             }
             removeDraw(idx) {
-                let fixtures = this.getFixtures();
+                let fixtures = this.fixtureCache;
                 if (idx !== undefined) {
-                    let fx = (fixtures.length - 1) - idx;
-                    this.planckBody.DestroyFixture(fixtures[fx]);
+                    this.destroyFixture(fixtures[idx]);
                 } else {
-                    fixtures.forEach(fixture => this.planckBody.DestroyFixture(fixture));
+                    fixtures.forEach(fixture => this.destroyFixture(fixture));
                 }
                 this.fixtureShapeDrawer();
             }
             getDrawType(idx) {
-                const fixtures = this.getFixtures();
-                let fx = (fixtures.length - 1) - idx;
-                return fixtures[fx].drawingProfile.tcode;
+                return this.fixtureCache[idx].drawingProfile.tcode;
             }
             setDrawAppearance(idx, cidx, value) {
-                let task = this.getFixtures().reverse().map(fix => ({
+                let task = this.fixtureCache.map(fix => ({
                     values: this.getFixtureValues(fix),
                     rawArg: fix.drawingProfile.rawArg,
                     tcode: fix.drawingProfile.tcode
@@ -879,8 +876,6 @@ const pixiInst = function () {
                 });
             }
             setDrawColor(idx, color, alpha) {
-                let fixtures = this.getFixtures();
-                let fx = (fixtures.length - 1) - idx;
                 let type = this.getDrawType(idx);
                 let idxs;
                 if (type === DrawType.RECTANGLE) idxs = [4, 5];
@@ -889,23 +884,25 @@ const pixiInst = function () {
                 let value = [color, alpha];
                 idxs.forEach((val, i) => {
                     if (value[i] === undefined || value[i] === null) return;
-                    // fixtures[fx].drawingProfile.arg[val] = value[i]; //ANINI
-                    fixtures[fx].drawingProfile.rawArg[val] = value[i];
+                    this.fixtureCache[idx].drawingProfile.rawArg[val] = value[i];
                 })
                 this.fixtureShapeDrawer();
             }
-            createFixture(shape, attr) {
-                if (PLANCKMODE) {
-                    return this.planckBody.createFixture(shape, attr);
-                } else {
-                    // console.log(shape)
-                    return this.planckBody.CreateFixture(shape);
-                }
+            createFixture(shape) {
+                let fixture = this.planckBody.CreateFixture(shape);
+                this.fixtureCache = this.getFixtures().reverse();
+                Object.freeze(this.fixtureCache);
+                return fixture;
+            }
+            destroyFixture(fixture) {
+                this.planckBody.DestroyFixture(fixture);
+                this.fixtureCache = this.getFixtures().reverse();
+                Object.freeze(this.fixtureCache);
             }
             fixtureShapeDrawer() {
                 // console.log(1);
                 this.graphic.body.clear();
-                this.getFixtures().reverse().forEach(f => {
+                this.fixtureCache.forEach(f => {
                     if (f.drawingProfile.tcode === DrawType.RECTANGLE) {
                         let [x, y, width, height, color, alpha] = f.drawingProfile.rawArg; //ANINI
                         width *= 0.5;
@@ -1081,7 +1078,7 @@ const pixiInst = function () {
                 return this.planckBody;
             }
             getDraw(idx) {
-                return this.getFixture(idx).drawingProfile.drawInstance;
+                return this.numberToFixture(idx).drawingProfile.drawInstance;
             }
             getFixtureValues(idx) {
                 if (idx === undefined) {
@@ -1094,8 +1091,7 @@ const pixiInst = function () {
                 }
                 let fixture;
                 if (idx.constructor === Number) {
-                    const fixtures = this.getFixtures();
-                    fixture = fixtures[(fixtures.length - 1) - idx];
+                    fixture = this.fixtureCache[idx];
                 } else {
                     fixture = idx;
                 }
@@ -1111,21 +1107,10 @@ const pixiInst = function () {
                     sensor
                 };
             }
-            getFixture(idx) {
-                const fixtures = this.getFixtures();
-                const fx = fixtures[(fixtures.length - 1) - idx];
-                return fx;
-            }
             getFixtures() {
                 let list = [];
-                if (PLANCKMODE) {
-                    for (let fixture = this.planckBody.getFixtureList(); fixture; fixture = fixture.getNext()) {
-                        list.push(fixture);
-                    }
-                } else {
-                    for (let fixture = this.planckBody.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
-                        list.push(fixture);
-                    }
+                for (let fixture = this.planckBody.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
+                    list.push(fixture);
                 }
                 return list;
             }
@@ -1136,19 +1121,10 @@ const pixiInst = function () {
                     friction: PLANCKMODE ? 'setFriction' : 'SetFriction',
                     sensor: 'SetSensor',
                 })[propname];
-                let fixtures = this.getFixtures();
                 if (idx === undefined) {
-                    fixtures.forEach(fixture => {
-                        fixture[fnname](value);
-                    })
+                    this.fixtureCache.forEach(fixture => fixture[fnname](value))
                 } else {
-                    let fx;
-                    if (idx.constructor === Number) {
-                        fx = fixtures[(fixtures.length - 1) - idx];
-                    } else {
-                        fx = fixtures.filter(f => f === idx)[0];
-                    }
-                    fx[fnname](value);
+                    this.numberToFixture(idx)[fnname](value);
                 }
             }
             getFixtureProp(propname, idx) {
@@ -1158,14 +1134,11 @@ const pixiInst = function () {
                     friction: PLANCKMODE ? 'getFriction' : 'GetFriction',
                     sensor: 'IsSensor',
                 })[propname];
-                let fixtures = this.getFixtures();
-                let fx;
-                if (idx.constructor === Number) {
-                    fx = fixtures[(fixtures.length - 1) - idx];
-                } else {
-                    fx = fixtures.filter(f => f === idx)[0];
-                }
-                return fx[fnname]();
+                return this.numberToFixture(idx)[fnname]();
+            }
+            numberToFixture(idx) {
+                if (idx.constructor === Number) return this.fixtureCache[idx];
+                return idx;
             }
             setSensor(value, idx) {
                 this.setFixtureProp(value, 'sensor', idx);
@@ -1269,7 +1242,7 @@ const pixiInst = function () {
                 // 픽스쳐와 바디를 제거한다
                 if (PLANCKMODE) {
                 } else {
-                    fixtureList.forEach(fixture => this.planckBody.DestroyFixture(fixture));
+                    fixtureList.forEach(fixture => this.destroyFixture(fixture));
                     this.planckBody.GetWorld().DestroyBody(this.planckBody);
                 }
 
@@ -1306,13 +1279,8 @@ const pixiInst = function () {
                     } = fixtures.get(fixture);
                     const drawingProfile = fixture.drawingProfile;
                     if (PLANCKMODE) {
-                        fixture = this.planckBody.createFixture(shape);
-                        fixture.setRestitution(restitution || 0);
-                        fixture.setFriction(friction || 0);
-                        fixture.setDensity(density || 0);
-                        fixture.drawingProfile = drawingProfile;
                     } else {
-                        fixture = this.planckBody.CreateFixture(shape);
+                        fixture = this.createFixture(shape);
                         fixture.SetRestitution(restitution || 0);
                         fixture.SetFriction(friction || 0);
                         fixture.SetDensity(density || 0);
@@ -1594,18 +1562,15 @@ const pixiInst = function () {
             get tcode() { return this.fixture.drawingProfile.tcode; }
             get rawArg() { return this.fixture.drawingProfile.rawArg; }
             get fixture() {
-                return this.pg.getFixture(this.fixtureOrder);//.drawingProfile.rawArg[0];
+                return this.pg.numberToFixture(this.fixtureOrder);//.drawingProfile.rawArg[0];
             }
             get fixtureOrder() {
-                let idx;
-                let fixtures = this.pg.getFixtures();
+                let fixtures = this.pg.fixtureCache;
                 for (let i = 0; i < fixtures.length; i++) {
                     if (fixtures[i].drawingProfile.drawInstance === this) {
-                        idx = i;
+                        return i;
                     }
                 }
-                let fx = (fixtures.length - 1) - idx;
-                return fx;
             }
         }
         class DrawCircle extends Draw {
