@@ -35,8 +35,16 @@ async function initPixics(initValue) {
         initPixics.status = 2;
     } else { while (initPixics.status !== 2) await new Promise(r => setTimeout(r)) }
     const PIXICS = pixiInst();
-
-    let currentRotation = initValue.rotationEmulation !== undefined ? initValue.rotationEmulation : screen.orientation.angle;
+    function getAngle() {
+        let val;
+        try {
+            val = screen.orientation.angle
+        } catch (e) {
+            val = window.innerWidth > window.innerHeight ? 90 : 0
+        }
+        return val;
+    }
+    let currentRotation = initValue.rotationEmulation !== undefined ? initValue.rotationEmulation : getAngle();
     if (initValue.rotation) initValue.rotation = currentRotation === 0;
     if (initValue.rotation !== undefined && !initValue.rotation) {
         let tmp = initValue.resolution.width;
