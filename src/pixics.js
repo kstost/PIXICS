@@ -357,6 +357,7 @@ const pixiInst = function () {
             kinematicMotionMove = new Map();
             kinematicMotionRotate = new Map();
             tag = null;
+            preCallbackQueueMode = false;
             preCallbackQueue = [];
             updateQueue = new Map();
             constructor({ world }) {
@@ -374,6 +375,7 @@ const pixiInst = function () {
                     //파괴
 
                     const bodyDef = new b2.BodyDef();
+                    bodyDef.allowSleeping = true;
                     this.planckBody = world.CreateBody(bodyDef);
                     this.planckBody.SetGravityScale(1);
                     this.planckBody.SetUserData(this);
@@ -524,13 +526,21 @@ const pixiInst = function () {
                     if (!this.contacts.has(body)) {
                         this.contacts.set(body, mode);
                         let cb = this.getCBFunc(body, 'contact');
-                        cb && this.preCallbackQueue.push([cb, body]);
+                        if (this.preCallbackQueueMode) {
+                            cb && cb(body)
+                        } else {
+                            cb && this.preCallbackQueue.push([cb, body]);
+                        }
                     }
                 } else {
                     if (this.contacts.has(body)) {
                         this.contacts.delete(body);
                         let cb = this.getCBFunc(body, 'untact');
-                        cb && this.preCallbackQueue.push([cb, body]);
+                        if (this.preCallbackQueueMode) {
+                            cb && cb(body)
+                        } else {
+                            cb && this.preCallbackQueue.push([cb, body]);
+                        }
                     }
                 }
             }
@@ -1284,6 +1294,7 @@ const pixiInst = function () {
                     this.planckBody.setMassData({ mass: 1, center: planck.Vec2(0, 0), I: 1 });
                 } else {
                     const bodyDef = new b2.BodyDef();
+                    bodyDef.allowSleeping = true;
                     this.planckBody = this.world.CreateBody(bodyDef);
                     this.planckBody.SetGravityScale(gravityScale);
                     this.planckBody.SetUserData(this);
@@ -1413,7 +1424,7 @@ const pixiInst = function () {
                 let ball1 = this;
                 let prev;
                 this.resistanceFn && point.pixics.unupdate(this.resistanceFn);
-                let resist = function () {
+                let resist = function (a, b, c) {
                     let cur = ball1.getBody().GetLinearVelocity();
                     let zero = { x: 0, y: 0 };
                     let radian = math.get_angle_in_radian_between_two_points(zero, cur);
@@ -1430,6 +1441,7 @@ const pixiInst = function () {
                             point.pixics.unupdate(resist);
                             ball1.resistanceFn = null;
                             cb && cb();
+                            b();
                         }
                     }
                     prev = { x: ball1.getGraphic().x, y: ball1.getGraphic().y };
@@ -1787,6 +1799,9 @@ const pixiInst = function () {
                 point.ratio = ratio;
                 point.worldscale = scale * ratio;
                 let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
+                world.SetAllowSleeping(true);
+                world.SetWarmStarting(true);
+                world.SetContinuousPhysics(true);
                 registUpdate(world);
                 world.SetContactListener(new ContactListener());
                 point.pixics = {
