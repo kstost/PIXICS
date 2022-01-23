@@ -1800,8 +1800,8 @@ const pixiInst = function () {
                 point.worldscale = scale * ratio;
                 let world = PLANCKMODE ? new planck.World(gravity) : new b2.World(gravity);
                 world.SetAllowSleeping(true);
-                world.SetWarmStarting(true);
-                world.SetContinuousPhysics(true);
+                false && world.SetWarmStarting(true);
+                false && world.SetContinuousPhysics(true);
                 registUpdate(world);
                 world.SetContactListener(new ContactListener());
                 point.pixics = {
