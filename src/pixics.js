@@ -1672,7 +1672,8 @@ const pixiInst = function () {
                     width, height
                 };
                 let pointer = {
-                    createPIXIApp() {
+                    createPIXIApp(initValue) {
+                        // console.log(!!initValue.rotation);
                         let display = this;
                         // let ratio = display.getRatio();
                         const app = new PIXI.Application({
@@ -1682,14 +1683,23 @@ const pixiInst = function () {
                             resolution: window.devicePixelRatio,
                             autoDensity: true,
                         });
-                        display.width = app.screen.width;
-                        display.height = app.screen.height;
+                        if (!!initValue.rotation) {
+                            display.width = app.screen.height;
+                            display.height = app.screen.width;
+                        } else {
+                            display.width = app.screen.width;
+                            display.height = app.screen.height;
+                        }
                         app.stage.sortableChildren = true;
                         display.container.innerText = '';
                         display.container.appendChild(app.view);
                         if (resizable && isBodyContainer) {
                             resizeCb = () => app.renderer.resize(window.innerWidth, window.innerHeight);
                             resizeCb();
+                        }
+                        if (!!initValue.rotation) {
+                            app.stage.x = display.height;
+                            app.stage.rotation = Math.PI / 2
                         }
                         return app;
                     },

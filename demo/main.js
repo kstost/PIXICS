@@ -6,7 +6,8 @@ window.addEventListener('load', async () => {
       return colors[rn];
    }
    const { app, pixics, world, size, PIXICS, b2, math } = await initPixics({
-      resolution: { width: 100, height: 150 },
+      resolution: { width: 108, height: 192 },
+      rotation: true,
       fpsmonitor: true,
       container: document.querySelector('body'),
       gravity: { x: 0, y: -10 },

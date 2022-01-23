@@ -36,9 +36,15 @@ async function initPixics(initValue) {
     } else { while (initPixics.status !== 2) await new Promise(r => setTimeout(r)) }
     const PIXICS = pixiInst();
 
+    if (initValue.rotation) initValue.rotation = screen.orientation.angle === 0;
+    if (initValue.rotation !== undefined && !initValue.rotation) {
+        let tmp = initValue.resolution.width;
+        initValue.resolution.width = initValue.resolution.height;
+        initValue.resolution.height = tmp;
+    }
     // Creating Pixi Screen
     const display = PIXICS.displaySystem(initValue.resolution ? [initValue.resolution.width, initValue.resolution.height] : [], !!initValue.fpsmonitor, initValue.container);
-    const app = display.createPIXIApp();
+    const app = display.createPIXIApp(initValue);
     const { ratio, width, height } = display;
 
     // Creating Physics-World
