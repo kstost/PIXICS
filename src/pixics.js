@@ -345,7 +345,76 @@ const pixiInst = function () {
                 return speedMeter;
             }
         }
+        class TextView {
+            image = null;
+            #text = '';
+            #opt = null;
+            constructor(text, opt) {
+                this.text = text;
+                this.opt = opt;
+            }
+            get text() { return this.#text; }
+            set text(v) { this.#text = `${v}`; this.draw(); }
+            get opt() { return this.#opt; }
+            set opt(v) { this.#opt = v; this.draw(); }
+            draw() {
+                if (!this.opt || !this.text) return;
+                let parent;
+                if (this.image) {
+                    parent = this.image.parentObject;
+                    this.image.remove();
+                }
+                let textSprite = new PIXI.Text(`${this.text}`, this.opt);
+                this.image = new PIXICS.Image(point.pixiApp.renderer.generateTexture(textSprite));
+                if (parent) parent.addVirtualChild(this.image);
+            }
+            get width() { return this.image.width; }
+            get height() { return this.image.height; }
+            get x() { return this.image.x; }
+            get y() { return this.image.y; }
+            set x(v) { this.image.x = v; }
+            set y(v) { this.image.y = v; }
+        }
+        class Image {
+            parentObject = null;
+            #x = 0;
+            #y = 0;
+            #rotation = 0;
+            constructor(tet) {
+                this.gr = new PIXI.Sprite(tet);
+                this.gr.anchor.x = 0.5;
+                this.gr.anchor.y = 0.5;
+                this.gr.scale.x = point.ratio * 2;
+                this.gr.scale.y = point.ratio * 2;
+                this.x = 0;
+                this.y = 0;
+                this.rotation = 0;
+            }
+            remove() {
+                if (!this.parentObject) return;
+                this.parentObject.removeVirtualChild(this);
+            }
+            getSprite() { return this.gr; }
+            align() {
+                if (!this.parentObject) return;
+                let gr = this.parentObject.getGraphic();
+                let vc = this;
+                let sp = this.getSprite();
+                sp.x = gr.x + vc.x;
+                sp.y = gr.y + vc.y;
+                sp.rotation = gr.rotation + vc.rotation;
+            }
+            set x(v) { this.#x = v; this.align(); }
+            set y(v) { this.#y = v; this.align(); }
+            set rotation(v) { this.#rotation = v; this.align(); }
+            get x() { return this.#x; }
+            get y() { return this.#y; }
+            get rotation() { return this.#rotation; }
+            get width() { return this.gr.width; }
+            get height() { return this.gr.height; }
+        }
         class PhysicsGraphics {
+            virtualChildren = new Map();
             fixtureMapCache = new Map();
             fixtureCache = Object.freeze([]);
             activeState = {};
@@ -798,6 +867,31 @@ const pixiInst = function () {
                 getKinematicMotionMap().set(motionInst);
                 return prm;
             }
+            removeAllVirtualChildren() {
+                //ok
+                [...this.virtualChildren.keys()].forEach(vc => vc.remove());
+            }
+            removeVirtualChild(vc) {
+                //ok
+                this.virtualChildren.delete(vc);
+                vc.getSprite().parent.removeChild(vc.getSprite());
+                vc.parentObject = null;
+            }
+            addVirtualChild(sprite) {
+                this.virtualChildren.set(sprite);
+                point.particleContainer.addChild(sprite.getSprite());
+                sprite.parentObject = this;
+                sprite.align();
+            }
+            setVirtualChildAlign() {
+                //ok
+                let fe = this.virtualChildren.keys();
+                while (true) {
+                    let de = fe.next();
+                    if (de.done) { break; }
+                    de.value.align();
+                }
+            }
             rotateEaseBy(x, duration, f) {
                 let startPoint = this.getAngle();
                 return this.rotateEaseTo(startPoint + x, duration, f);
@@ -1071,6 +1165,7 @@ const pixiInst = function () {
                     let { x, y } = this.planckBody.GetPosition();
                     this.graphic.SetAngle(this.planckBody.GetAngle());
                     this.graphic.SetPosition(x * PIXICS.worldscale, y * PIXICS.worldscale);
+                    this.setVirtualChildAlign();
                     // this.graphic.rotation = -this.planckBody.GetAngle();
                     // this.graphic.x = orb2(x, 1) + this.bojx;/// PIXICS.worldscale
                     // this.graphic.y = orb2(y, 0) + this.bojy;//
@@ -1405,6 +1500,7 @@ const pixiInst = function () {
                 this.remAllUpdate();
                 this.removeAllEvent();
                 this.remAllpinGravities();
+                this.removeAllVirtualChildren();
                 point.pixics.getJointList().forEach(jj => {
                     let jp = jj.GetUserData();
                     if (jp.joints.map(j => j.body).includes(this)) {
@@ -1695,6 +1791,25 @@ const pixiInst = function () {
                             resolution: window.devicePixelRatio,
                             autoDensity: true,
                         });
+                        if (true) {
+                            if (false) {
+                                let particleContainer = new PIXI.ParticleContainer(10000, {
+                                    scale: true,
+                                    position: true,
+                                    uvs: true,
+                                    tint: true,
+                                    alpha: true,
+                                    rotation: true
+                                });
+                                particleContainer.interactiveChildren = true;
+                                particleContainer.zIndex = 1;
+                            }
+                            const particleContainer = new PIXI.Container();
+                            particleContainer.zIndex = 1;
+                            app.stage.addChild(particleContainer);
+                            point.particleContainer = particleContainer;
+                            point.pixiApp = app;
+                        }
                         if (!!initValue.rotation) {
                             display.width = app.screen.height;
                             display.height = app.screen.width;
@@ -1750,6 +1865,8 @@ const pixiInst = function () {
                 return pointer;
             },
             worldscale: 0, PhysicsGraphics,
+            TextView,
+            Image,
             ObjectPool,
             Line,
             editorUrl(json, redirect) {
