@@ -360,12 +360,22 @@ const pixiInst = function () {
             draw() {
                 if (!this.opt || !this.text) return;
                 let parent;
+                let attb;// = {};
                 if (this.image) {
                     parent = this.image.parentObject;
+                    if (!attb) attb = {};
+                    attb.x = this.image.x;
+                    attb.y = this.image.y;
+                    attb.alpha = this.image.alpha;
                     this.image.remove();
                 }
                 let textSprite = new PIXI.Text(`${this.text}`, this.opt);
                 this.image = new PIXICS.Image(point.pixiApp.renderer.generateTexture(textSprite));
+                if (attb) {
+                    this.image.x = attb.x;
+                    this.image.y = attb.y;
+                    this.image.alpha = attb.alpha;
+                }
                 if (parent) parent.addVirtualChild(this.image);
             }
             get width() { return this.image.width; }
@@ -379,7 +389,7 @@ const pixiInst = function () {
             parentObject = null;
             #x = 0;
             #y = 0;
-            #rotation = 0;
+            // #rotation = 0;
             constructor(tet) {
                 this.gr = new PIXI.Sprite(tet);
                 this.gr.anchor.x = 0.5;
@@ -388,7 +398,7 @@ const pixiInst = function () {
                 this.gr.scale.y = point.ratio * 1;
                 this.x = 0;
                 this.y = 0;
-                this.rotation = 0;
+                // this.rotation = 0;
             }
             remove() {
                 if (!this.parentObject) return;
@@ -402,14 +412,16 @@ const pixiInst = function () {
                 let sp = this.getSprite();
                 sp.x = gr.x + vc.x;
                 sp.y = gr.y + vc.y;
-                sp.rotation = gr.rotation + vc.rotation;
+                sp.rotation = gr.rotation;
             }
+            get alpha() { return this.gr.alpha; }
+            set alpha(v) { this.gr.alpha = v; }
             set x(v) { this.#x = v; this.align(); }
             set y(v) { this.#y = v; this.align(); }
-            set rotation(v) { this.#rotation = v; this.align(); }
+            // set rotation(v) { this.gr.rotation = v; }
             get x() { return this.#x; }
             get y() { return this.#y; }
-            get rotation() { return this.#rotation; }
+            // get rotation() { return this.gr.rotation; }
             get width() { return this.gr.width; }
             get height() { return this.gr.height; }
         }
