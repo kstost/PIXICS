@@ -1578,12 +1578,13 @@ const pixiInst = function () {
                     cb(_body);
                 }
                 bdv.preCallbackQueue.splice(0, len);
-                // console.log()
-                let keys = bdv.updateQueue.keys();
-                while (true) {
-                    let val = keys.next();
-                    if (val.done) break;
-                    runUpdateCb(val.value);
+                if (bdv.updateQueue.size) {
+                    let keys = bdv.updateQueue.keys();
+                    while (true) {
+                        let val = keys.next();
+                        if (val.done) break;
+                        runUpdateCb(val.value);
+                    }
                 }
                 bdv?.syncState();
             }
@@ -2072,12 +2073,10 @@ const pixiInst = function () {
                         center.y = actual_display.height / 2;
                         center.x += x;
                         center.y += -y;
-                        syncStateAll(world);
                     },
                     moveWorldCenterBy(x, y) {
                         center.x += x;
                         center.y += -y;
-                        syncStateAll(world);
                     },
                     log(str, duration) {
                         let line = document.createElement('div');
