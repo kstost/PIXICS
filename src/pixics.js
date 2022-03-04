@@ -345,6 +345,26 @@ const pixiInst = function () {
                 return speedMeter;
             }
         }
+        class TextView2 extends PIXI.Text {
+            parentObject = null;
+            constructor(text, opt) {
+                super(text, opt);
+            }
+            get image() { return this; }
+            getSprite() { return this; }
+            remove() {
+                if (!this.parentObject) return;
+                this.parentObject.removeVirtualChild(this);
+            }
+            align() {
+                if (!this.parentObject) return;
+                let gr = this.parentObject.getGraphic();
+                let sp = this.getSprite();
+                sp.x = gr.x - sp.width * 0.5;
+                sp.y = gr.y - sp.height * 0.5;
+                sp.rotation = gr.rotation;
+            }
+        }
         class TextView {
             image = null;
             #text = '';
@@ -606,28 +626,38 @@ const pixiInst = function () {
                 if (mode) {
                     if (!this.contacts.has(body)) {
                         this.contacts.set(body, mode);
-                        let cb = this.getCBFunc(body, 'contact');
+                        let vcb = this.getCBFunc(body, 'contact', true);
+                        let cb = vcb?.cbf;
+                        let sendThru;
+                        if (vcb && vcb.preCalc) sendThru = vcb.preCalc();
                         if (this.preCallbackQueueMode) {
-                            cb && cb(body)
+                            cb && cb(body, sendThru)
                         } else {
-                            cb && this.preCallbackQueue.push([cb, body]);
+                            cb && this.preCallbackQueue.push([cb, body, sendThru]);
                         }
                     }
                 } else {
                     if (this.contacts.has(body)) {
                         this.contacts.delete(body);
-                        let cb = this.getCBFunc(body, 'untact');
+                        let vcb = this.getCBFunc(body, 'untact', true);
+                        let cb = vcb?.cbf;
+                        let sendThru;
+                        if (vcb && vcb.preCalc) sendThru = vcb.preCalc();
                         if (this.preCallbackQueueMode) {
-                            cb && cb(body)
+                            cb && cb(body, sendThru)
                         } else {
-                            cb && this.preCallbackQueue.push([cb, body]);
+                            cb && this.preCallbackQueue.push([cb, body, sendThru]);
                         }
                     }
                 }
             }
-            getCBFunc(boundary, mode) {
+            getCBFunc(boundary, mode, all) {
                 let dt = this.stickState.get(boundary);
-                return dt?.cbs[mode]?.cbf
+                if (!all) {
+                    return dt?.cbs[mode]?.cbf
+                } else {
+                    return dt?.cbs[mode];//?.cbf
+                }
             }
             removeEvent(mode, boundary, otherside) {
                 if (!boundary) {
@@ -691,7 +721,7 @@ const pixiInst = function () {
                 try { if (boundary.stickState.get(this).cbs[mode]) return true; } catch (e) { }
                 return false;
             }
-            addEvent(mode, boundary, cbf) {
+            addEvent(mode, boundary, cbf, preCalc) {
                 if (boundary instanceof Function) {
                     if (mode.constructor === String) mode = [mode];
                     mode.forEach(mode => {
@@ -708,7 +738,7 @@ const pixiInst = function () {
                         dt = { body: boundary, prevstate: false, cbs: {} };
                         this.stickState.set(boundary, dt);
                     };
-                    dt.cbs[mode] = { cbf }
+                    dt.cbs[mode] = { cbf, preCalc }
                 }
             }
             getContactList(mode) {
@@ -1574,8 +1604,8 @@ const pixiInst = function () {
                 let len = bdv.preCallbackQueue.length;
                 for (let i = 0; i < len; i++) {
                     if (!bdv.preCallbackQueue[i]) continue;
-                    let [cb, _body] = bdv.preCallbackQueue[i];
-                    cb(_body);
+                    let [cb, _body, sendThru] = bdv.preCallbackQueue[i];
+                    cb(_body, sendThru);
                 }
                 bdv.preCallbackQueue.splice(0, len);
                 if (bdv.updateQueue.size) {
@@ -1879,6 +1909,7 @@ const pixiInst = function () {
             },
             worldscale: 0, PhysicsGraphics,
             TextView,
+            TextView2,
             Image,
             ObjectPool,
             Line,
