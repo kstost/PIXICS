@@ -78,7 +78,74 @@ const pixiInst = function () {
                 y: center_coordinate.y + Math.sin(angle) * distance
             };
         }
-    }
+    };
+    math.check_intersection_line_line = function (l1, l2) {
+        // geometry
+        let [line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY, mode] = [l1.first.x, l1.first.y, l1.second.x, l1.second.y, l2.first.x, l2.first.y, l2.second.x, l2.second.y, false];
+        let denominator, a, b, numerator1, numerator2;
+        denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) - ((line2EndX - line2StartX) * (line1EndY - line1StartY));
+        if (denominator == 0) return false;
+        a = line1StartY - line2StartY;
+        b = line1StartX - line2StartX;
+        numerator1 = ((line2EndX - line2StartX) * a) - ((line2EndY - line2StartY) * b);
+        numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
+        a = numerator1 / denominator;
+        b = numerator2 / denominator;
+        if (mode) {
+            return {
+                x: line1StartX + (a * (line1EndX - line1StartX)),
+                y: line1StartY + (a * (line1EndY - line1StartY)),
+                onLine1: a > 0 && a < 1,
+                onLine2: b > 0 && b < 1
+            };
+        } else {
+            if (a > 0 && a < 1 && b > 0 && b < 1) {
+                return {
+                    x: line1StartX + (a * (line1EndX - line1StartX)),
+                    y: line1StartY + (a * (line1EndY - line1StartY))
+                };
+            }
+        }
+        return false;
+    };
+    math.checkPointIsInsideCircle = function (spec, pt) {
+        // geometry
+        var distancesquared = (pt.x - spec.x) * (pt.x - spec.x) + (pt.y - spec.y) * (pt.y - spec.y);
+        return distancesquared <= spec.r * spec.r;
+    };
+    math.rotation_coordinate = function (point1, point2, radians) {
+        // geometry
+        let cos = Math.cos(radians);
+        let sin = Math.sin(radians);
+        return {
+            x: (cos * (point2.x - point1.x)) + (sin * (point2.y - point1.y)) + point1.x,
+            y: (cos * (point2.y - point1.y)) - (sin * (point2.x - point1.x)) + point1.y
+        };
+    };
+    math.checkPointIsInsideRect = function (ballp, point, width, height) {
+        // geometry
+        let dd = 1;
+        let sx = ballp.x - (dd * (width * 0.5));
+        let sy = ballp.y - (dd * (height * 0.5));
+        let ex = ballp.x + (dd * (width * 0.5));
+        let ey = ballp.y + (dd * (height * 0.5));
+        return (point.x >= sx && point.y >= sy) && (point.x <= ex && point.y <= ey);
+    };
+    math.make_cross_by_centerpoint = function (bcenter, angling, length) {
+        let line = [];
+        if (length === undefined) length = 100000000;
+        if (true) {
+            let opo = math.get_coordinate_distance_away_from_center_with_radian(length, bcenter, -angling);
+            let opd = math.get_coordinate_distance_away_from_center_with_radian(-(length * 2), opo, -angling);
+            line.push({ first: opo, second: opd });
+        }
+        if (true) {
+            let opo = math.get_coordinate_distance_away_from_center_with_radian(length, bcenter, -angling + (Math.PI * 0.5));
+            let opd = math.get_coordinate_distance_away_from_center_with_radian(-(length * 2), opo, -angling + (Math.PI * 0.5));
+            line.push({ first: opo, second: opd });
+        }
+        return line;
+    };
     const typeChecker = {
         isNumber() {
             let cnt = 0;
@@ -2119,6 +2186,14 @@ const pixiInst = function () {
                     moveWorldCenterBy(x, y) {
                         center.x += x;
                         center.y += -y;
+                    },
+                    async prepareImageResources(images) {
+                        let ndsa = {};
+                        Object.keys(images).forEach(key => {
+                            ndsa[key] = PIXI.Texture.from(images[key]);
+                        });
+                        while (Object.keys(ndsa).filter(key => ndsa[key].width * ndsa[key].height <= 1).length) await new Promise(r => setTimeout(r));
+                        return ndsa;
                     },
                     log(str, duration) {
                         let line = document.createElement('div');
