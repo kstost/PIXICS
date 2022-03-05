@@ -997,6 +997,7 @@ const pixiInst = function () {
                 vc.parentObject = null;
             }
             addVirtualChild(sprite, fitting) {
+                if (this.virtualChildren.has(sprite)) return;
                 this.virtualChildren.set(sprite);
                 point.particleContainer.addChild(sprite.getSprite());
                 sprite.parentObject = this;
@@ -1877,6 +1878,7 @@ const pixiInst = function () {
 
         let lineList = new Map();
         let point = {
+            symbolValue: {},
             DrawType,
             KeyEvent,
             framerate: magicNumber,
@@ -2186,6 +2188,10 @@ const pixiInst = function () {
                     moveWorldCenterBy(x, y) {
                         center.x += x;
                         center.y += -y;
+                    },
+                    valueLikeSymbol(id, cons) {
+                        if (!point.symbolValue[Symbol.for(id)]) point.symbolValue[Symbol.for(id)] = cons();
+                        return point.symbolValue[Symbol.for(id)];
                     },
                     async prepareImageResources(images) {
                         let ndsa = {};
