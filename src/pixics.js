@@ -349,6 +349,8 @@ const pixiInst = function () {
             parentObject = null;
             constructor(text, opt) {
                 super(text, opt);
+                this.anchor.x = 0.5;
+                this.anchor.y = 0.5;
             }
             get image() { return this; }
             getSprite() { return this; }
@@ -360,8 +362,10 @@ const pixiInst = function () {
                 if (!this.parentObject) return;
                 let gr = this.parentObject.getGraphic();
                 let sp = this.getSprite();
-                sp.x = gr.x - sp.width * 0.5;
-                sp.y = gr.y - sp.height * 0.5;
+                // sp.x = gr.x - sp.width * 0.5;
+                // sp.y = gr.y - sp.height * 0.5;
+                sp.x = gr.x;// - sp.width * 0.5;
+                sp.y = gr.y;// - sp.height * 0.5;
                 sp.rotation = gr.rotation;
             }
         }
@@ -444,6 +448,12 @@ const pixiInst = function () {
             // get rotation() { return this.gr.rotation; }
             get width() { return this.gr.width; }
             get height() { return this.gr.height; }
+            fitting() {
+                let ball2 = this.parentObject;
+                this.gr.scale.x = ball2.getGraphic().width / this.gr.texture.width;
+                this.gr.scale.y = ball2.getGraphic().height / this.gr.texture.height;
+
+            }
         }
         class PhysicsGraphics {
             virtualChildren = new Map();
@@ -919,11 +929,12 @@ const pixiInst = function () {
                 vc.getSprite().parent.removeChild(vc.getSprite());
                 vc.parentObject = null;
             }
-            addVirtualChild(sprite) {
+            addVirtualChild(sprite, fitting) {
                 this.virtualChildren.set(sprite);
                 point.particleContainer.addChild(sprite.getSprite());
                 sprite.parentObject = this;
                 sprite.align();
+                fitting && sprite.fitting();
             }
             setVirtualChildAlign() {
                 //ok
