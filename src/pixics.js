@@ -523,6 +523,7 @@ const pixiInst = function () {
             }
         }
         class PhysicsGraphics {
+            calculateMode = false;
             virtualChildren = new Map();
             fixtureMapCache = new Map();
             fixtureCache = Object.freeze([]);
@@ -1573,27 +1574,44 @@ const pixiInst = function () {
                     contactList.forEach(contact => contact.getBody().SetAwake(true));
                 }
             }
+            justCalcuateMode(v) {
+                // Graphic 을 사용안하고 계산만 하는모드
+                this.calculateMode = v;
+            }
             setActive(v) {
                 /*
                     false 로 설정하면 해당 요소를 쉬도록 한다
                     화면으로부터도 제거하고 걸어줬던 모든 이벤트와 업데이트를 해제한다
                     키네마틱움직임도 모두 중단된다
                 */
-                const graphic = this.getGraphic();
-                const parent = graphic.parent;
-                if (!v && parent && !this.activeState.parent) {
-                    this.setStatic();
-                    this.setPosition(math.BIGNUMBER, math.BIGNUMBER);
-                    this.planckBody.SetAngularVelocity(0);
-                    this.planckBody.SetLinearVelocity({ x: 0, y: 0 });
-                    this.destroy(true);
-                    this.activeState.parent = parent;
-                    parent.removeChild(graphic);
-                    this.getBody()[INACTIVE] = !v;
-                } else if (v && !parent && this.activeState.parent) {
-                    this.activeState.parent.addChild(graphic);
-                    Object.keys(this.activeState).forEach(key => delete this.activeState[key]);
-                    this.getBody()[INACTIVE] = !v;
+                if (!this.calculateMode) {
+                    const graphic = this.getGraphic();
+                    const parent = graphic.parent;
+                    if (!v && parent && !this.activeState.parent) {
+                        this.setStatic();
+                        this.setPosition(math.BIGNUMBER, math.BIGNUMBER);
+                        this.planckBody.SetAngularVelocity(0);
+                        this.planckBody.SetLinearVelocity({ x: 0, y: 0 });
+                        this.destroy(true);
+                        this.activeState.parent = parent;
+                        parent.removeChild(graphic);
+                        this.getBody()[INACTIVE] = !v;
+                    } else if (v && !parent && this.activeState.parent) {
+                        this.activeState.parent.addChild(graphic);
+                        Object.keys(this.activeState).forEach(key => delete this.activeState[key]);
+                        this.getBody()[INACTIVE] = !v;
+                    }
+                } else {
+                    if (!v) {
+                        this.setStatic();
+                        this.setPosition(math.BIGNUMBER, math.BIGNUMBER);
+                        this.planckBody.SetAngularVelocity(0);
+                        this.planckBody.SetLinearVelocity({ x: 0, y: 0 });
+                        this.destroy(true);
+                        this.getBody()[INACTIVE] = !v;
+                    } else if (v) {
+                        this.getBody()[INACTIVE] = !v;
+                    }
                 }
             } //oo
             isActive() { return !this.getBody()[INACTIVE]; } //oo
