@@ -2059,6 +2059,7 @@ const pixiInst = function () {
                             }
                             const particleContainer = new PIXI.Container();
                             particleContainer.zIndex = 1;
+                            particleContainer.sortableChildren = true;
                             app.stage.addChild(particleContainer);
                             point.particleContainer = particleContainer;
                             point.pixiApp = app;
