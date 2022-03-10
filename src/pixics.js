@@ -79,6 +79,96 @@ const pixiInst = function () {
             };
         }
     };
+    math.check_intersection_line_circle = function (line, circle) {
+        // okk
+        let distance_1, distance_2;
+        let msqrt = Math.sqrt;
+        let mdrs = null, EPSILL = 1e-7;
+        let lx = line.second.x - line.first.x, ly = line.second.y - line.first.y;
+        let len = msqrt(lx * lx + ly * ly);
+        let dx = lx / len, dy = ly / len;
+        let t = dx * (circle.x - line.first.x) + dy * (circle.y - line.first.y);
+        let ex = t * dx + line.first.x, ey = t * dy + line.first.y;
+        let lec = msqrt((ex - circle.x) * (ex - circle.x) + (ey - circle.y) * (ey - circle.y));
+        let get_point_on_arc = function (circle, dot) {
+            /*
+            circle 은 {x:100, y:100, r:50} 형태의 원의 스펙이고
+            dot 은 {x:100, y:149} 형태의 점이다.
+            dot이 circle의 안에 위치할때 원의 중심점으로부터 dot을 지나 닿게되는 호의 지점의 좌표를 내어준다.
+            dot이 circle의 밖에 위치할때 원의 중심점으로부터 dot을 지날때 교차하게되는 호의 지점의 좌표를 내어준다.
+            */
+            let loop = true;
+            let pll = circle.r;
+            let angle = Math.atan2(circle.y - dot.y, circle.x - dot.x) + Math.PI;
+            while (loop) {
+                dot.x = circle.x + Math.cos(angle) * pll;
+                dot.y = circle.y + Math.sin(angle) * pll;
+                let a = circle.x - dot.x;
+                let b = circle.y - dot.y;
+                if (msqrt(a * a + b * b) >= circle.r) {
+                    return dot;
+                } else {
+                    pll += EPSILL;
+                }
+            }
+        };
+        for (let bomo = 0; bomo < 3; bomo++) {
+            if (bomo > 1) {
+                bomo = -1;
+            }
+            if (true) {
+                let lf1 = line.first.x - circle.x, lf2 = line.first.y - circle.y, ls1 = line.second.x - circle.x, ls2 = line.second.y - circle.y, boel = EPSILL * bomo;
+                distance_1 = msqrt(lf1 * lf1 + lf2 * lf2) + boel; // ksttool.math.get_distance_between_two_point(line.first, circle) + (EPSILL * bomo);
+                distance_2 = msqrt(ls1 * ls1 + ls2 * ls2) + boel; // ksttool.math.get_distance_between_two_point(line.second, circle) + (EPSILL * bomo);
+            }
+            let compare_1 = distance_1 >= circle.r;
+            let compare_2 = distance_2 >= circle.r;
+            let compare_data = compare_1 && (distance_2 < circle.r) || compare_2 && (distance_1 < circle.r);
+            if (lec < circle.r) {
+                let dt = msqrt(circle.r * circle.r - lec * lec) - EPSILL;
+                let t_m_dt = t - dt;
+                let t_p_dt = t + dt;
+                //---
+                let te = dx * lx + dy * ly;
+                let t_m_dt_lt_0_or_t_m_dt_gt_te = t_m_dt < 0 || t_m_dt > te;
+                let t_p_dt_lt_0_or_t_p_dt_gt_te = t_p_dt < 0 || t_p_dt > te;
+                if (!compare_data && t_m_dt_lt_0_or_t_m_dt_gt_te && t_p_dt_lt_0_or_t_p_dt_gt_te) {
+                    mdrs = [];
+                } else if (compare_data && t_m_dt_lt_0_or_t_m_dt_gt_te) {
+                    mdrs = [get_point_on_arc(circle, { x: t_p_dt * dx + line.first.x, y: t_p_dt * dy + line.first.y })];
+                } else if (compare_data && t_p_dt_lt_0_or_t_p_dt_gt_te) {
+                    mdrs = [get_point_on_arc(circle, { x: t_m_dt * dx + line.first.x, y: t_m_dt * dy + line.first.y })];
+                }
+                //---         
+                if (!mdrs && compare_1 && compare_2) {
+                    mdrs = [get_point_on_arc(circle, {
+                        x: t_m_dt * dx + line.first.x,
+                        y: t_m_dt * dy + line.first.y
+                    }), get_point_on_arc(circle, {
+                        x: t_p_dt * dx + line.first.x,
+                        y: t_p_dt * dy + line.first.y
+                    })];
+                }
+            } else if (lec == circle.r) {
+                let result1 = { x: ex, y: ey };
+                let result2 = { x: ex, y: ey };
+                let angle__forward = ksttool.math.get_angle_in_radian_between_two_points(circle, result1);
+                let lll = ksttool.math.get_coordinate_distance_away_from_center_with_radian(ksttool.math.get_distance_between_two_point(circle, result1) + EPSILL, circle, angle__forward);
+                if (ksttool.check_intersection_line_line({ first: circle, second: lll }, line, true)) {
+                    result1 = get_point_on_arc(circle, result1);
+                    result2 = get_point_on_arc(circle, result2);
+                    mdrs = [result1, result2];
+                }
+            }
+            if (!mdrs && !compare_data) {
+                mdrs = [];
+            }
+            if (mdrs !== null || bomo == -1) {
+                return mdrs;
+            }
+        }
+        return [];
+    };
     math.check_intersection_line_line = function (l1, l2) {
         // geometry
         let [line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY, mode] = [l1.first.x, l1.first.y, l1.second.x, l1.second.y, l2.first.x, l2.first.y, l2.second.x, l2.second.y, false];
@@ -696,7 +786,7 @@ const pixiInst = function () {
             getIgnoreContacts() {
                 return this.ignoreContact;
             }
-            setContactState(body, mode) {
+            setContactState(body, mode, contact, param) {
                 // if (!force) {
                 //     if (!this.getContactable() || !body.getContactable()) return;
                 // }
@@ -709,9 +799,9 @@ const pixiInst = function () {
                         let sendThru;
                         if (vcb && vcb.preCalc) sendThru = vcb.preCalc();
                         if (this.preCallbackQueueMode) {
-                            cb && cb(body, sendThru)
+                            cb && cb(body, sendThru, contact, param)
                         } else {
-                            cb && this.preCallbackQueue.push([cb, body, sendThru]);
+                            cb && this.preCallbackQueue.push([cb, body, sendThru, contact, param]);
                         }
                     }
                 } else {
@@ -722,9 +812,9 @@ const pixiInst = function () {
                         let sendThru;
                         if (vcb && vcb.preCalc) sendThru = vcb.preCalc();
                         if (this.preCallbackQueueMode) {
-                            cb && cb(body, sendThru)
+                            cb && cb(body, sendThru, contact, param)
                         } else {
-                            cb && this.preCallbackQueue.push([cb, body, sendThru]);
+                            cb && this.preCallbackQueue.push([cb, body, sendThru, contact, param]);
                         }
                     }
                 }
@@ -1000,7 +1090,29 @@ const pixiInst = function () {
             addVirtualChild(sprite, fitting) {
                 if (this.virtualChildren.has(sprite)) return;
                 this.virtualChildren.set(sprite);
-                point.particleContainer.addChild(sprite.getSprite());
+                let container;
+                if (false) {
+                    if (point.fastContainers === undefined) point.fastContainers = new Map();
+                    let key = sprite.getSprite().texture;
+                    if (point.fastContainers.has(key)) {
+                        container = point.fastContainers.get(key);
+                    } else {
+                        container = new PIXI.ParticleContainer(10000, {
+                            scale: false,
+                            position: false,
+                            uvs: false,
+                            tint: false,
+                            alpha: false,
+                            rotation: false
+                        });
+                        container.zIndex = 10;
+                        point.fastContainers.set(key, container);
+                        point.pixiApp.stage.addChild(container);
+                    }
+                } else {
+                    container = point.particleContainer;
+                }
+                container.addChild(sprite.getSprite());
                 sprite.parentObject = this;
                 sprite.align();
                 fitting && sprite.fitting();
@@ -1701,8 +1813,8 @@ const pixiInst = function () {
                 let len = bdv.preCallbackQueue.length;
                 for (let i = 0; i < len; i++) {
                     if (!bdv.preCallbackQueue[i]) continue;
-                    let [cb, _body, sendThru] = bdv.preCallbackQueue[i];
-                    cb(_body, sendThru);
+                    let [cb, _body, sendThru, contact, param] = bdv.preCallbackQueue[i];
+                    cb(_body, sendThru, contact, param);
                 }
                 bdv.preCallbackQueue.splice(0, len);
                 if (bdv.updateQueue.size) {
@@ -2008,6 +2120,7 @@ const pixiInst = function () {
             worldscale: 0, PhysicsGraphics,
             TextView,
             TextView2,
+            Assert,
             Image,
             ObjectPool,
             Line,
@@ -2033,12 +2146,21 @@ const pixiInst = function () {
                     constructor() {
                         super();
                     }
-                    askFire(contact, contactmode) {
+                    askFire(contact, contactmode, param) {
                         let wba = contact.GetFixtureA().GetBody().GetUserData();
                         let wbb = contact.GetFixtureB().GetBody().GetUserData();
-                        // if (!wba.isActive() || !wbb.isActive()) return;
-                        wbb.setContactState(wba, contactmode);
-                        wba.setContactState(wbb, contactmode);
+                        if (false) {
+                            let pc = contact.GetManifold().pointCount;
+                            if (pc) {
+                                const worldManifold = new b2.WorldManifold();
+                                contact.GetWorldManifold(worldManifold);
+                                worldManifold.points.forEach(vec => {
+                                    console.log(vec);
+                                });
+                            }
+                        }
+                        wbb.setContactState(wba, contactmode, contact, param);
+                        wba.setContactState(wbb, contactmode, contact, param);
                     }
                     BeginContact(contact) {
                         this.askFire(contact, true);
@@ -2047,10 +2169,10 @@ const pixiInst = function () {
                         this.askFire(contact, false);
                     }
                     PreSolve(contact, oldManifold) {
-                        this.askFire(contact, true);
+                        this.askFire(contact, true, oldManifold);
                     }
                     PostSolve(contact, impulse) {
-                        this.askFire(contact, true);
+                        this.askFire(contact, true, impulse);
                     }
                 }
                 actual_display = display;
