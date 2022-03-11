@@ -45,6 +45,8 @@ window.addEventListener('load', async () => {
         pixiGraphic.y = pixis.y;
         app.stage.addChild(pixiGraphic);
     }
+    rectangle.setTag('R');
+    movingCircle.setTag('C');
     rectangle.addEvent('contact', movingCircle, function (movingCircle, response, contactPosition) {
         L(`${response}: ${JSON.stringify(contactPosition)}`);
         pinPoint(contactPosition, 0x0077ff);

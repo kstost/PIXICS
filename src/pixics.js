@@ -835,11 +835,13 @@ const pixiInst = function () {
             }
             setContactState(body, mode, type, contact) {
                 if (this.ignoreContact.has(body)) return;
+                0 && console.log(type, body.getTag())
                 if (mode) {
+                    let vcb = this.getCBFunc(body, 'contact', true);
+                    if (!vcb) return;
                     if (!this.contacts.has(body)) {
                         let contactInfo = { list: [] };
                         this.contacts.set(body, contactInfo);
-                        let vcb = this.getCBFunc(body, 'contact', true);
                         let cb = vcb?.cbf;
                         if (vcb?.needToCalcCollidedPos) {
                             contactInfo.list.push(ContactListener.contactTranslator(contact));
@@ -852,7 +854,6 @@ const pixiInst = function () {
                             cb && this.preCallbackQueue.push([cb, body, sendThru, contactInfo.list[0]]);
                         }
                     } else if (type === ContactListener.PRESOLVE) {
-                        let vcb = this.getCBFunc(body, 'contact', true);
                         if (vcb?.needToCalcCollidedPos) {
                             let contactInfo = this.contacts.get(body);
                             contactInfo.list.push(ContactListener.contactTranslator(contact));
