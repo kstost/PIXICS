@@ -786,14 +786,16 @@ const pixiInst = function () {
             getIgnoreContacts() {
                 return this.ignoreContact;
             }
-            setContactState(body, mode, contact, param) {
-                // if (!force) {
-                //     if (!this.getContactable() || !body.getContactable()) return;
-                // }
+            setContactState(ContactListener, body, mode, type, contact, param) {
                 if (this.ignoreContact.has(body)) return;
+                if (false) {
+                    const worldManifold = new b2.WorldManifold();
+                    contact.GetWorldManifold(worldManifold);
+                    console.log(mode, type, worldManifold.points[0]);
+                }
                 if (mode) {
                     if (!this.contacts.has(body)) {
-                        this.contacts.set(body, mode);
+                        this.contacts.set(body, [contact]);
                         let vcb = this.getCBFunc(body, 'contact', true);
                         let cb = vcb?.cbf;
                         let sendThru;
@@ -803,6 +805,8 @@ const pixiInst = function () {
                         } else {
                             cb && this.preCallbackQueue.push([cb, body, sendThru, contact, param]);
                         }
+                    } else if (type === ContactListener.PRESOLVE || type === ContactListener.POSTSOLVE) {
+                        this.contacts.get(body).push(contact);
                     }
                 } else {
                     if (this.contacts.has(body)) {
@@ -2144,10 +2148,14 @@ const pixiInst = function () {
             transScale(v) { return v / PIXICS.worldscale; },
             createWorld(scale, ratio, gravity, useflyover, display) {
                 class ContactListener extends b2.ContactListener {
+                    static BEGIN = 0;
+                    static END = 1;
+                    static PRESOLVE = 2;
+                    static POSTSOLVE = 3;
                     constructor() {
                         super();
                     }
-                    askFire(contact, contactmode, param) {
+                    askFire(contact, contactmode, type, param) {
                         let wba = contact.GetFixtureA().GetBody().GetUserData();
                         let wbb = contact.GetFixtureB().GetBody().GetUserData();
                         if (false) {
@@ -2160,20 +2168,25 @@ const pixiInst = function () {
                                 });
                             }
                         }
-                        wbb.setContactState(wba, contactmode, contact, param);
-                        wba.setContactState(wbb, contactmode, contact, param);
+                        wbb.setContactState(ContactListener, wba, contactmode, type, contact, param);
+                        wba.setContactState(ContactListener, wbb, contactmode, type, contact, param);
+
+                        // const worldManifold = new b2.WorldManifold();
+                        // contact.GetWorldManifold(worldManifold);
+                        // console.log(worldManifold.points[0]);
+
                     }
                     BeginContact(contact) {
-                        this.askFire(contact, true);
+                        this.askFire(contact, true, ContactListener.BEGIN);
                     }
                     EndContact(contact) {
-                        this.askFire(contact, false);
+                        this.askFire(contact, false, ContactListener.END);
                     }
                     PreSolve(contact, oldManifold) {
-                        this.askFire(contact, true, oldManifold);
+                        this.askFire(contact, true, ContactListener.PRESOLVE, oldManifold);
                     }
                     PostSolve(contact, impulse) {
-                        this.askFire(contact, true, impulse);
+                        this.askFire(contact, true, ContactListener.POSTSOLVE, impulse);
                     }
                 }
                 actual_display = display;
