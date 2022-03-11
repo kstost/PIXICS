@@ -617,6 +617,11 @@ const pixiInst = function () {
             static END = 1;
             static PRESOLVE = 2;
             static POSTSOLVE = 3;
+            static contactTranslator(contact) {
+                const worldManifold = new b2.WorldManifold();
+                contact.GetWorldManifold(worldManifold);
+                return worldManifold.points[0];
+            }
             constructor() {
                 super();
             }
@@ -633,8 +638,8 @@ const pixiInst = function () {
                         });
                     }
                 }
-                wbb.setContactState(ContactListener, wba, contactmode, type, contact, param);
-                wba.setContactState(ContactListener, wbb, contactmode, type, contact, param);
+                wbb.setContactState(wba, contactmode, type, contact);
+                wba.setContactState(wbb, contactmode, type, contact);
 
                 // const worldManifold = new b2.WorldManifold();
                 // contact.GetWorldManifold(worldManifold);
@@ -828,39 +833,47 @@ const pixiInst = function () {
             getIgnoreContacts() {
                 return this.ignoreContact;
             }
-            setContactState(ContactListener, body, mode, type, contact, param) {
+            setContactState(body, mode, type, contact) {
                 if (this.ignoreContact.has(body)) return;
-                if (false) {
-                    const worldManifold = new b2.WorldManifold();
-                    contact.GetWorldManifold(worldManifold);
-                    console.log(mode, type, worldManifold.points[0]);
-                }
                 if (mode) {
                     if (!this.contacts.has(body)) {
-                        this.contacts.set(body, [contact]);
+                        let contactInfo = { list: [] };
+                        this.contacts.set(body, contactInfo);
                         let vcb = this.getCBFunc(body, 'contact', true);
                         let cb = vcb?.cbf;
+                        if (vcb?.needToCalcCollidedPos) {
+                            contactInfo.list.push(ContactListener.contactTranslator(contact));
+                        }
                         let sendThru;
                         if (vcb && vcb.preCalc) sendThru = vcb.preCalc();
                         if (this.preCallbackQueueMode) {
-                            cb && cb(body, sendThru, contact, param)
+                            cb && cb(body, sendThru, contactInfo.list[0])
                         } else {
-                            cb && this.preCallbackQueue.push([cb, body, sendThru, contact, param]);
+                            cb && this.preCallbackQueue.push([cb, body, sendThru, contactInfo.list[0]]);
                         }
-                    } else if (type === ContactListener.PRESOLVE || type === ContactListener.POSTSOLVE) {
-                        this.contacts.get(body).push(contact);
+                    } else if (type === ContactListener.PRESOLVE) {
+                        let vcb = this.getCBFunc(body, 'contact', true);
+                        if (vcb?.needToCalcCollidedPos) {
+                            let contactInfo = this.contacts.get(body);
+                            contactInfo.list.push(ContactListener.contactTranslator(contact));
+                        }
                     }
                 } else {
                     if (this.contacts.has(body)) {
-                        this.contacts.delete(body);
                         let vcb = this.getCBFunc(body, 'untact', true);
+                        let lastContact;
+                        if (vcb?.needToCalcCollidedPos) {
+                            lastContact = this.contacts.get(body).list;
+                            lastContact = lastContact[lastContact.length - 1];
+                        }
+                        this.contacts.delete(body);
                         let cb = vcb?.cbf;
                         let sendThru;
                         if (vcb && vcb.preCalc) sendThru = vcb.preCalc();
                         if (this.preCallbackQueueMode) {
-                            cb && cb(body, sendThru, contact, param)
+                            cb && cb(body, sendThru, lastContact)
                         } else {
-                            cb && this.preCallbackQueue.push([cb, body, sendThru, contact, param]);
+                            cb && this.preCallbackQueue.push([cb, body, sendThru, lastContact]);
                         }
                     }
                 }
@@ -935,7 +948,7 @@ const pixiInst = function () {
                 try { if (boundary.stickState.get(this).cbs[mode]) return true; } catch (e) { }
                 return false;
             }
-            addEvent(mode, boundary, cbf, preCalc) {
+            addEvent(mode, boundary, cbf, preCalc, needToCalcCollidedPos) {
                 if (boundary instanceof Function) {
                     if (mode.constructor === String) mode = [mode];
                     mode.forEach(mode => {
@@ -952,7 +965,7 @@ const pixiInst = function () {
                         dt = { body: boundary, prevstate: false, cbs: {} };
                         this.stickState.set(boundary, dt);
                     };
-                    dt.cbs[mode] = { cbf, preCalc }
+                    dt.cbs[mode] = { cbf, preCalc, needToCalcCollidedPos }
                 }
             }
             getContactList(mode) {
@@ -1859,8 +1872,8 @@ const pixiInst = function () {
                 let len = bdv.preCallbackQueue.length;
                 for (let i = 0; i < len; i++) {
                     if (!bdv.preCallbackQueue[i]) continue;
-                    let [cb, _body, sendThru, contact, param] = bdv.preCallbackQueue[i];
-                    cb(_body, sendThru, contact, param);
+                    let [cb, _body, sendThru, contact] = bdv.preCallbackQueue[i];
+                    cb(_body, sendThru, contact);
                 }
                 bdv.preCallbackQueue.splice(0, len);
                 if (bdv.updateQueue.size) {
@@ -2167,6 +2180,7 @@ const pixiInst = function () {
             worldscale: 0, PhysicsGraphics,
             TextView,
             TextView2,
+            ContactListener,
             Assert,
             Image,
             ObjectPool,
@@ -2329,6 +2343,13 @@ const pixiInst = function () {
                     world,
                     get worldscale() {
                         return point.worldscale;
+                    },
+                    worldPositionToPIXIStyle(pos) {
+                        let center = this.getWorldCenter();
+                        return {
+                            x: (pos.x * point.worldscale) + center.x,
+                            y: -(pos.y * point.worldscale) + center.y
+                        };
                     },
                     getWorldCenter() {
                         return center;
