@@ -612,6 +612,48 @@ const pixiInst = function () {
 
             }
         }
+        class ContactListener extends b2.ContactListener {
+            static BEGIN = 0;
+            static END = 1;
+            static PRESOLVE = 2;
+            static POSTSOLVE = 3;
+            constructor() {
+                super();
+            }
+            askFire(contact, contactmode, type, param) {
+                let wba = contact.GetFixtureA().GetBody().GetUserData();
+                let wbb = contact.GetFixtureB().GetBody().GetUserData();
+                if (false) {
+                    let pc = contact.GetManifold().pointCount;
+                    if (pc) {
+                        const worldManifold = new b2.WorldManifold();
+                        contact.GetWorldManifold(worldManifold);
+                        worldManifold.points.forEach(vec => {
+                            console.log(vec);
+                        });
+                    }
+                }
+                wbb.setContactState(ContactListener, wba, contactmode, type, contact, param);
+                wba.setContactState(ContactListener, wbb, contactmode, type, contact, param);
+
+                // const worldManifold = new b2.WorldManifold();
+                // contact.GetWorldManifold(worldManifold);
+                // console.log(worldManifold.points[0]);
+
+            }
+            BeginContact(contact) {
+                this.askFire(contact, true, ContactListener.BEGIN);
+            }
+            EndContact(contact) {
+                this.askFire(contact, false, ContactListener.END);
+            }
+            PreSolve(contact, oldManifold) {
+                this.askFire(contact, true, ContactListener.PRESOLVE, oldManifold);
+            }
+            PostSolve(contact, impulse) {
+                this.askFire(contact, true, ContactListener.POSTSOLVE, impulse);
+            }
+        }
         class PhysicsGraphics {
             calculateMode = false;
             virtualChildren = new Map();
@@ -2147,48 +2189,6 @@ const pixiInst = function () {
             },
             transScale(v) { return v / PIXICS.worldscale; },
             createWorld(scale, ratio, gravity, useflyover, display) {
-                class ContactListener extends b2.ContactListener {
-                    static BEGIN = 0;
-                    static END = 1;
-                    static PRESOLVE = 2;
-                    static POSTSOLVE = 3;
-                    constructor() {
-                        super();
-                    }
-                    askFire(contact, contactmode, type, param) {
-                        let wba = contact.GetFixtureA().GetBody().GetUserData();
-                        let wbb = contact.GetFixtureB().GetBody().GetUserData();
-                        if (false) {
-                            let pc = contact.GetManifold().pointCount;
-                            if (pc) {
-                                const worldManifold = new b2.WorldManifold();
-                                contact.GetWorldManifold(worldManifold);
-                                worldManifold.points.forEach(vec => {
-                                    console.log(vec);
-                                });
-                            }
-                        }
-                        wbb.setContactState(ContactListener, wba, contactmode, type, contact, param);
-                        wba.setContactState(ContactListener, wbb, contactmode, type, contact, param);
-
-                        // const worldManifold = new b2.WorldManifold();
-                        // contact.GetWorldManifold(worldManifold);
-                        // console.log(worldManifold.points[0]);
-
-                    }
-                    BeginContact(contact) {
-                        this.askFire(contact, true, ContactListener.BEGIN);
-                    }
-                    EndContact(contact) {
-                        this.askFire(contact, false, ContactListener.END);
-                    }
-                    PreSolve(contact, oldManifold) {
-                        this.askFire(contact, true, ContactListener.PRESOLVE, oldManifold);
-                    }
-                    PostSolve(contact, impulse) {
-                        this.askFire(contact, true, ContactListener.POSTSOLVE, impulse);
-                    }
-                }
                 actual_display = display;
                 PLANCKMODE = !useflyover ? true : false;
                 point.ratio = ratio;
