@@ -1076,7 +1076,7 @@ const pixiInst = function () {
                         }
                         if (!resolver) return;
                         if (!rotateMode && setDestination) _point.setPosition(x, -y);
-                        if (rotateMode && setDestination) _point.setAngle(x);
+                        if (rotateMode && setDestination) _point.setAngle(x + (bojvalue), true);
                         let currentValue = rotateMode ? _point.getAngle() : _point.getPosition();
                         let difference = rotateMode ? currentValue - firstValue : math.get_distance_between_two_point(firstValue, currentValue);
                         this.abort();
@@ -1122,7 +1122,7 @@ const pixiInst = function () {
                             _point.setPosition(_startPoint.x + chx, _startPoint.y_ + chy)
                         }
                     } else {
-                        staticMode && _point.setAngle(_point.getAngle() + tasks[cnt])
+                        staticMode && _point.setAngle(_point.getAngle() + tasks[cnt], true)
                         !staticMode && _point.getBody().SetAngularVelocity(distanceToMoveOnThisTick * magicNumber)
                     }
                     cnt++;
@@ -1133,7 +1133,8 @@ const pixiInst = function () {
                 const prm = new SeqPromise(async function (resolver, stop) {
                     resolver(await this);
                 }, _point.setUpdate(callback));
-                let motionInst = { clearPrm };
+                let bojvalue = 0;
+                let motionInst = { clearPrm, addValue: (vv) => { bojvalue += vv; } };
                 getKinematicMotionMap().set(motionInst);
                 return prm;
             }
@@ -1475,7 +1476,9 @@ const pixiInst = function () {
                     return this.setPosition(...arguments);
                 }
             }
-            setAngle(radian) {
+            setAngle(radian, avoid) {
+                let before;
+                if (!avoid && this.kinematicMotionRotate.size) before = this.getAngle();
                 if (PLANCKMODE) {
                     this.planckBody.setAngle(radian);
                 } else {
@@ -1483,6 +1486,9 @@ const pixiInst = function () {
                 }
                 this.syncState();
                 this.touchContacts();
+                if (!avoid && before !== undefined) {
+                    [...this.kinematicMotionRotate.keys()].forEach(point => point.addValue(this.getAngle() - before));
+                }
             }
             getAngle() {
                 if (PLANCKMODE) {
