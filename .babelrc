@@ -1,4 +1,5 @@
 {
-  "presets": ["latest"]
+  "presets": ["@babel/preset-env"]
+  // "presets": ["2015"]
 }
 

@@ -1,7 +1,7 @@
-const webpack = require('webpack');  
+const webpack = require('webpack');
 module.exports = {
   devtool: 'source-map',
-  entry: './editor.js',
+  entry: './src/pixics.js',
   output: {
     filename: "bundle.js",
   },
@@ -13,6 +13,20 @@ module.exports = {
     // })
   ],
   module: {
+    rules: [
+      {
+        // test: /\.jsx?/,
+        // include: 'YOUR_APP_SRC_DIR',
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ["@babel/preset-env"]
+          }
+        }
+      }
+    ]
+
+
     // loaders: [{
     //   test: /\.js$/,
     //   loader: 'babel',
@@ -21,3 +35,10 @@ module.exports = {
   }
 };
 
+/*
+https://www.npmjs.com/package/@babel/preset-env
+https://www.npmjs.com/package/@babel/preset-env
+npm install --save-dev @babel/preset-env
+
+
+*/

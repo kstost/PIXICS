@@ -2463,4 +2463,5 @@ const pixiInst = function () {
         return point;
     })();
     return PIXICS;
-}
+};
+window.pixiInst = pixiInst;
