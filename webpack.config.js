@@ -1,9 +1,9 @@
 const webpack = require('webpack');
 module.exports = {
   devtool: 'source-map',
-  entry: './src/pixics.js',
+  entry: './src/pixics.src.js',
   output: {
-    filename: "bundle.js",
+    filename: "pixics.js",
   },
   plugins: [
     // new webpack.optimize.UglifyJsPlugin({
