@@ -1,5 +1,14 @@
 {
-  "presets": ["@babel/preset-env"]
-  // "presets": ["2015"]
+  // npm install --save-dev @babel/plugin-transform-runtime
+  // "presets": [ "es2015", "stage-0" ]
+  "presets": [
+    "@babel/preset-env"
+  ],
+  "plugins": [
+    [
+      "@babel/transform-runtime"
+    ]
+  ]
+  // "presets": ["@babel/preset-env"]
+  // "presets": ["latest"]
 }
-
