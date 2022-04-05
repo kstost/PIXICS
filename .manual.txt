@@ -40,4 +40,5 @@ git rm file
 src/pixics.src.js 본체다.
 수정하게되면
 source .x_check.sh 해서 검토 후 올바르면 source .upload.sh
-source bundling.sh; source .upload.sh 해서 나오는 깃헙커밋아이디를 loader.js 에 담고 source .upload.sh
+source bundling.sh; source .upload.sh 해서 나오는 mKey를 loader.js 에 담고 source .upload.sh
+해서 나오는 mKey 를 가져다 쓰면된다.
