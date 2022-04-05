@@ -2138,6 +2138,7 @@ const pixiInst = function () {
                             display.height = app.screen.height;
                         }
                         app.stage.sortableChildren = true;
+                        if (initValue.clearContainer === undefined) initValue.clearContainer = true;
                         if (initValue.clearContainer) display.container.innerText = '';
                         display.container.appendChild(app.view);
                         if (resizable && isBodyContainer) {
