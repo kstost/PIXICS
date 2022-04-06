@@ -838,7 +838,6 @@ const pixiInst = function () {
                 0 && console.log(type, body.getTag())
                 if (mode) {
                     let vcb = this.getCBFunc(body, 'contact', true);
-                    if (!vcb) return;
                     if (!this.contacts.has(body)) {
                         let contactInfo = { list: [] };
                         this.contacts.set(body, contactInfo);
