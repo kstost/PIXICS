@@ -79,6 +79,23 @@ const pixiInst = function () {
             };
         }
     };
+    math.are_overlap_two_circle = function (circle1, circle2) {
+        const targetdist = (circle1.r + circle2.r)
+        const taskmove = targetdist - math.get_distance_between_two_point(circle1, circle2)
+        return !(taskmove <= 0)
+    }
+    math.prevent_overlap_two_circle = function (circle1, circle2, padding) {
+        const targetdist = (circle1.r + circle2.r)
+        let taskmove = targetdist - math.get_distance_between_two_point(circle1, circle2)
+        if (taskmove <= 0) return;
+        taskmove *= padding
+        const radian = math.get_angle_in_radian_between_two_points(circle1, circle2)
+        const npos1 = math.get_coordinate_distance_away_from_center_with_radian((taskmove * (circle1.r / targetdist)) * -1, circle1, radian)
+        const npos2 = math.get_coordinate_distance_away_from_center_with_radian((taskmove * (circle2.r / targetdist)) * 1, circle2, radian)
+        // npos1.r = circle1.r
+        // npos2.r = circle2.r
+        return [npos1, npos2]
+    };
     math.check_intersection_line_circle = function (line, circle) {
         // okk
         let distance_1, distance_2;
@@ -710,6 +727,9 @@ const pixiInst = function () {
             remPinGravity(pin) {
                 if (this.pinGravity) {
                     this.pinGravity.delete(pin);
+                    if (this.pinGravity.size === 0) {
+                        delete this.pinGravity
+                    }
                 }
             }
             setPinGravity(pin) {
