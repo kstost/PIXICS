@@ -1,4 +1,7 @@
-# npm i -g webpack
-npm i -D webpack babel-core babel-loader
-npm i -D webpack-cli
+[업데이트의 과정]
+src/pixics.src.js 를 수정하면 된다.
+수정 완료 후에는 
+npm i
 npx webpack-cli
+해서 dist/pixics.js 를 만들자.
+그런 후 source .upload.sh 를 해서 commit 후 나오는 id 를 loader.js 에 넣고 source .upload.sh 한번 더 한다.
