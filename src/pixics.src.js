@@ -1544,6 +1544,13 @@ const pixiInst = function () {
             getDraw(idx) {
                 return this.numberToFixture(idx)[DRAWINGPROFILE].drawInstance;
             }
+            setFixtureFilterGroupIndex(groupIndex) {
+                // setDensity 를 하면 풀린다
+                const fixtures = this.getFixtures()
+                for (let i = 0; i < fixtures.length; i++) {
+                    fixtures[i].GetFilterData().groupIndex = groupIndex
+                }
+            }
             getFixtureValues(idx) {
                 Assert.use && Assert.validate('getFixtureValues::idx 상태가 이상하네', () => idx !== undefined);
                 Assert.use && Assert.validate('getFixtureValues::idx 허용되지 못하는 값', () => idx.constructor === b2.Fixture || idx.constructor === Number);
