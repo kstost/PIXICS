@@ -2252,6 +2252,7 @@ const pixiInst = function () {
             ObjectPool,
             Line,
             TilingLine,
+            Rectangle,
             editorUrl(json, redirect) {
                 let data = encodeURIComponent(JSON.stringify(json));
                 let a = document.createElement('a');
