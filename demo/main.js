@@ -30,7 +30,7 @@ window.addEventListener('load', async () => {
         gravity: { x: 0, y: -10 },
         worldscale: 200,
         scriptlist: [
-            "https://pixijs.download/v6.2.1/pixi.min.js",
+            "https://pixijs.download/v7.0.4/pixi.min.js",
             "../src/pixics.src.js",
             "https://cdn.jsdelivr.net/gh/flyover/box2d.ts@52eb0773a59592dc573c4bc4d0f1451676a43ef9/dist/box2d.umd.js",
         ]
