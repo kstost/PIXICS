@@ -26,6 +26,20 @@ const pixiInst = function () {
             if (cb() !== true) throw new Error(v);
         }
     }
+    const Ease2 = { // https://spicyyoghurt.com/tools/easing-functions
+        easeOutQuad(t, b, c, d) { return -c * (t /= d) * (t - 2) + b; },
+        easeInQuad(t, b, c, d) {
+            return c * (t /= d) * t + b;
+        },
+        easeInOutExpo(t, b, c, d) {
+            if (t == 0) return b;
+            if (t == d) return b + c;
+            if ((t /= d / 2) < 1) return c / 2 * Math.pow(2, 10 * (t - 1)) + b;
+            return c / 2 * (-Math.pow(2, -10 * --t) + 2) + b;
+        }
+
+
+    }
     const Ease = {
         easeOutElastic: (t, b, c, d) => { var s = 1.70158; var p = 0; var a = c; if (t == 0) return b; if ((t /= d) == 1) return b + c; if (!p) p = d * .3; if (a < Math.abs(c)) { a = c; var s = p / 4; } else var s = p / (2 * Math.PI) * Math.asin(c / a); return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b; },
         linearTween: (t, b, c, d) => { return c * t / d + b; },// simple linear tweening - no easing, no acceleration
@@ -52,6 +66,8 @@ const pixiInst = function () {
         easeInOutCirc: (t, b, c, d) => { t /= d / 2; if (t < 1) return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b; t -= 2; return c / 2 * (Math.sqrt(1 - t * t) + 1) + b; }// circular easing in/out - acceleration until halfway, then deceleration
     };
     const math = {
+        Ease,
+        Ease2,
         BIGNUMBER: 999999999999999,
         EPSILON: 0.0000001,
         get_angle_in_radian_between_two_points(point1, point2) {
@@ -500,9 +516,9 @@ const pixiInst = function () {
             isDataMap() {
                 return (this.pool).constructor === Map;
             }
-            get(construct, init) {
+            get(construct, init, forceNew) {
                 let ob;
-                if (this.getSize()) {
+                if (!forceNew && this.getSize()) {
                     ob = this.pickOne();//pool.splice(0, 1)[0];
                     if (!ob[ObjectPool.resting]) throw new Error('에러..');
                 }
@@ -2137,6 +2153,7 @@ const pixiInst = function () {
             KeyEvent,
             framerate: magicNumber,
             math: math,
+            // Ease,
             displaySystem: (scs, fps, container) => {
                 let [width, height] = scs;
                 let isBodyContainer = container.constructor === HTMLBodyElement;
@@ -2338,6 +2355,8 @@ const pixiInst = function () {
                         design = !design ? { color: 0x00ffff, thickness: 0.5 * ratio } : design;
                         const parent = ball1.getGraphic().parent;
                         let joints = [{ body: ball2, origin: { ...b2p }, anchor: anchor2 }, { body: ball1, origin: { ...b1p }, anchor: anchor1 }];
+                        // let jd = coord2 ? new b2.DistanceJointDef() : new b2.RevoluteJointDef(); // 원본
+                        // let jd = coord2 ? new b2.FrictionJointDef() : new b2.WheelJointDef(); //PrismaticJointDef, WheelJointDef,DistanceJointDef,RevoluteJointDef // FrictionJointDef
                         let jd = coord2 ? new b2.DistanceJointDef() : new b2.RevoluteJointDef();
                         let afa1 = angle({ pos: b1p, x: anchor1.x + b1p.x * 2, y: anchor1.y, angle: ball1.getAngle() });
                         let afa2 = angle({ pos: b2p, x: anchor2.x + b2p.x * 2, y: anchor2.y, angle: ball2.getAngle() });
@@ -2476,8 +2495,15 @@ const pixiInst = function () {
                         }, duration ? duration : 2000);
                         lineList.set(line, true);
                     },
-                    setPlay() {
-                        point.tickplay = !point.tickplay;
+                    setPlay(val) {
+                        if (val === undefined) {
+                            point.tickplay = !point.tickplay;
+                        } else {
+                            point.tickplay = !!val;
+                        }
+                    },
+                    getPlay() {
+                        return !!point.tickplay;
                     },
                     goOneStep() {
                         point.tickplay = false;
