@@ -1599,6 +1599,20 @@ const pixiInst = function () {
                     fixtures[i].GetFilterData().groupIndex = groupIndex
                 }
             }
+            setFixtureFilterData({ groupIndex, categoryBits, maskBits }) {
+                // setDensity 를 하면 풀린다
+                if (groupIndex === undefined) groupIndex = null
+                if (categoryBits === undefined) categoryBits = null
+                if (maskBits === undefined) maskBits = null
+                if (maskBits === null && categoryBits === null && groupIndex === null) return
+                const fixtures = this.getFixtures()
+                for (let i = 0; i < fixtures.length; i++) {
+                    const data = fixtures[i].GetFilterData()
+                    if (maskBits !== null) data.maskBits = maskBits
+                    if (groupIndex !== null) data.groupIndex = groupIndex
+                    if (categoryBits !== null) data.categoryBits = categoryBits
+                }
+            }
             getFixtureValues(idx) {
                 Assert.use && Assert.validate('getFixtureValues::idx 상태가 이상하네', () => idx !== undefined);
                 Assert.use && Assert.validate('getFixtureValues::idx 허용되지 못하는 값', () => idx.constructor === b2.Fixture || idx.constructor === Number);
