@@ -231,6 +231,14 @@ const pixiInst = function () {
         }
         return false;
     };
+    math.pieAsNum = function (startRad, divs, centerPos, occuPos) {
+        let afdasfd = ((Math.PI * 2) - Math.PI / 2) + startRad
+        const axis = (Math.PI * 1);
+        const onepiece = ((Math.PI * 2) / divs)
+        const pointEnd = math.rotation_coordinate(centerPos, occuPos, afdasfd)
+        const pos = axis + math.get_angle_in_radian_between_two_points(centerPos, pointEnd)
+        return Math.round((pos - (pos % onepiece)) / onepiece)
+    }
     math.checkPointIsInsideCircle = function (spec, pt) {
         // geometry
         var distancesquared = (pt.x - spec.x) * (pt.x - spec.x) + (pt.y - spec.y) * (pt.y - spec.y);
