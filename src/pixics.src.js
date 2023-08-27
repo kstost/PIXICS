@@ -2206,6 +2206,7 @@ const pixiInst = function () {
                             antialias: true,
                             resolution: window.devicePixelRatio,
                             autoDensity: true,
+                            backgroundAlpha: 0,
                         });
                         if (true) {
                             if (false) {
